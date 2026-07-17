@@ -16,6 +16,7 @@
 - **Score display**: show the literal string `< 1k` for any score `< 1000`; at/above 1000 show `Math` -formatted with one decimal and a `k` suffix, trailing `.0` stripped (e.g. `1200 → "1.2k"`, `48200 → "48.2k"`, `2000 → "2k"`).
 - **Colors** are keyed **by lowercased hex, globally** across platforms. **OSes** are keyed by **slug**.
 - **on-color rule** (text over a swatch): HSL lightness `> 55` → `#1c1917`, else `#ffffff`.
+- **Perceptual distance**: all "nearest color" logic (closest-RAL, similar-colors) uses **OKLab** Euclidean distance, not RGB. The reference set for closest-color is the **full RAL Classic table (213 colors)**, vendored from the lunohodov gist (`ral_classic.csv`), never a hand-picked subset.
 - **Design tokens** (exact values): bg `#fafaf9`, ink `#1c1917`, muted text `#57534e`, faint `#a8a29e`, hairline `#e7e5e4`, card border `#eceae8`, accent `oklch(0.55 0.17 255)`; fonts `Space Grotesk` (UI) and `IBM Plex Mono` (mono/numeric).
 - **No personal data** anywhere in this plan (no scores writing, no IP handling — that's Plan 3).
 - Commit after every task with a `feat:`/`test:`/`chore:` prefixed message.
@@ -30,14 +31,19 @@ package.json
 tsconfig.json
 astro.config.mjs
 vitest.config.ts
+scripts/
+  build-ral.mjs               # one-time: CSV -> src/data/ral-classic.json
 src/
   content/
     config.ts                 # Zod schema for the `os` collection
     os/*.json                 # one file per platform (seed data)
+  data/
+    ral-classic.json          # vendored full RAL Classic table (213 entries)
   lib/
-    color.ts                  # hex/rgb/hsl, families, tone, shade, RAL, on-color, formatScore
+    color.ts                  # hex/rgb/hsl, OKLab, families, tone, shade, closest-RAL, on-color, formatScore
     color.test.ts
-    ral.ts                    # RAL classic reference table
+    ral.ts                    # loads the vendored full RAL Classic table
+    ral.test.ts               # validates the vendored dataset (count + anchors)
     scores.ts                 # Scores type, parseScores, loadScores (build-time fs)
     scores.test.ts
     derive.ts                 # mergeColorsByHex, similarColors, eraPeers, firstKnownUse
@@ -174,54 +180,119 @@ git commit -m "chore: scaffold Astro + Preact + Vitest project"
 
 ---
 
-### Task 2: RAL reference table
+### Task 2: Vendor the full RAL Classic table (data + loader + validation)
 
 **Files:**
+- Create: `scripts/build-ral.mjs` (one-time generator)
+- Create: `src/data/ral-classic.json` (generated output, committed to the repo)
 - Create: `src/lib/ral.ts`
+- Test: `src/lib/ral.test.ts`
 
 **Interfaces:**
-- Consumes: nothing.
-- Produces: `export interface RalColor { code: string; name: string; hex: string }` and `export const RAL_CLASSIC: RalColor[]` (read-only reference data used by `color.ts`).
+- Consumes: nothing at runtime (the JSON is vendored/committed; no network access at build or runtime).
+- Produces: `export interface RalColor { code: string; name: string; hex: string }` and `export const RAL_CLASSIC: RalColor[]` (the full 213-entry table, read by `color.ts`).
 
-This task is pure data with no behavior, so it has no separate test; `color.test.ts` (Task 3) exercises it through `closestRal`.
+**Why vendored, not hand-typed:** the full RAL Classic set is 213 colors; transcribing hexes by hand is error-prone. We generate the JSON once from an authoritative CSV and commit it, so builds are offline and reproducible.
 
-- [ ] **Step 1: Create `src/lib/ral.ts`**
+**Source:** lunohodov gist `1995178`, file `ral_classic.csv`.
+Raw URL: `https://gist.githubusercontent.com/lunohodov/1995178/raw/ral_classic.csv`
+Columns: `RAL,RGB,HEX,CMYK,LRV,English,German,French,Spanish,Italian,Dutch` — we use `RAL` (code), `HEX`, and `English` (name).
+
+- [ ] **Step 1: Create the generator `scripts/build-ral.mjs`**
+
+```js
+// Usage: node scripts/build-ral.mjs <path-to-ral_classic.csv>
+// Writes src/data/ral-classic.json as [{ code, name, hex }] with lowercased hex.
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+
+const csvPath = process.argv[2];
+if (!csvPath) { console.error("pass the CSV path"); process.exit(1); }
+
+const lines = readFileSync(csvPath, "utf8").trim().split(/\r?\n/);
+const header = lines[0].split(",");
+const iCode = header.indexOf("RAL");
+const iHex = header.indexOf("HEX");
+const iName = header.indexOf("English");
+if (iCode < 0 || iHex < 0 || iName < 0) {
+  console.error("unexpected CSV header:", lines[0]); process.exit(1);
+}
+
+const out = lines.slice(1).map((line) => {
+  const f = line.split(",");
+  return { code: f[iCode].trim(), name: f[iName].trim(), hex: f[iHex].trim().toLowerCase() };
+}).filter((r) => /^#[0-9a-f]{6}$/.test(r.hex) && r.code && r.name);
+
+mkdirSync("src/data", { recursive: true });
+writeFileSync("src/data/ral-classic.json", JSON.stringify(out, null, 2) + "\n");
+console.log(`wrote ${out.length} RAL colors`);
+```
+
+- [ ] **Step 2: Download the CSV and generate the JSON**
+
+Run:
+```bash
+curl -fsSL "https://gist.githubusercontent.com/lunohodov/1995178/raw/ral_classic.csv" -o /tmp/ral_classic.csv
+node scripts/build-ral.mjs /tmp/ral_classic.csv
+```
+Expected: prints `wrote 213 RAL colors` and creates `src/data/ral-classic.json`. Spot-check: it contains `"code": "RAL 9005"` with `"hex": "#0e0e10"`.
+
+- [ ] **Step 3: Create `src/lib/ral.ts`**
 
 ```ts
+import ralData from "../data/ral-classic.json";
+
 export interface RalColor {
   code: string;
   name: string;
   hex: string;
 }
 
-/** A small subset of RAL Classic colors, sufficient for nearest-color matching. */
-export const RAL_CLASSIC: RalColor[] = [
-  { code: "RAL 5001", name: "Green Blue", hex: "#1f3438" },
-  { code: "RAL 5002", name: "Ultramarine", hex: "#20214f" },
-  { code: "RAL 5010", name: "Gentian Blue", hex: "#0e294b" },
-  { code: "RAL 5015", name: "Sky Blue", hex: "#2271b3" },
-  { code: "RAL 5021", name: "Water Blue", hex: "#07737a" },
-  { code: "RAL 6027", name: "Light Green", hex: "#81c0bb" },
-  { code: "RAL 6034", name: "Pastel Turquoise", hex: "#7fb0b2" },
-  { code: "RAL 7011", name: "Iron Grey", hex: "#52595d" },
-  { code: "RAL 7040", name: "Window Grey", hex: "#9da3a6" },
-  { code: "RAL 9005", name: "Jet Black", hex: "#0a0a0a" },
-  { code: "RAL 9010", name: "Pure White", hex: "#f1ece1" },
-  { code: "RAL 1023", name: "Traffic Yellow", hex: "#f7b500" },
-  { code: "RAL 3020", name: "Traffic Red", hex: "#c1121c" },
-  { code: "RAL 4008", name: "Signal Violet", hex: "#924e7d" },
-  { code: "RAL 6018", name: "Yellow Green", hex: "#57a639" },
-  { code: "RAL 5017", name: "Traffic Blue", hex: "#063971" },
-  { code: "RAL 8012", name: "Red Brown", hex: "#642424" },
-  { code: "RAL 4006", name: "Traffic Purple", hex: "#911a75" },
-];
+export const RAL_CLASSIC: RalColor[] = ralData as RalColor[];
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 4: Write the validation test `src/lib/ral.test.ts`**
+
+```ts
+import { describe, it, expect } from "vitest";
+import { RAL_CLASSIC } from "./ral";
+
+describe("RAL_CLASSIC dataset", () => {
+  it("has the full classic set", () => {
+    expect(RAL_CLASSIC.length).toBe(213);
+  });
+
+  it("every entry is well-formed", () => {
+    for (const r of RAL_CLASSIC) {
+      expect(r.code).toMatch(/^RAL \d{4}$/);
+      expect(r.hex).toMatch(/^#[0-9a-f]{6}$/);
+      expect(r.name.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("matches known anchor colors", () => {
+    const by = (code: string) => RAL_CLASSIC.find((r) => r.code === code);
+    expect(by("RAL 9005")?.hex).toBe("#0e0e10");
+    expect(by("RAL 5015")?.hex).toBe("#007caf");
+    expect(by("RAL 6027")?.hex).toBe("#7ebab5");
+    expect(by("RAL 1023")?.hex).toBe("#f7b500");
+  });
+});
+```
+
+- [ ] **Step 5: Run the test**
+
+Run: `npx vitest run src/lib/ral.test.ts`
+Expected: PASS (213 entries, anchors match).
+
+- [ ] **Step 6: Enable JSON imports in TypeScript (if not already)**
+
+Ensure `tsconfig.json` `compilerOptions` includes `"resolveJsonModule": true`. Astro's strict base config sets this, but add it explicitly if the test or `astro check` complains.
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/lib/ral.ts
-git commit -m "feat: add RAL classic reference table"
+git add scripts/build-ral.mjs src/data/ral-classic.json src/lib/ral.ts src/lib/ral.test.ts tsconfig.json
+git commit -m "feat: vendor full RAL Classic table with validation"
 ```
 
 ---
@@ -240,13 +311,15 @@ git commit -m "feat: add RAL classic reference table"
   - `hexToHsl(hex: string): [number, number, number]`
   - `onColor(hex: string): "#1c1917" | "#ffffff"`
   - `rgbDistance(a: [number, number, number], b: [number, number, number]): number`
+  - `hexToOklab(hex: string): [number, number, number]` — perceptual L/a/b (Björn Ottosson's sRGB→OKLab)
+  - `oklabDistance(a: [number, number, number], b: [number, number, number]): number` — Euclidean over OKLab
   - `type FamilyKey = "red" | "orange" | "yellow" | "green" | "teal" | "blue" | "purple" | "pink" | "neutral"`
   - `hueFamily(h: number, s: number): FamilyKey`
   - `type ToneKey = "neon" | "bright" | "pastel" | "muted" | "dark"`
   - `tone(h: number, s: number, l: number): ToneKey`
   - `type ShadeKey = "deep" | "mid" | "light" | "pale"`
   - `shade(l: number): ShadeKey`
-  - `closestRal(hex: string): RalColor`
+  - `closestRal(hex: string): RalColor` — nearest of the 213 RAL colors by **OKLab** distance
   - `formatScore(points: number): string`
 
 - [ ] **Step 1: Write the failing test `src/lib/color.test.ts`**
@@ -255,7 +328,7 @@ git commit -m "feat: add RAL classic reference table"
 import { describe, it, expect } from "vitest";
 import {
   hexToRgb, rgbToHsl, hexToHsl, onColor, rgbDistance,
-  hueFamily, tone, shade, closestRal, formatScore,
+  hexToOklab, oklabDistance, hueFamily, tone, shade, closestRal, formatScore,
 } from "./color";
 
 describe("hexToRgb", () => {
@@ -299,6 +372,19 @@ describe("rgbDistance", () => {
   });
 });
 
+describe("hexToOklab / oklabDistance", () => {
+  it("maps black to L≈0 and white to L≈1", () => {
+    const [lb] = hexToOklab("#000000");
+    const [lw] = hexToOklab("#ffffff");
+    expect(lb).toBeCloseTo(0, 3);
+    expect(lw).toBeCloseTo(1, 2);
+  });
+  it("is zero for identical colors and positive otherwise", () => {
+    expect(oklabDistance(hexToOklab("#008080"), hexToOklab("#008080"))).toBe(0);
+    expect(oklabDistance(hexToOklab("#000000"), hexToOklab("#ffffff"))).toBeGreaterThan(0.9);
+  });
+});
+
 describe("hueFamily", () => {
   it("classifies low saturation as neutral", () => {
     expect(hueFamily(200, 5)).toBe("neutral");
@@ -336,8 +422,11 @@ describe("shade", () => {
 });
 
 describe("closestRal", () => {
-  it("matches a near-black to Jet Black", () => {
+  it("matches a near-black to Jet black (RAL 9005)", () => {
     expect(closestRal("#050505").code).toBe("RAL 9005");
+  });
+  it("matches a near-traffic-yellow to RAL 1023", () => {
+    expect(closestRal("#f7b400").code).toBe("RAL 1023");
   });
 });
 
@@ -407,6 +496,30 @@ export function rgbDistance(a: [number, number, number], b: [number, number, num
   return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
 }
 
+function srgbToLinear(c: number): number {
+  const x = c / 255;
+  return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+}
+
+// Björn Ottosson's sRGB -> OKLab transform.
+export function hexToOklab(hex: string): [number, number, number] {
+  const [r8, g8, b8] = hexToRgb(hex);
+  const r = srgbToLinear(r8), g = srgbToLinear(g8), b = srgbToLinear(b8);
+  const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+  const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+  const s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+  const l_ = Math.cbrt(l), m_ = Math.cbrt(m), s_ = Math.cbrt(s);
+  return [
+    0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+    1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+    0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
+  ];
+}
+
+export function oklabDistance(a: [number, number, number], b: [number, number, number]): number {
+  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+}
+
 export function hueFamily(h: number, s: number): FamilyKey {
   if (s < 12) return "neutral";
   if (h < 15 || h >= 345) return "red";
@@ -435,11 +548,11 @@ export function shade(l: number): ShadeKey {
 }
 
 export function closestRal(hex: string): RalColor {
-  const target = hexToRgb(hex);
+  const target = hexToOklab(hex);
   let best = RAL_CLASSIC[0];
   let bestD = Infinity;
   for (const ral of RAL_CLASSIC) {
-    const d = rgbDistance(target, hexToRgb(ral.hex));
+    const d = oklabDistance(target, hexToOklab(ral.hex));
     if (d < bestD) { bestD = d; best = ral; }
   }
   return best;
@@ -797,14 +910,14 @@ For each platform, write a one-sentence `tagline` and a 1–2 sentence `descript
 - Test: `src/lib/derive.test.ts`
 
 **Interfaces:**
-- Consumes: `hexToRgb`, `rgbDistance`, `hueFamily`, `hexToHsl` from `./color`; `OsInput`, `OsColor` from `../content/config`.
+- Consumes: `hexToOklab`, `oklabDistance`, `hueFamily`, `hexToHsl` from `./color`; `OsInput`, `OsColor` from `../content/config`.
 - Produces (all pure; each takes already-parsed OS entries):
   - `type OsEntry = { slug: string; data: OsInput }`
   - `defaultColor(data: OsInput): OsColor` — the `default:true` color, else `colors[0]`.
   - `interface MergedColor { hex: string; name: string; platforms: { slug: string; name: string; year: number }[]; yearRange: string; family: FamilyKey }`
   - `mergeColorsByHex(entries: OsEntry[]): MergedColor[]` — grouped by lowercased hex; `name` prefers a default-color name, else the most common; `yearRange` is `"1995"` or `"1993–2001"`.
   - `interface SimilarColor { hex: string; name: string; osSlug: string; osName: string; distance: number; match: number }`
-  - `similarColors(hex: string, entries: OsEntry[], excludeSlug: string, limit: number): SimilarColor[]` — nearest colors from other platforms by RGB distance; `match = max(0, round(100 - distance / 4.42))`.
+  - `similarColors(hex: string, entries: OsEntry[], excludeSlug: string, limit: number): SimilarColor[]` — nearest colors from other platforms by **OKLab** distance; `match = max(0, round(100 * (1 - distance / 0.4)))` (0.4 ≈ a large OKLab distance, so an exact match reads 100% and very different colors read ~0%).
   - `interface EraPeer { slug: string; name: string; family: string; year: number; hex: string; colorName: string; rel: string }`
   - `eraPeers(entry: OsEntry, entries: OsEntry[], windowYears: number): EraPeer[]` — other platforms within ±window years, each with its default color; `rel` is `"same year"`, `"2 yr earlier"`, `"1 yr later"`, sorted by year.
   - `interface FirstUse { slug: string; name: string; year: number }`
@@ -900,7 +1013,7 @@ Expected: FAIL — module not found.
 
 ```ts
 import {
-  hexToRgb, rgbDistance, hueFamily, hexToHsl, type FamilyKey,
+  hexToOklab, oklabDistance, hueFamily, hexToHsl, type FamilyKey,
 } from "./color";
 import type { OsInput, OsColor } from "../content/config";
 
@@ -967,15 +1080,15 @@ export interface SimilarColor {
 export function similarColors(
   hex: string, entries: OsEntry[], excludeSlug: string, limit: number,
 ): SimilarColor[] {
-  const target = hexToRgb(hex);
+  const target = hexToOklab(hex);
   const all: SimilarColor[] = [];
   for (const { slug, data } of entries) {
     if (slug === excludeSlug) continue;
     for (const c of data.colors) {
-      const distance = rgbDistance(target, hexToRgb(c.hex));
+      const distance = oklabDistance(target, hexToOklab(c.hex));
       all.push({
         hex: c.hex.toLowerCase(), name: c.name, osSlug: slug, osName: data.name,
-        distance, match: Math.max(0, Math.round(100 - distance / 4.42)),
+        distance, match: Math.max(0, Math.round(100 * (1 - distance / 0.4))),
       });
     }
   }
@@ -1617,6 +1730,7 @@ git commit -m "feat: add Browse page with search/sort controls island"
 
 ## Self-review checklist (completed while writing)
 
-- **Spec coverage (Plan 1 scope):** Astro+Preact scaffold ✓ (T1); design tokens ✓ (T8); one-JSON-per-OS content model + Zod validation + build-fail on bad data ✓ (T5); referential integrity ✓ (T5 test + T7 `buildCatalog`); derived data (rgb/hsl, family, tone, shade, RAL, merge, similar, era, first-use) ✓ (T3, T6, T7); scores read + baked + `< 1k`/`k` formatting ✓ (T3, T4, T7); Browse page static shell + island search/sort over embedded data (no fetch/reorder-jump) ✓ (T9). Out of Plan 1 scope (later plans): OS detail, Explorer, preview component, wallpaper generation, list-view + mobile menu, counter service, deploy, Playwright.
-- **Placeholder scan:** no TBD/TODO; every code step contains full code; the seed-data appendix carries the complete color dataset (data, not a placeholder). The list-view deferral in T9 is stated explicitly with defined interim behavior.
+- **Spec coverage (Plan 1 scope):** Astro+Preact scaffold ✓ (T1); full RAL Classic table vendored + validated ✓ (T2); design tokens ✓ (T8); one-JSON-per-OS content model + Zod validation + build-fail on bad data ✓ (T5); referential integrity ✓ (T5 test + T7 `buildCatalog`); derived data — rgb/hsl, **OKLab**, family, tone, shade, closest-RAL (OKLab, full table), merge, similar (OKLab), era, first-use ✓ (T2, T3, T6, T7); scores read + baked + `< 1k`/`k` formatting ✓ (T3, T4, T7); Browse page static shell + island search/sort over embedded data (no fetch/reorder-jump) ✓ (T9). Out of Plan 1 scope (later plans): OS detail, Explorer, preview component, wallpaper generation, list-view + mobile menu, counter service, deploy, Playwright.
+- **Placeholder scan:** no TBD/TODO; every code step contains full code. The RAL table is generated from a cited authoritative CSV (T2) and validated by count + anchors rather than hand-typed. The seed-data appendix carries the complete platform color dataset (data, not a placeholder). The list-view deferral in T9 is stated explicitly with defined interim behavior.
+- **Metric consistency:** `closestRal` (T3) and `similarColors` (T6) both use `oklabDistance`/`hexToOklab`; `rgbDistance` remains exported but is no longer used for matching. `RAL_CLASSIC` is a 213-entry array of `{code,name,hex}` consumed only by `closestRal`.
 - **Type consistency:** `Scores`, `OsEntry`, `OsInput`/`OsColor`, `MergedColor`, `ColorView`/`OsView`/`MergedColorView`/`Catalog`, `FamilyKey`/`ToneKey`/`ShadeKey`, `BrowseItem` are each defined once and imported where used; `buildCatalog(entries, scores)`, `loadCatalog()`, `formatScore`, `onColor`, `hexToHsl` signatures are consistent across tasks.

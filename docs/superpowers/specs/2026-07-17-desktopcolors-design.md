@@ -98,7 +98,8 @@ by shared TS functions in `src/lib/`.
 ### 4.2 Derived data (build-time, pure TS)
 - **Color math:** hex→RGB→HSL; luminance → on-color (light/dark text over the swatch).
 - **Hue family** (Reds/Oranges/…/Neutrals) and **tone** (Neon/Bright/Pastel/Muted/Dark) classification.
-- **Closest RAL** classic color (nearest RGB distance against a small RAL table).
+- **Closest RAL** classic color — nearest of the **full RAL Classic set (213 colors, vendored** from an
+  authoritative CSV) by **OKLab** perceptual distance. The same OKLab distance powers "similar colors."
 - **Merge by hex** across all platforms → the Explorer's per-color entries (name, platforms, year range).
 - **Similar colors elsewhere:** nearest colors from *other* platforms by RGB distance.
 - **Same-era peers:** platforms released within ±3 years, with their default color.
@@ -250,5 +251,5 @@ docs/superpowers/specs/
 - Seed the catalog with the platforms present in the prototype (Windows 3.1/95/NT4/98/2000/XP, Amiga
   Workbench, CDE, BeOS, Mac OS 8, KDE 1/2), each as its own JSON file.
 - Exact resolution presets for the download sheet (Desktop / Mobile / Classic groups from the prototype).
-- The small RAL classic table used for nearest-color matching.
+- (Resolved) Nearest-color matching uses the full 213-color RAL Classic table (vendored) with OKLab distance.
 - Per-`desktopStyle` preview chrome details.
