@@ -81,7 +81,7 @@ nginx -t && systemctl reload nginx
 ```bash
 curl -fsS https://desktopcolors.com/ | grep -q "desktop color archive" && echo "site OK"
 curl -fsS -o /dev/null -w '%{http_code}\n' -X POST https://desktopcolors.com/api/event \
-  -d '{"kind":"osview","os":"windows-95"}'   # -> 204
+  -H 'Content-Type: application/json' -d '{"kind":"osview","os":"windows-95"}'   # -> 204
 # confirm logs are anonymized (last IPv4 octet zeroed, /api not logged):
 tail -3 /var/log/nginx/desktopcolors.access.log
 ```

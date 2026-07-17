@@ -30,6 +30,8 @@ log "building"
 npm run build
 
 # 3. Publish atomically: copy dist into a new release, then flip the symlink.
+# Clean up the staging symlink if we're killed between ln and mv.
+trap 'rm -f "$WWW_DIR/current.tmp"' EXIT
 ts="$(date -u +%Y%m%d%H%M%S)"
 rel="$WWW_DIR/releases/$ts"
 mkdir -p "$rel"
