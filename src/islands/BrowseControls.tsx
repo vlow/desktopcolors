@@ -12,6 +12,7 @@ export interface BrowseItem {
   scoreLabel: string;
   altColors: { hex: string; name: string }[];
   href: string;
+  listColors: { hex: string; name: string }[];
 }
 
 type SortKey = "popular" | "year" | "alpha";
@@ -25,6 +26,7 @@ const SORTS: { key: SortKey; label: string }[] = [
 export function BrowseControls({ items }: { items: BrowseItem[] }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("popular");
+  const [view, setView] = useState<"card" | "list">("card");
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -61,8 +63,11 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
             style="border: none; outline: none; background: transparent; font: 400 15px var(--font-ui); color: var(--ink); width: 100%;"
           />
         </label>
-        <div style="display: flex; align-items: center; gap: 14px; margin-top: 16px;">
-          <span style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SORT</span>
+        <div style="display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap;">
+          <span style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">VIEW</span>
+          <button onClick={() => setView("card")} style={`cursor: pointer; border: none; background: none; font: 500 15px var(--font-ui); color: ${view === "card" ? "var(--ink)" : "var(--faint)"};`}>&#x25A6; Cards</button>
+          <button onClick={() => setView("list")} style={`cursor: pointer; border: none; background: none; font: 500 15px var(--font-ui); color: ${view === "list" ? "var(--ink)" : "var(--faint)"};`}>&#x2630; List</button>
+          <span style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-left: 8px;">SORT</span>
           {SORTS.map((s) => (
             <button
               key={s.key}
@@ -78,7 +83,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
           <div style="font: 500 20px var(--font-ui); color: var(--ink);">No platforms or colors match &ldquo;{query}&rdquo;</div>
           <div style="font-size: 14px; margin-top: 8px;">Try a platform name, a color name like &ldquo;teal&rdquo;, or a hex value.</div>
         </div>
-      ) : (
+      ) : view === "card" ? (
         <main style="padding: 32px 48px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
           {shown.map((it) => (
             <a key={it.slug} href={it.href} style="border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; background: var(--panel); display: block;">
@@ -99,6 +104,27 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
                 </div>
               </div>
             </a>
+          ))}
+        </main>
+      ) : (
+        <main style="padding: 6px 48px 80px;">
+          {shown.map((it) => (
+            <div key={it.slug} style="display: grid; grid-template-columns: 230px 1fr; gap: 32px; padding: 26px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
+              <div>
+                <a href={it.href} data-testid="os-name" style="font: 500 19px var(--font-ui);">{it.name} ↗</a>
+                <div style="font: 400 12px var(--font-mono); color: var(--faint); margin-top: 6px;">{it.year} · {it.family} · {it.colorCount} colors</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5;">{it.tagline}</div>
+              </div>
+              <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                {it.listColors.map((c) => (
+                  <a key={c.hex} href={`/os/${it.slug}?hex=${encodeURIComponent(c.hex)}`} aria-label={`${c.name} swatch`} style="width: 100px;">
+                    <div style={`height: 76px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.09);`} />
+                    <div style="font: 500 12px var(--font-mono); margin-top: 8px;">{c.hex}</div>
+                    <div style="font-size: 11px; color: var(--faint);">{c.name}</div>
+                  </a>
+                ))}
+              </div>
+            </div>
           ))}
         </main>
       )}
