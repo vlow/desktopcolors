@@ -1,0 +1,15 @@
+{
+  "name": "Windows 3.1",
+  "year": 1992,
+  "family": "Windows",
+  "tagline": "The teal desktop that first taught the world to point and click.",
+  "description": "Windows 3.1 was the version that brought a graphical desktop to the mass market. Its small palette of VGA colors set the tone that Windows 95 would later make iconic.",
+  "successor": "windows-95",
+  "desktopStyle": "win9x",
+  "colors": [
+    { "hex": "#008080", "name": "Teal", "index": "3", "default": true },
+    { "hex": "#000080", "name": "Navy", "index": "1" },
+    { "hex": "#808080", "name": "Gray", "index": "8" },
+    { "hex": "#c0c0c0", "name": "Silver", "index": "7" }
+  ]
+}

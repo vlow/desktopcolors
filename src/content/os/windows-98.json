@@ -1,0 +1,15 @@
+{
+  "name": "Windows 98",
+  "year": 1998,
+  "family": "Windows",
+  "tagline": "Classic Blue took over where teal left off.",
+  "description": "Windows 98 shifted the default desktop from teal to a muted corporate blue, reflecting both the era's design tastes and the move toward a web-integrated desktop.",
+  "predecessor": "windows-95",
+  "successor": "windows-2000",
+  "desktopStyle": "win9x",
+  "colors": [
+    { "hex": "#3a6ea5", "name": "Classic Blue", "default": true },
+    { "hex": "#008080", "name": "Teal", "index": "3" },
+    { "hex": "#c0c0c0", "name": "Silver", "index": "7" }
+  ]
+}

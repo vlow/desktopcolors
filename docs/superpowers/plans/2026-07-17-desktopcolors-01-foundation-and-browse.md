@@ -16,7 +16,7 @@
 - **Score display**: show the literal string `< 1k` for any score `< 1000`; at/above 1000 show `Math` -formatted with one decimal and a `k` suffix, trailing `.0` stripped (e.g. `1200 → "1.2k"`, `48200 → "48.2k"`, `2000 → "2k"`).
 - **Colors** are keyed **by lowercased hex, globally** across platforms. **OSes** are keyed by **slug**.
 - **on-color rule** (text over a swatch): HSL lightness `> 55` → `#1c1917`, else `#ffffff`.
-- **Perceptual distance**: all "nearest color" logic (closest-RAL, similar-colors) uses **OKLab** Euclidean distance, not RGB. The reference set for closest-color is the **full RAL Classic table (213 colors)**, vendored from the lunohodov gist (`ral_classic.csv`), never a hand-picked subset.
+- **Perceptual distance**: all "nearest color" logic (closest-RAL, similar-colors) uses **OKLab** Euclidean distance, not RGB. The reference set for closest-color is the **full RAL Classic table (216 colors)**, vendored from the lunohodov gist (`ral_classic.csv`), never a hand-picked subset.
 - **Design tokens** (exact values): bg `#fafaf9`, ink `#1c1917`, muted text `#57534e`, faint `#a8a29e`, hairline `#e7e5e4`, card border `#eceae8`, accent `oklch(0.55 0.17 255)`; fonts `Space Grotesk` (UI) and `IBM Plex Mono` (mono/numeric).
 - **No personal data** anywhere in this plan (no scores writing, no IP handling — that's Plan 3).
 - Commit after every task with a `feat:`/`test:`/`chore:` prefixed message.
@@ -38,7 +38,7 @@ src/
     config.ts                 # Zod schema for the `os` collection
     os/*.json                 # one file per platform (seed data)
   data/
-    ral-classic.json          # vendored full RAL Classic table (213 entries)
+    ral-classic.json          # vendored full RAL Classic table (216 entries)
   lib/
     color.ts                  # hex/rgb/hsl, OKLab, families, tone, shade, closest-RAL, on-color, formatScore
     color.test.ts
@@ -190,9 +190,9 @@ git commit -m "chore: scaffold Astro + Preact + Vitest project"
 
 **Interfaces:**
 - Consumes: nothing at runtime (the JSON is vendored/committed; no network access at build or runtime).
-- Produces: `export interface RalColor { code: string; name: string; hex: string }` and `export const RAL_CLASSIC: RalColor[]` (the full 213-entry table, read by `color.ts`).
+- Produces: `export interface RalColor { code: string; name: string; hex: string }` and `export const RAL_CLASSIC: RalColor[]` (the full 216-entry table, read by `color.ts`).
 
-**Why vendored, not hand-typed:** the full RAL Classic set is 213 colors; transcribing hexes by hand is error-prone. We generate the JSON once from an authoritative CSV and commit it, so builds are offline and reproducible.
+**Why vendored, not hand-typed:** the full RAL Classic set is 216 colors; transcribing hexes by hand is error-prone. We generate the JSON once from an authoritative CSV and commit it, so builds are offline and reproducible.
 
 **Source:** lunohodov gist `1995178`, file `ral_classic.csv`.
 Raw URL: `https://gist.githubusercontent.com/lunohodov/1995178/raw/ral_classic.csv`
@@ -234,7 +234,7 @@ Run:
 curl -fsSL "https://gist.githubusercontent.com/lunohodov/1995178/raw/ral_classic.csv" -o /tmp/ral_classic.csv
 node scripts/build-ral.mjs /tmp/ral_classic.csv
 ```
-Expected: prints `wrote 213 RAL colors` and creates `src/data/ral-classic.json`. Spot-check: it contains `"code": "RAL 9005"` with `"hex": "#0e0e10"`.
+Expected: prints `wrote 216 RAL colors` and creates `src/data/ral-classic.json`. Spot-check: it contains `"code": "RAL 9005"` with `"hex": "#0e0e10"`.
 
 - [ ] **Step 3: Create `src/lib/ral.ts`**
 
@@ -258,7 +258,7 @@ import { RAL_CLASSIC } from "./ral";
 
 describe("RAL_CLASSIC dataset", () => {
   it("has the full classic set", () => {
-    expect(RAL_CLASSIC.length).toBe(213);
+    expect(RAL_CLASSIC.length).toBe(216);
   });
 
   it("every entry is well-formed", () => {
@@ -282,7 +282,7 @@ describe("RAL_CLASSIC dataset", () => {
 - [ ] **Step 5: Run the test**
 
 Run: `npx vitest run src/lib/ral.test.ts`
-Expected: PASS (213 entries, anchors match).
+Expected: PASS (216 entries, anchors match).
 
 - [ ] **Step 6: Enable JSON imports in TypeScript (if not already)**
 
@@ -319,7 +319,7 @@ git commit -m "feat: vendor full RAL Classic table with validation"
   - `tone(h: number, s: number, l: number): ToneKey`
   - `type ShadeKey = "deep" | "mid" | "light" | "pale"`
   - `shade(l: number): ShadeKey`
-  - `closestRal(hex: string): RalColor` — nearest of the 213 RAL colors by **OKLab** distance
+  - `closestRal(hex: string): RalColor` — nearest of the 216 RAL colors by **OKLab** distance
   - `formatScore(points: number): string`
 
 - [ ] **Step 1: Write the failing test `src/lib/color.test.ts`**
@@ -770,7 +770,7 @@ Create one file per platform under `src/content/os/`, named `<slug>.json`. Two c
     { "hex": "#008080", "name": "Teal", "index": "3", "note": "The signature default background of Windows 95.", "default": true },
     { "hex": "#808080", "name": "Gray", "index": "8", "note": "A neutral, low-distraction desktop." },
     { "hex": "#000080", "name": "Navy", "index": "1", "note": "Deep cool blue, a common corporate choice." },
-    { "hex": "#808000", "name": "Olive", "index": "3", "note": "Muted warm green-yellow." },
+    { "hex": "#808000", "name": "Olive", "index": "6", "note": "Muted warm green-yellow." },
     { "hex": "#800080", "name": "Purple", "index": "5", "note": "Bold and saturated." },
     { "hex": "#800000", "name": "Maroon", "index": "4", "note": "Warm dark red." },
     { "hex": "#c0c0c0", "name": "Silver", "index": "7", "note": "Light gray, matches the UI chrome." },
@@ -1732,5 +1732,5 @@ git commit -m "feat: add Browse page with search/sort controls island"
 
 - **Spec coverage (Plan 1 scope):** Astro+Preact scaffold ✓ (T1); full RAL Classic table vendored + validated ✓ (T2); design tokens ✓ (T8); one-JSON-per-OS content model + Zod validation + build-fail on bad data ✓ (T5); referential integrity ✓ (T5 test + T7 `buildCatalog`); derived data — rgb/hsl, **OKLab**, family, tone, shade, closest-RAL (OKLab, full table), merge, similar (OKLab), era, first-use ✓ (T2, T3, T6, T7); scores read + baked + `< 1k`/`k` formatting ✓ (T3, T4, T7); Browse page static shell + island search/sort over embedded data (no fetch/reorder-jump) ✓ (T9). Out of Plan 1 scope (later plans): OS detail, Explorer, preview component, wallpaper generation, list-view + mobile menu, counter service, deploy, Playwright.
 - **Placeholder scan:** no TBD/TODO; every code step contains full code. The RAL table is generated from a cited authoritative CSV (T2) and validated by count + anchors rather than hand-typed. The seed-data appendix carries the complete platform color dataset (data, not a placeholder). The list-view deferral in T9 is stated explicitly with defined interim behavior.
-- **Metric consistency:** `closestRal` (T3) and `similarColors` (T6) both use `oklabDistance`/`hexToOklab`; `rgbDistance` remains exported but is no longer used for matching. `RAL_CLASSIC` is a 213-entry array of `{code,name,hex}` consumed only by `closestRal`.
+- **Metric consistency:** `closestRal` (T3) and `similarColors` (T6) both use `oklabDistance`/`hexToOklab`; `rgbDistance` remains exported but is no longer used for matching. `RAL_CLASSIC` is a 216-entry array of `{code,name,hex}` consumed only by `closestRal`.
 - **Type consistency:** `Scores`, `OsEntry`, `OsInput`/`OsColor`, `MergedColor`, `ColorView`/`OsView`/`MergedColorView`/`Catalog`, `FamilyKey`/`ToneKey`/`ShadeKey`, `BrowseItem` are each defined once and imported where used; `buildCatalog(entries, scores)`, `loadCatalog()`, `formatScore`, `onColor`, `hexToHsl` signatures are consistent across tasks.

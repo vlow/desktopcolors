@@ -1,0 +1,21 @@
+---
+import "../styles/tokens.css";
+import Header from "../components/Header.astro";
+interface Props { title: string; description?: string; active?: "browse" | "explorer" | "setup" | "about"; }
+const { title, description, active } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  </head>
+  <body>
+    <Header active={active} />
+    <slot />
+  </body>
+</html>

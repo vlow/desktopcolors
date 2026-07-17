@@ -1,0 +1,16 @@
+{
+  "name": "Windows 2000",
+  "year": 2000,
+  "family": "Windows",
+  "tagline": "A polished blue-gray palette that bridged two eras.",
+  "description": "Windows 2000 refined the NT aesthetic with a clean, professional palette. It was the last Windows to wear the classic flat look before Luna arrived with XP.",
+  "predecessor": "windows-98",
+  "successor": "windows-xp",
+  "desktopStyle": "win9x",
+  "colors": [
+    { "hex": "#3a6ea5", "name": "Classic Blue", "default": true },
+    { "hex": "#008080", "name": "Teal", "index": "3" },
+    { "hex": "#808080", "name": "Gray", "index": "8" },
+    { "hex": "#5a7ea5", "name": "Steel" }
+  ]
+}
