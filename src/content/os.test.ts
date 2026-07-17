@@ -23,8 +23,10 @@ const osSchema = z.object({
   colors: z.array(osColor).min(1),
 });
 
+type ParsedEntry = { slug: string; data: z.infer<typeof osSchema> };
+
 const dir = "src/content/os";
-const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
+const files: string[] = readdirSync(dir).filter((f: string) => f.endsWith(".json"));
 const slugOf = (f: string) => f.replace(/\.json$/, "");
 
 describe("os content files", () => {
@@ -32,17 +34,17 @@ describe("os content files", () => {
     expect(files.length).toBeGreaterThanOrEqual(12);
   });
 
-  const parsed = files.map((f) => ({
+  const parsed: ParsedEntry[] = files.map((f: string) => ({
     slug: slugOf(f),
     data: osSchema.parse(JSON.parse(readFileSync(`${dir}/${f}`, "utf8"))),
   }));
 
-  it.each(parsed)("$slug passes the schema and has <=1 default", ({ data }) => {
-    expect(data.colors.filter((c) => c.default).length).toBeLessThanOrEqual(1);
+  it.each(parsed)("$slug passes the schema and has <=1 default", (entry: ParsedEntry) => {
+    expect(entry.data.colors.filter((c) => c.default).length).toBeLessThanOrEqual(1);
   });
 
   it("resolves every predecessor/successor slug", () => {
-    const slugs = new Set(parsed.map((p) => p.data.slug ?? p.slug));
+    const slugs = new Set(parsed.map((p: ParsedEntry) => p.data.slug ?? p.slug));
     for (const { slug, data } of parsed) {
       if (data.predecessor) expect(slugs, `${slug}.predecessor`).toContain(data.predecessor);
       if (data.successor) expect(slugs, `${slug}.successor`).toContain(data.successor);
