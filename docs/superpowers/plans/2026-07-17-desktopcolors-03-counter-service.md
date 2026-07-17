@@ -6,11 +6,11 @@
 
 **Architecture:** One Go module under `counter/`, built as a single static binary (pure-Go SQLite driver, `CGO_ENABLED=0`). Two subcommands: `counter serve` (long-running HTTP service bound to localhost, managed by systemd in Plan 4) and `counter dump` (one-shot, run by the rebuild pipeline in Plan 4). Layered internals: pure `scoring` (validate event → point deltas), `store` (SQLite aggregates), `ratelimit` (salted-hash-of-truncated-IP token bucket, in memory only), and `server` (HTTP wiring). This plan builds and tests the service in isolation; wiring the site's `track()` seam to `/api/event` and all deployment (nginx, systemd, TLS, rebuild timer) is Plan 4.
 
-**Tech Stack:** Go 1.22+ (uses `net/http` 1.22 method-pattern routing), `modernc.org/sqlite` (cgo-free SQLite driver), standard library `testing` + `net/http/httptest`.
+**Tech Stack:** Go 1.25+ (uses `net/http` 1.22 method-pattern routing), `modernc.org/sqlite` (cgo-free SQLite driver), standard library `testing` + `net/http/httptest`.
 
 ## Global Constraints
 
-- **Go 1.22 or newer** (this machine has 1.26). The module's `go` directive is `1.22`. If `go` is missing at execution time, install it (`brew install go` on macOS) before proceeding.
+- **Go 1.25 or newer** (this machine has 1.26). The module's `go` directive is `1.25`. If `go` is missing at execution time, install it (`brew install go` on macOS) before proceeding.
 - **Cgo-free static binary.** The only third-party dependency is `modernc.org/sqlite` (pure Go). Build with `CGO_ENABLED=0`. No other modules.
 - **No personal data on disk, ever.** SQLite stores ONLY two aggregate tables (`color_scores`, `os_scores`). No IP addresses, no hashes, no per-client rows, no event log. The rate limiter keeps everything in RAM.
 - **Scoring rules (exact):** `copy` or `download` → color[hex] **+3** and os[slug] **+3**; `osview` → os[slug] **+1**. Points are integers starting at 0. The counter stores and dumps **raw points** — the `< 1k` / `1.2k` display formatting is the frontend's job (Plan 1's `formatScore`), NOT the counter's.
@@ -62,7 +62,7 @@ The binary is git-ignored (Plan 1's `.gitignore` already ignores `counter/counte
 - [ ] **Step 1: Verify the Go toolchain**
 
 Run: `go version`
-Expected: `go1.22` or newer. If missing, run `brew install go` (macOS) and re-check. If it cannot be installed, STOP and report BLOCKED.
+Expected: `go1.25` or newer. If missing, run `brew install go` (macOS) and re-check. If it cannot be installed, STOP and report BLOCKED.
 
 - [ ] **Step 2: Initialize the module**
 
@@ -73,14 +73,14 @@ go mod init desktopcolors/counter
 ```
 Expected: creates `counter/go.mod` with module path `desktopcolors/counter` and a `go 1.2x` directive.
 
-- [ ] **Step 3: Pin the go directive to 1.22**
+- [ ] **Step 3: Pin the go directive to 1.25**
 
-Edit `counter/go.mod` so the version line reads exactly `go 1.22` (broadens the toolchain floor for the vServer; 1.22 is when `net/http` method-pattern routing landed). The file should look like:
+Edit `counter/go.mod` so the version line reads exactly `go 1.25` (set to match modernc.org/sqlite v1.54+, which requires go 1.25; net/http method-pattern routing used by the server has been available since 1.22). The file should look like:
 
 ```
 module desktopcolors/counter
 
-go 1.22
+go 1.25
 ```
 
 - [ ] **Step 4: Add the SQLite driver**
@@ -851,7 +851,7 @@ func truncateIP(s string) string {
 }
 ```
 
-Note: Go 1.21+ has a builtin `min`; the local helper is kept to avoid any ambiguity with `float64` and older toolchains at the `go 1.22` floor. If `go vet`/compiler flags a redeclaration conflict with the builtin, delete the local `min` and rely on the builtin.
+Note: Go 1.21+ has a builtin `min`; the local helper is kept to avoid any ambiguity with `float64` and older toolchains at the `go 1.25` floor. If `go vet`/compiler flags a redeclaration conflict with the builtin, delete the local `min` and rely on the builtin.
 
 - [ ] **Step 4: Run the test to verify it passes**
 
