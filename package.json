@@ -1,0 +1,24 @@
+{
+  "name": "desktopcolors",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "astro": "^4.15.0",
+    "@astrojs/preact": "^3.5.0",
+    "preact": "^10.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "@testing-library/preact": "^3.2.4",
+    "jsdom": "^24.1.0"
+  }
+}
