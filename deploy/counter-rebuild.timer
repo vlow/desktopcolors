@@ -1,0 +1,10 @@
+[Unit]
+Description=Hourly rebuild of desktopcolors.com
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target

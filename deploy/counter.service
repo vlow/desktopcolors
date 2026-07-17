@@ -1,0 +1,21 @@
+[Unit]
+Description=desktopcolors.com popularity counter
+After=network.target
+
+[Service]
+Type=simple
+User=desktopcolors
+Group=desktopcolors
+ExecStart=/opt/desktopcolors/counter/counter serve --db /var/lib/desktopcolors/counter.db --addr 127.0.0.1:8787
+Restart=always
+RestartSec=2
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/desktopcolors
+StateDirectory=desktopcolors
+
+[Install]
+WantedBy=multi-user.target
