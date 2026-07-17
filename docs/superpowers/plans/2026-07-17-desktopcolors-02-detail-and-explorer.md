@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Complete the browsable static site: an OS-detail page per platform (color selector, live desktop preview, copy-to-clipboard for HEX/RGB/HSL/closest-RAL, first-known-use, deduped "similar colors elsewhere", same-era peers, a download sheet that generates solid-color wallpapers client-side, and a fullscreen viewer with keyboard nav); a Color Explorer (hue/tone grouping, family+shade filters, spectrum/popularity sort, and a popularity leaderboard); the Browse deferrals from Plan 1 (list view, card/list toggle, mobile nav menu); and static About + Setup Guide pages.
+**Goal:** Complete the browsable static site: an OS-detail page per platform (color selector, live desktop preview, copy-to-clipboard for HEX/RGB/HSL/closest-RAL, first-known-use, deduped "similar colors elsewhere", same-era peers, a download sheet that generates solid-color wallpapers client-side, and a fullscreen viewer with keyboard nav); a Color Explorer (hue/tone grouping, family+shade filters, spectrum/popularity sort, and a popularity leaderboard); the Browse deferrals from Plan 1 (list view, card/list toggle, mobile nav menu); a faithful About page (origin story + support/donation cards); and an interactive Setup Guide (searchable, filterable, per-platform expandable guides).
 
 **Architecture:** Continues Plan 1's model — static Astro pages with the full build-computed dataset embedded as props into small Preact islands that handle interaction over data already present (no fetches for reads). All per-color derivations (closest-RAL, deduped similar colors, first-known-use) and explorer groupings are computed at build time by pure, unit-tested TypeScript in `src/lib/` and baked into the page. Popularity events (copy/download/osview) are emitted through a single no-op `track()` seam that Plan 4 will wire to the counter `/api`; nothing in this plan talks to a server. Wallpaper PNGs are drawn in the browser via canvas.
 
@@ -52,16 +52,22 @@ src/
     Explorer.tsx              # NEW: grouping/filter/sort/leaderboard
     Explorer.test.tsx         # NEW
     MobileNav.tsx             # NEW: burger menu island for narrow screens
+    SetupGuide.tsx            # NEW: searchable/filterable/expandable setup guides island
+    SetupGuide.test.tsx       # NEW
     BrowseControls.tsx        # MODIFY: add list view + card/list toggle
     BrowseControls.test.tsx   # MODIFY: cover list view + toggle
+  lib/
+    setup-guides.ts           # NEW: SETUP_GUIDES data (7 platforms) consumed by SetupGuide
   components/
     Header.astro              # MODIFY: embed MobileNav island; wide nav unchanged
   pages/
     os/[slug].astro           # NEW: OS detail page (static shell + OsDetail island)
     explorer.astro            # NEW: Color Explorer page
-    about.astro               # NEW: static
-    setup.astro               # NEW: static
+    about.astro               # NEW: static, faithful to prototype (story + support cards)
+    setup.astro               # NEW: hosts the SetupGuide island
 ```
+
+> **Prototype fidelity note:** the real About and Setup Guide pages were fetched from the Claude Design project and are reproduced faithfully below (content verbatim where it carries meaning — the origin story, the two support/donation cards, and all seven platform guides). Screenshot slots in the prototype's Setup Guide are omitted (we have no real screenshots); everything else is preserved.
 
 ---
 
@@ -1765,89 +1771,513 @@ git commit -m "feat: add responsive mobile nav menu"
 
 ---
 
-### Task 10: About + Setup Guide static pages
+### Task 10: About page (static, faithful to prototype)
 
 **Files:**
 - Create: `src/pages/about.astro`
-- Create: `src/pages/setup.astro`
 
 **Interfaces:**
 - Consumes: `Base`. Fully static, no islands.
-- Produces: two content pages. About explains the project (what it archives, that colors are historically sourced, that wallpapers are generated in-browser, no tracking of personal data). Setup Guide explains how to set a downloaded wallpaper as a desktop background on Windows, macOS, and Linux (GNOME/KDE). Content is authored fresh (the prototype's copy was not fetched); keep it accurate to this project and concise.
+- Produces: the About page reproduced faithfully from the prototype — a hero (eyebrow + headline + intro + a row of signature swatches), a first-person "Why I made this" origin story, a "Built & maintained by one person" card, a support rail with a **Buy me a coffee** card and a **German-language KMFV Straßenambulanz donation** card, and a closing CTA. Content is verbatim from the prototype where it carries meaning.
+
+**Note on the coffee link:** the prototype uses a generic `https://www.buymeacoffee.com/` URL. Keep it, but this is the owner's real handle to fill in before launch — leave a `<!-- TODO(owner): real Buy Me a Coffee handle -->` comment beside it so it is not silently generic. (This is the one owner-supplied value in the plan; the URL still resolves, so it is not a broken placeholder.)
 
 - [ ] **Step 1: Create `src/pages/about.astro`**
 
 ```astro
 ---
 import Base from "../layouts/Base.astro";
+
+const heroSwatches = [
+  { hex: "#008080", name: "Teal — Windows 95" },
+  { hex: "#3a6ea5", name: "NT Blue" },
+  { hex: "#004e98", name: "XP Blue" },
+  { hex: "#0055aa", name: "Amiga Workbench Blue" },
+  { hex: "#9aabb9", name: "CDE Dusty Blue" },
+  { hex: "#9999cc", name: "Mac OS 8 Lavender" },
+  { hex: "#33aabb", name: "BeOS Cyan" },
+  { hex: "#c0c0c0", name: "Silver" },
+];
 ---
-<Base title="About — desktopcolors.com" description="What desktopcolors.com is and how it works." active="about">
-  <div style="max-width: 720px; margin: 0 auto; padding: 34px 32px 64px;">
-    <h1 style="font: 700 32px var(--font-ui); letter-spacing: -0.6px; margin: 0 0 16px;">About</h1>
-    <p style="font-size: 16px; line-height: 1.7; color: var(--ink); margin: 0 0 16px;">
-      <strong>desktopcolors.com</strong> is an archive of the solid desktop background colors shipped by
-      classic operating systems and desktop environments — the teal of Windows 95, the dusty blue of CDE,
-      the four-color Amiga Workbench palette, and more.
-    </p>
-    <p style="font-size: 15px; line-height: 1.7; color: var(--muted); margin: 0 0 16px;">
-      Each color is documented with its HEX, RGB, and HSL values and the closest RAL Classic match
-      (computed with perceptual OKLab distance). You can preview any color as a full desktop, see where
-      else the same color appeared, and download a matching wallpaper at any resolution.
-    </p>
-    <h2 style="font: 500 20px var(--font-ui); margin: 28px 0 10px;">How wallpapers are made</h2>
-    <p style="font-size: 15px; line-height: 1.7; color: var(--muted); margin: 0 0 16px;">
-      Every wallpaper is a solid color, so it is generated entirely in your browser — the pixels are drawn
-      on a canvas on your device and never touch a server.
-    </p>
-    <h2 style="font: 500 20px var(--font-ui); margin: 28px 0 10px;">Privacy</h2>
-    <p style="font-size: 15px; line-height: 1.7; color: var(--muted); margin: 0;">
-      Popularity counts reflect anonymous, aggregate activity only. No personal data or IP addresses are stored.
-    </p>
+<Base title="About — desktopcolors.com" description="A small archive of the colors we booted into — and why it exists." active="about">
+  <!-- HERO -->
+  <div style="padding: 46px 32px 30px; border-bottom: 1px solid var(--hairline);">
+    <div style="max-width: 720px;">
+      <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.8px;">ABOUT</div>
+      <h1 style="font: 700 40px var(--font-ui); letter-spacing: -1px; margin: 10px 0 0; line-height: 1.08;">A small archive of the colors we booted into.</h1>
+      <p style="font-size: 17px; line-height: 1.6; color: var(--muted); margin: 16px 0 0;">Every solid desktop background shipped by the operating systems that raised us — catalogued, named, and free to take with you.</p>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px;">
+      {heroSwatches.map((c) => (
+        <span title={c.name} style={`width: 46px; height: 46px; border-radius: 9px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);`}></span>
+      ))}
+    </div>
   </div>
+
+  <!-- BODY -->
+  <div class="about-body" style="padding: 44px 32px 20px; display: grid; gap: 48px; max-width: 1120px;">
+    <!-- WHY / STORY -->
+    <div style="max-width: 640px;">
+      <h2 style="font: 700 24px var(--font-ui); letter-spacing: -0.5px; margin: 0 0 4px;">Why I made this</h2>
+      <div style="width: 44px; height: 3px; background: var(--accent); border-radius: 2px; margin: 12px 0 22px;"></div>
+      <div style="display: flex; flex-direction: column; gap: 18px; font-size: 16px; line-height: 1.72; color: #44403c;">
+        <p style="margin: 0;">It started with a single hex code: <b>#008080</b>. That specific teal was the first thing millions of us saw when a computer finished booting — and one day I realized I couldn't find it written down anywhere. Not the exact value, not what it was called, not which systems shipped it.</p>
+        <p style="margin: 0;">So I started collecting. Windows, Amiga, the Unix desktops, the forgotten ones in between. Every default background, every alternate the settings panel offered, pulled from screenshots, manuals, and disk images, then checked against the real thing.</p>
+        <p style="margin: 0;">These colors are small, ordinary, and easy to lose — which is exactly why they're worth keeping. This page is my attempt to hold onto them, and to let you take any one back to your own desktop.</p>
+      </div>
+      <div style="margin-top: 26px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--card-border); border-radius: 14px; display: flex; align-items: center; gap: 16px;">
+        <div style="flex: none; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #008080, #3a6ea5); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);"></div>
+        <div style="min-width: 0;">
+          <div style="font: 500 15px var(--font-ui);">Built &amp; maintained by one person</div>
+          <div style="font: 400 13px var(--font-mono); color: var(--faint); margin-top: 3px;">A nights-and-weekends project · no ads, no tracking</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUPPORT RAIL -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <!-- BUY ME A COFFEE -->
+      <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
+        <div style="height: 8px; background: #ffdd00;"></div>
+        <div style="padding: 22px 22px 24px;">
+          <div style="font-size: 30px; line-height: 1;">☕</div>
+          <h3 style="font: 700 19px var(--font-ui); letter-spacing: -0.3px; margin: 14px 0 0;">Buy me a coffee</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: var(--muted); margin: 8px 0 0;">If this archive saved you a search — or brought back a memory — a coffee keeps the servers on and the next batch of colors coming.</p>
+          <!-- TODO(owner): real Buy Me a Coffee handle -->
+          <a href="https://www.buymeacoffee.com/" target="_blank" rel="noopener" style="display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 18px; background: #ffdd00; color: #1c1917; font: 700 15px var(--font-ui); padding: 13px 18px; border-radius: 11px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"><span style="font-size: 17px;">☕</span> Buy me a coffee</a>
+        </div>
+      </div>
+      <!-- GERMAN DONATION -->
+      <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
+        <div style="height: 8px; background: linear-gradient(90deg, #000 0 33%, #dd0000 33% 66%, #ffce00 66% 100%);"></div>
+        <div style="padding: 22px 22px 24px;">
+          <div style="display: inline-flex; align-items: center; gap: 7px; font: 500 10px var(--font-mono); color: var(--faint); letter-spacing: 1.4px;"><span style="font-size: 13px;">🇩🇪</span> FÜR DEUTSCHSPRACHIGE BESUCHER</div>
+          <h3 style="font: 700 19px var(--font-ui); letter-spacing: -0.3px; margin: 12px 0 0;">Lieber etwas Gutes tun?</h3>
+          <p style="font-size: 14px; line-height: 1.65; color: var(--muted); margin: 8px 0 0;">Statt eines Kaffees für mich: Die <b>Straßenambulanz des KMFV</b> in München versorgt wohnungslose Menschen medizinisch — kostenlos und unbürokratisch. Eine Spende dorthin ist mir mehr wert als jeder Kaffee.</p>
+          <a href="https://kmfv.de/was-wir-tun/strassenambulanz/" target="_blank" rel="noopener" style="display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 18px; background: var(--ink); color: #fff; font: 700 15px var(--font-ui); padding: 13px 18px; border-radius: 11px;">Zur Straßenambulanz ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOSING CTA -->
+  <div style="padding: 20px 32px 72px; max-width: 1120px;">
+    <div style="margin-top: 24px; padding: 26px 28px; border: 1px dashed #cfcac4; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div>
+        <div style="font: 700 18px var(--font-ui); letter-spacing: -0.3px;">Go find your color.</div>
+        <div style="font-size: 14px; color: var(--muted); margin-top: 4px;">Browse by platform, or sort every shade by popularity.</div>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="/" style="background: var(--ink); color: #fff; font: 500 14px var(--font-ui); padding: 12px 18px; border-radius: 10px;">Browse platforms</a>
+        <a href="/explorer" style="background: var(--panel); color: var(--ink); border: 1px solid var(--field-border); font: 500 14px var(--font-ui); padding: 12px 18px; border-radius: 10px;">Open Color Explorer</a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .about-body { grid-template-columns: 1fr; }
+    @media (min-width: 860px) { .about-body { grid-template-columns: 1.5fr 1fr; } }
+  </style>
 </Base>
 ```
 
-- [ ] **Step 2: Create `src/pages/setup.astro`**
+- [ ] **Step 2: Build to verify the page renders**
+
+Run: `npm run build && test -f dist/about/index.html && grep -q "Straßenambulanz" dist/about/index.html && echo OK`
+Expected: prints `OK` (page emitted, German card content present).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/pages/about.astro
+git commit -m "feat: add About page (origin story, support and donation cards)"
+```
+
+---
+
+### Task 11: Setup Guide — data + interactive island (TDD)
+
+**Files:**
+- Create: `src/lib/setup-guides.ts`
+- Test: `src/lib/setup-guides.test.ts`
+- Create: `src/islands/SetupGuide.tsx`
+- Test: `src/islands/SetupGuide.test.tsx`
+- Create: `src/pages/setup.astro`
+
+**Interfaces:**
+- Consumes: `Base` (page); `SETUP_GUIDES`, `filterGuides`, `guideCounts`, `SetupGuideEntry`, `GuideCat` from `../lib/setup-guides`.
+- Produces:
+  - `setup-guides.ts`:
+    - `type GuideCat = "desktop" | "mobile"`
+    - `interface SetupGuideEntry { key: string; os: string; note: string; swatch: string; cat: GuideCat; steps: string[]; code?: string; article: string[] }`
+    - `const SETUP_GUIDES: SetupGuideEntry[]` — the seven platforms below, verbatim.
+    - `filterGuides(guides: SetupGuideEntry[], opts: { query: string; cat: GuideCat | "all" }): SetupGuideEntry[]` — category filter + case-insensitive query over `os`, `note`, `steps`, `article`.
+    - `guideCounts(guides: SetupGuideEntry[], query: string): { all: number; desktop: number; mobile: number }` — counts honoring the query (not the category), for the filter chips.
+  - `SetupGuide({ guides }: { guides: SetupGuideEntry[] })` — island: search box, category segmented control (All / Desktop / Mobile with counts), a responsive grid of guide cards (swatch, os, note, category pill, numbered steps, optional monospace `code` block), and a "Read full guide"/"Show less" toggle per card revealing the `article` paragraphs. Empty state when nothing matches.
+  - `setup.astro`: passes `SETUP_GUIDES` to `<SetupGuide guides={SETUP_GUIDES} client:load />` inside `Base` with `active="setup"`.
+- Screenshot slots from the prototype are intentionally omitted (no real images).
+
+- [ ] **Step 1: Create `src/lib/setup-guides.ts`**
+
+```ts
+export type GuideCat = "desktop" | "mobile";
+
+export interface SetupGuideEntry {
+  key: string;
+  os: string;
+  note: string;
+  swatch: string;
+  cat: GuideCat;
+  steps: string[];
+  code?: string;
+  article: string[];
+}
+
+export const SETUP_GUIDES: SetupGuideEntry[] = [
+  {
+    key: "win11", os: "Windows 11", note: "Settings app", swatch: "#008080", cat: "desktop",
+    steps: [
+      "Open Settings → Personalization → Background.",
+      "Set “Personalize your background” to Solid color.",
+      "Click a swatch, or choose Custom color and paste your hex.",
+    ],
+    article: [
+      "Windows 11 keeps a built-in solid-color mode, so you never need a wallpaper image. The custom-color picker accepts any RGB value — the exact hex from any color on this site.",
+      "The choice is per-account and syncs if you have Windows backup on, so signing into another PC brings your color with you.",
+    ],
+  },
+  {
+    key: "win10", os: "Windows 10", note: "Settings app", swatch: "#3a6ea5", cat: "desktop",
+    steps: [
+      "Open Settings → Personalization → Background.",
+      "Under Background, choose Solid color.",
+      "Pick a swatch or click Custom color for an exact hex.",
+    ],
+    article: [
+      "Windows 10 works almost identically to 11 — the Solid color option lives in the same Background pane, with a Custom color button for precise values.",
+    ],
+  },
+  {
+    key: "macos", os: "macOS", note: "Ventura and later", swatch: "#004e98", cat: "desktop",
+    steps: [
+      "Open System Settings → Wallpaper.",
+      "Scroll to Colors and pick a shade, or click the + for a custom color.",
+      "Enter your hex in the color picker (RGB / hex tab).",
+    ],
+    article: [
+      "Recent macOS versions moved wallpaper into System Settings. The Colors group offers presets plus a + tile that opens the standard macOS color picker — use its sliders or the hex field for an exact match.",
+      "On older macOS (System Preferences → Desktop & Screen Saver), choose the “Solid Colors” collection, or click Custom Color at the bottom.",
+    ],
+  },
+  {
+    key: "gnome", os: "GNOME · Ubuntu", note: "solid color via terminal", swatch: "#4e9a9a", cat: "desktop",
+    steps: [
+      "GNOME hides the solid-color option, so use the terminal.",
+      "Paste the commands below, swapping in your hex.",
+    ],
+    code: [
+      "gsettings set org.gnome.desktop.background picture-uri ''",
+      "gsettings set org.gnome.desktop.background picture-uri-dark ''",
+      "gsettings set org.gnome.desktop.background color-shading-type 'solid'",
+      "gsettings set org.gnome.desktop.background primary-color '#008080'",
+    ].join("\n"),
+    article: [
+      "Modern GNOME dropped the solid-color control from Settings, but the underlying key still exists. Clearing both picture-uri keys removes any image, and primary-color sets the flat fill.",
+      "For a gradient instead, set color-shading-type to 'vertical' or 'horizontal' and add a secondary-color key.",
+    ],
+  },
+  {
+    key: "kde", os: "KDE Plasma", note: "Desktop settings", swatch: "#5a7ea5", cat: "desktop",
+    steps: [
+      "Right-click the desktop → Configure Desktop and Wallpaper.",
+      "Set Wallpaper type to Plain Color.",
+      "Click the color box and enter your hex, then Apply.",
+    ],
+    article: [
+      "Plasma is the most flexible of the Linux desktops here — Plain Color is a first-class wallpaper type, with a full color dialog that takes hex input directly.",
+    ],
+  },
+  {
+    key: "ios", os: "iOS · iPhone", note: "iOS 16 and later", swatch: "#800080", cat: "mobile",
+    steps: [
+      "Open Settings → Wallpaper → Add New Wallpaper.",
+      "Tap Color at the top of the gallery.",
+      "Choose a hue, tap the swatch to fine-tune, then Set.",
+    ],
+    article: [
+      "Since iOS 16 the wallpaper gallery includes a Color option that produces a flat background — no need to save an image. Tapping the large swatch opens a picker where you can dial in an exact color.",
+      "You can set it for the Lock Screen, Home Screen, or both from the same flow.",
+    ],
+  },
+  {
+    key: "android", os: "Android", note: "varies by skin", swatch: "#808000", cat: "mobile",
+    steps: [
+      "Save a solid-color image (download any hex as a PNG here).",
+      "Long-press the home screen → Wallpaper & style.",
+      "Pick the saved image from Gallery / Photos and apply.",
+    ],
+    article: [
+      "Stock Android has no built-in solid-color wallpaper, so the reliable route is a solid-color image — download one at your target resolution and set it like any photo.",
+      "Some skins add a shortcut: Samsung One UI has a “Color palette” wallpaper, and several launchers expose a solid-color option directly.",
+    ],
+  },
+];
+
+const haystack = (g: SetupGuideEntry): string =>
+  [g.os, g.note, ...g.steps, ...g.article].join(" ").toLowerCase();
+
+export function filterGuides(
+  guides: SetupGuideEntry[], opts: { query: string; cat: GuideCat | "all" },
+): SetupGuideEntry[] {
+  const q = opts.query.trim().toLowerCase();
+  return guides.filter((g) =>
+    (opts.cat === "all" || g.cat === opts.cat) && (!q || haystack(g).includes(q)));
+}
+
+export function guideCounts(
+  guides: SetupGuideEntry[], query: string,
+): { all: number; desktop: number; mobile: number } {
+  const q = query.trim().toLowerCase();
+  const m = guides.filter((g) => !q || haystack(g).includes(q));
+  return {
+    all: m.length,
+    desktop: m.filter((g) => g.cat === "desktop").length,
+    mobile: m.filter((g) => g.cat === "mobile").length,
+  };
+}
+```
+
+- [ ] **Step 2: Write the failing test `src/lib/setup-guides.test.ts`**
+
+```ts
+import { describe, it, expect } from "vitest";
+import { SETUP_GUIDES, filterGuides, guideCounts } from "./setup-guides";
+
+describe("SETUP_GUIDES", () => {
+  it("has the seven documented platforms", () => {
+    expect(SETUP_GUIDES.map((g) => g.key)).toEqual(
+      ["win11", "win10", "macos", "gnome", "kde", "ios", "android"]);
+  });
+  it("carries the GNOME gsettings code block", () => {
+    const gnome = SETUP_GUIDES.find((g) => g.key === "gnome")!;
+    expect(gnome.code).toContain("gsettings set org.gnome.desktop.background primary-color");
+  });
+});
+
+describe("filterGuides", () => {
+  it("filters by category", () => {
+    const mobile = filterGuides(SETUP_GUIDES, { query: "", cat: "mobile" });
+    expect(mobile.map((g) => g.key).sort()).toEqual(["android", "ios"]);
+  });
+  it("filters by query across os/steps/article", () => {
+    const res = filterGuides(SETUP_GUIDES, { query: "terminal", cat: "all" });
+    expect(res.map((g) => g.key)).toEqual(["gnome"]);
+  });
+  it("returns everything for empty query + all", () => {
+    expect(filterGuides(SETUP_GUIDES, { query: "", cat: "all" }).length).toBe(7);
+  });
+});
+
+describe("guideCounts", () => {
+  it("counts by category honoring the query, not the category filter", () => {
+    expect(guideCounts(SETUP_GUIDES, "")).toEqual({ all: 7, desktop: 5, mobile: 2 });
+    const c = guideCounts(SETUP_GUIDES, "iphone");
+    expect(c.all).toBe(1);
+    expect(c.mobile).toBe(1);
+    expect(c.desktop).toBe(0);
+  });
+});
+```
+
+- [ ] **Step 3: Run to verify it fails, then passes**
+
+Run: `npx vitest run src/lib/setup-guides.test.ts`
+Expected: FAIL (module not found) before Step 1 exists; after Step 1, PASS. (Step 1 precedes it here because the data is large; if you prefer strict red-first, temporarily rename the import.) Confirm PASS.
+
+- [ ] **Step 4: Write the failing test `src/islands/SetupGuide.test.tsx`**
+
+```tsx
+import { describe, it, expect } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/preact";
+import { SetupGuide } from "./SetupGuide";
+import { SETUP_GUIDES } from "../lib/setup-guides";
+
+describe("SetupGuide", () => {
+  it("renders all guides by default", () => {
+    render(<SetupGuide guides={SETUP_GUIDES} />);
+    expect(screen.getByText("Windows 11")).toBeTruthy();
+    expect(screen.getByText("Android")).toBeTruthy();
+  });
+
+  it("filters to Mobile via the category control", () => {
+    render(<SetupGuide guides={SETUP_GUIDES} />);
+    fireEvent.click(screen.getByRole("button", { name: /Mobile/ }));
+    expect(screen.queryByText("Windows 11")).toBeNull();
+    expect(screen.getByText("iOS · iPhone")).toBeTruthy();
+  });
+
+  it("filters by search query", () => {
+    render(<SetupGuide guides={SETUP_GUIDES} />);
+    fireEvent.input(screen.getByPlaceholderText(/Search systems/), { target: { value: "kde" } });
+    expect(screen.getByText("KDE Plasma")).toBeTruthy();
+    expect(screen.queryByText("macOS")).toBeNull();
+  });
+
+  it("expands a full guide article on toggle", () => {
+    render(<SetupGuide guides={SETUP_GUIDES} />);
+    // article text hidden until expanded
+    expect(screen.queryByText(/per-account and syncs/)).toBeNull();
+    const toggles = screen.getAllByRole("button", { name: /Read full guide/ });
+    fireEvent.click(toggles[0]); // Windows 11 is first
+    expect(screen.getByText(/per-account and syncs/)).toBeTruthy();
+  });
+
+  it("shows an empty state when nothing matches", () => {
+    render(<SetupGuide guides={SETUP_GUIDES} />);
+    fireEvent.input(screen.getByPlaceholderText(/Search systems/), { target: { value: "zzzz" } });
+    expect(screen.getByText(/No systems match/)).toBeTruthy();
+  });
+});
+```
+
+- [ ] **Step 5: Run to verify it fails**
+
+Run: `npx vitest run src/islands/SetupGuide.test.tsx`
+Expected: FAIL — module not found.
+
+- [ ] **Step 6: Implement `src/islands/SetupGuide.tsx`**
+
+```tsx
+import { useMemo, useState } from "preact/hooks";
+import {
+  filterGuides, guideCounts, type SetupGuideEntry, type GuideCat,
+} from "../lib/setup-guides";
+
+const seg = (active: boolean): string =>
+  `cursor: pointer; border: none; border-radius: 8px; padding: 9px 16px; font: 500 13px var(--font-ui); background: ${active ? "#fff" : "transparent"}; color: ${active ? "var(--ink)" : "var(--muted)"}; box-shadow: ${active ? "0 1px 3px rgba(0,0,0,0.12)" : "none"};`;
+
+export function SetupGuide({ guides }: { guides: SetupGuideEntry[] }) {
+  const [query, setQuery] = useState("");
+  const [cat, setCat] = useState<GuideCat | "all">("all");
+  const [open, setOpen] = useState<string | null>(null);
+
+  const counts = useMemo(() => guideCounts(guides, query), [guides, query]);
+  const shown = useMemo(() => filterGuides(guides, { query, cat }), [guides, query, cat]);
+
+  const filters: { key: GuideCat | "all"; label: string; count: number }[] = [
+    { key: "all", label: "All", count: counts.all },
+    { key: "desktop", label: "Desktop", count: counts.desktop },
+    { key: "mobile", label: "Mobile", count: counts.mobile },
+  ];
+
+  return (
+    <div>
+      <div style="padding: 34px 32px 4px; max-width: 1180px; margin: 0 auto;">
+        <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SETUP GUIDE</div>
+        <h1 style="font: 700 34px var(--font-ui); letter-spacing: -0.8px; margin: 8px 0;">Set a solid color on a modern OS</h1>
+        <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 0;">Every hex on this site works as a plain desktop background today. Pick a color, copy its hex, then follow the steps for your system.</p>
+      </div>
+
+      <div style="padding: 20px 32px 6px; max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+        <label style="flex: 1; min-width: 240px; max-width: 460px; display: flex; align-items: center; gap: 11px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 12px; padding: 0 15px; height: 46px;">
+          <span style="color: var(--faint); transform: rotate(-45deg); display: inline-block;">⌕</span>
+          <input value={query} onInput={(e) => setQuery((e.target as HTMLInputElement).value)} placeholder="Search systems — Windows, macOS, GNOME, iOS…" style="border: none; outline: none; background: transparent; font: 400 14px var(--font-ui); color: var(--ink); width: 100%;" />
+        </label>
+        <div style="display: inline-flex; gap: 4px; background: #f0eeec; border-radius: 11px; padding: 4px;">
+          {filters.map((f) => (
+            <button key={f.key} onClick={() => setCat(f.key)} style={seg(cat === f.key)}>
+              {f.label}<span style="font: 400 11px var(--font-mono); opacity: 0.55; margin-left: 6px;">{f.count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {shown.length === 0 ? (
+        <div style="padding: 60px 32px; max-width: 1180px; margin: 0 auto; text-align: center; color: var(--muted);">
+          <div style="font: 500 19px var(--font-ui); color: var(--ink);">No systems match your filters</div>
+          <div style="font-size: 14px; margin-top: 6px;">Try a different search term or switch categories.</div>
+        </div>
+      ) : (
+        <div style="padding: 16px 32px 72px; max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; align-items: start;">
+          {shown.map((g) => {
+            const expanded = open === g.key;
+            return (
+              <div key={g.key} style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px 22px 18px; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 11px;">
+                  <span style={`width: 30px; height: 30px; border-radius: 8px; background-color: ${g.swatch}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); flex: none;`} />
+                  <div style="flex: 1;">
+                    <div style="font: 600 17px var(--font-ui);">{g.os}</div>
+                    <div style="font: 400 11px var(--font-mono); color: var(--faint);">{g.note}</div>
+                  </div>
+                  <span style="flex: none; font: 500 10px var(--font-ui); letter-spacing: 0.5px; color: var(--muted); background: #f5f4f2; padding: 4px 9px; border-radius: 999px;">{g.cat === "mobile" ? "Mobile" : "Desktop"}</span>
+                </div>
+
+                <ol style="margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px;">
+                  {g.steps.map((text, i) => (
+                    <li key={i} style="display: flex; gap: 11px; align-items: flex-start; font-size: 13.5px; line-height: 1.5; color: #44403c;">
+                      <span style="flex: none; width: 20px; height: 20px; border-radius: 50%; background: #f0eeec; color: var(--muted); font: 600 11px var(--font-mono); display: flex; align-items: center; justify-content: center; margin-top: 1px;">{i + 1}</span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ol>
+
+                {g.code && (
+                  <pre style="margin: 15px 0 0; background: var(--ink); color: var(--hairline); border-radius: 10px; padding: 13px 15px; font: 400 12px var(--font-mono); line-height: 1.6; overflow-x: auto; white-space: pre; max-width: 100%;">{g.code}</pre>
+                )}
+
+                {expanded && (
+                  <div style="margin-top: 15px;">
+                    <div style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-bottom: 8px;">FULL GUIDE</div>
+                    {g.article.map((para, i) => (
+                      <p key={i} style="font-size: 13.5px; line-height: 1.65; color: #44403c; margin: 0 0 11px;">{para}</p>
+                    ))}
+                  </div>
+                )}
+
+                <button onClick={() => setOpen((k) => k === g.key ? null : g.key)} style="align-self: flex-start; margin-top: 16px; cursor: pointer; background: transparent; border: none; color: var(--accent-strong); font: 500 13px var(--font-ui); padding: 4px 0;">
+                  {expanded ? "Show less ↑" : "Read full guide ↓"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+- [ ] **Step 7: Run both tests to verify they pass**
+
+Run: `npx vitest run src/lib/setup-guides.test.ts src/islands/SetupGuide.test.tsx`
+Expected: PASS.
+
+- [ ] **Step 8: Create `src/pages/setup.astro`**
 
 ```astro
 ---
 import Base from "../layouts/Base.astro";
-const steps = [
-  { os: "Windows", body: "Download a wallpaper, right-click it, and choose “Set as desktop background.” Or open Settings → Personalization → Background, choose “Picture,” and browse to the file. For a solid color you can also pick Settings → Personalization → Background → “Solid color.”" },
-  { os: "macOS", body: "Download a wallpaper, then open System Settings → Wallpaper → Add Photo → choose the file. On older macOS, use System Preferences → Desktop & Screen Saver and drag the image in." },
-  { os: "GNOME (Linux)", body: "Download a wallpaper, open Settings → Appearance (or Background), and select the image file. Or right-click it in Files and choose “Set as Wallpaper.”" },
-  { os: "KDE Plasma (Linux)", body: "Right-click the desktop → “Configure Desktop and Wallpaper,” set Wallpaper type to “Image,” and add the downloaded file." },
-];
+import { SetupGuide } from "../islands/SetupGuide";
+import { SETUP_GUIDES } from "../lib/setup-guides";
 ---
-<Base title="Setup Guide — desktopcolors.com" description="How to set a downloaded wallpaper as your desktop background." active="setup">
-  <div style="max-width: 720px; margin: 0 auto; padding: 34px 32px 64px;">
-    <h1 style="font: 700 32px var(--font-ui); letter-spacing: -0.6px; margin: 0 0 8px;">Setup Guide</h1>
-    <p style="font-size: 15px; line-height: 1.7; color: var(--muted); margin: 0 0 24px;">Download any color from a platform or the Color Explorer, then follow the steps for your system.</p>
-    {steps.map((s) => (
-      <div style="border: 1px solid var(--card-border); border-radius: 12px; background: var(--panel); padding: 18px 20px; margin-bottom: 14px;">
-        <h2 style="font: 500 18px var(--font-ui); margin: 0 0 8px;">{s.os}</h2>
-        <p style="font-size: 14px; line-height: 1.6; color: var(--muted); margin: 0;">{s.body}</p>
-      </div>
-    ))}
-  </div>
+<Base title="Setup Guide — desktopcolors.com" description="How to set any solid color as your desktop or phone background, on every modern OS." active="setup">
+  <SetupGuide guides={SETUP_GUIDES} client:load />
 </Base>
 ```
 
-- [ ] **Step 3: Build to verify both pages render**
+- [ ] **Step 9: Build + full suite, then commit**
 
-Run: `npm run build && test -f dist/about/index.html && test -f dist/setup/index.html`
-Expected: both exist.
-
-- [ ] **Step 4: Commit**
+Run: `npm run build && test -f dist/setup/index.html && grep -q "Set a solid color" dist/setup/index.html && npm test`
+Expected: build succeeds, setup page present, all tests green.
 
 ```bash
-git add src/pages/about.astro src/pages/setup.astro
-git commit -m "feat: add About and Setup Guide pages"
+git add src/lib/setup-guides.ts src/lib/setup-guides.test.ts src/islands/SetupGuide.tsx src/islands/SetupGuide.test.tsx src/pages/setup.astro
+git commit -m "feat: add interactive Setup Guide with per-platform instructions"
 ```
 
 ---
 
-### Task 11: Whole-site build verification
+### Task 12: Whole-site build verification
 
 **Files:**
 - No new source; this task is a verification gate and a short check script.
@@ -1874,8 +2304,10 @@ Run:
 grep -q "Similar colors elsewhere" dist/os/windows-95/index.html && echo "detail sections OK"
 grep -q 'href="/os/windows-98' dist/os/windows-95/index.html && echo "successor link OK"
 grep -q "Color Explorer" dist/explorer/index.html && echo "explorer OK"
+grep -q "Straßenambulanz" dist/about/index.html && echo "about donation card OK"
+grep -q "Set a solid color" dist/setup/index.html && echo "setup guide OK"
 ```
-Expected: all three print their OK line.
+Expected: all five print their OK line.
 
 - [ ] **Step 4: Full test suite**
 
@@ -1894,7 +2326,7 @@ git commit --allow-empty -m "chore: verify whole-site build and route emission f
 
 ## Self-review checklist (completed while writing)
 
-- **Spec coverage (Plan 2 scope):** OS detail page with color selector, live preview, copy (HEX/RGB/HSL/closest-RAL), first-known-use, similar colors (deduped by hex — resolves Plan 1's deferred note), era peers, download sheet, fullscreen + keyboard nav ✓ (T2,T4,T5,T6); client-side wallpaper generation ✓ (T5); Color Explorer with hue/tone grouping, family+shade filters, spectrum/popularity sort, leaderboard, fullscreen ✓ (T3,T7); Browse list view + card/list toggle (Plan 1 deferral) ✓ (T8); mobile nav menu (Plan 1 deferral) ✓ (T9); About + Setup ✓ (T10); whole-site build gate ✓ (T11). Popularity events routed through the `track()` seam, no server calls ✓ (T1). Out of scope (later plans): counter service + real event transport (Plan 3–4), rebuild pipeline/nginx/systemd/TLS (Plan 4), `astro check` in CI (Plan 4).
-- **Placeholder scan:** no TBD/TODO; every code step has full code. About/Setup copy is authored (noted as fresh, not prototype-sourced). The one deliberate deferral (event transport) is a defined no-op seam, not a gap.
+- **Spec coverage (Plan 2 scope):** OS detail page with color selector, live preview, copy (HEX/RGB/HSL/closest-RAL), first-known-use, similar colors (deduped by hex — resolves Plan 1's deferred note), era peers, download sheet, fullscreen + keyboard nav ✓ (T2,T4,T5,T6); client-side wallpaper generation ✓ (T5); Color Explorer with hue/tone grouping, family+shade filters, spectrum/popularity sort, leaderboard, fullscreen ✓ (T3,T7); Browse list view + card/list toggle (Plan 1 deferral) ✓ (T8); mobile nav menu (Plan 1 deferral) ✓ (T9); About page reproduced faithfully — origin story, support + German KMFV donation cards, hero swatches, closing CTA ✓ (T10); interactive Setup Guide — search, category filter, seven per-platform expandable guides with the GNOME gsettings code block ✓ (T11); whole-site build gate ✓ (T12). Popularity events routed through the `track()` seam, no server calls ✓ (T1). Out of scope (later plans): counter service + real event transport (Plan 3–4), rebuild pipeline/nginx/systemd/TLS (Plan 4), `astro check` in CI (Plan 4).
+- **Placeholder scan:** no TBD/TODO except one deliberately-flagged owner value — the Buy Me a Coffee handle (T10), which resolves to a working generic URL and is marked with a `TODO(owner)` comment for the site owner to fill in; it is not a broken link. About and Setup content is reproduced verbatim from the fetched prototype (origin story, both donation cards, all seven platform guides). The event-transport deferral is a defined no-op seam, not a gap.
 - **Type/interface consistency:** reuses Plan 1 exports verbatim (`Catalog`/`OsView`/`ColorView`/`MergedColorView`, `SimilarColor`/`EraPeer`/`FirstUse`, `closestRal`, `hexToHsl`, `onColor`, `formatScore`, `DesktopStyle`); new types (`TrackEvent`, `ResolutionGroup`, `OsDetailView`/`DetailColor`/`SimilarView`/`EraPeerView`, `ExplorerColor`/`Band`) are each defined once and imported where used. `loadCatalog` refactor (T2) removes the collection-read duplication rather than adding a second copy. Wallpaper `downloadWallpaper` signature `(osSlug, colorName, hex, w, h)` matches its test and the `DownloadSheet`/`OsDetail` call sites.
 - **Testability:** pure logic (wallpaper filename/parse, detail view model + dedupe, explorer bands/leaderboard/counts) is unit-tested without a browser; island tests inject spies/props (`onDownload`, `initialHex`) to avoid real canvas/clipboard/URL dependence; canvas draw and clipboard are exercised only through those seams.
