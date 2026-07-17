@@ -770,7 +770,7 @@ Create one file per platform under `src/content/os/`, named `<slug>.json`. Two c
     { "hex": "#008080", "name": "Teal", "index": "3", "note": "The signature default background of Windows 95.", "default": true },
     { "hex": "#808080", "name": "Gray", "index": "8", "note": "A neutral, low-distraction desktop." },
     { "hex": "#000080", "name": "Navy", "index": "1", "note": "Deep cool blue, a common corporate choice." },
-    { "hex": "#808000", "name": "Olive", "index": "3", "note": "Muted warm green-yellow." },
+    { "hex": "#808000", "name": "Olive", "index": "6", "note": "Muted warm green-yellow." },
     { "hex": "#800080", "name": "Purple", "index": "5", "note": "Bold and saturated." },
     { "hex": "#800000", "name": "Maroon", "index": "4", "note": "Warm dark red." },
     { "hex": "#c0c0c0", "name": "Silver", "index": "7", "note": "Light gray, matches the UI chrome." },
