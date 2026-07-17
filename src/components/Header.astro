@@ -1,4 +1,5 @@
 ---
+import { MobileNav } from "../islands/MobileNav";
 interface Props { active?: "browse" | "explorer" | "setup" | "about"; }
 const { active } = Astro.props;
 const links = [
@@ -10,9 +11,18 @@ const links = [
 ---
 <header style="position: relative; padding: 20px 32px; border-bottom: 1px solid var(--hairline); display: flex; align-items: center; justify-content: space-between; gap: 20px;">
   <a href="/" style="font: 700 19px var(--font-ui); letter-spacing: -0.4px;">desktopcolors<span style="color: var(--faint);">.com</span></a>
-  <nav style="display: flex; gap: 22px; font-size: 14px;">
+  <nav class="dc-wide-nav" style="gap: 22px; font-size: 14px;">
     {links.map((l) => (
       <a href={l.href} style={`color: ${l.key === active ? "var(--ink)" : "var(--muted)"}; font-weight: ${l.key === active ? 500 : 400};`}>{l.label}</a>
     ))}
   </nav>
+  <div class="dc-mobile-nav"><MobileNav active={active} client:load /></div>
 </header>
+<style>
+  .dc-wide-nav { display: none; }
+  .dc-mobile-nav { display: block; }
+  @media (min-width: 760px) {
+    .dc-wide-nav { display: flex; }
+    .dc-mobile-nav { display: none; }
+  }
+</style>
