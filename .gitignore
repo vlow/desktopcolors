@@ -7,3 +7,6 @@ counter/counter
 *.db-wal
 *.db-shm
 scores.json
+test-results/
+playwright-report/
+/playwright/.cache/
