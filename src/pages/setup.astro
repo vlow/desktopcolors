@@ -1,0 +1,8 @@
+---
+import Base from "../layouts/Base.astro";
+import { SetupGuide } from "../islands/SetupGuide";
+import { SETUP_GUIDES } from "../lib/setup-guides";
+---
+<Base title="Setup Guide — desktopcolors.com" description="How to set any solid color as your desktop or phone background, on every modern OS." active="setup">
+  <SetupGuide guides={SETUP_GUIDES} client:load />
+</Base>

@@ -1,0 +1,94 @@
+---
+import Base from "../layouts/Base.astro";
+
+const heroSwatches = [
+  { hex: "#008080", name: "Teal — Windows 95" },
+  { hex: "#3a6ea5", name: "NT Blue" },
+  { hex: "#004e98", name: "XP Blue" },
+  { hex: "#0055aa", name: "Amiga Workbench Blue" },
+  { hex: "#9aabb9", name: "CDE Dusty Blue" },
+  { hex: "#9999cc", name: "Mac OS 8 Lavender" },
+  { hex: "#33aabb", name: "BeOS Cyan" },
+  { hex: "#c0c0c0", name: "Silver" },
+];
+---
+<Base title="About — desktopcolors.com" description="A small archive of the colors we booted into — and why it exists." active="about">
+  <!-- HERO -->
+  <div style="padding: 46px 32px 30px; border-bottom: 1px solid var(--hairline);">
+    <div style="max-width: 720px;">
+      <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.8px;">ABOUT</div>
+      <h1 style="font: 700 40px var(--font-ui); letter-spacing: -1px; margin: 10px 0 0; line-height: 1.08;">A small archive of the colors we booted into.</h1>
+      <p style="font-size: 17px; line-height: 1.6; color: var(--muted); margin: 16px 0 0;">Every solid desktop background shipped by the operating systems that raised us — catalogued, named, and free to take with you.</p>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px;">
+      {heroSwatches.map((c) => (
+        <span title={c.name} style={`width: 46px; height: 46px; border-radius: 9px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);`}></span>
+      ))}
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="about-body" style="padding: 44px 32px 20px; display: grid; gap: 48px; max-width: 1120px;">
+    <!-- WHY / STORY -->
+    <div style="max-width: 640px;">
+      <h2 style="font: 700 24px var(--font-ui); letter-spacing: -0.5px; margin: 0 0 4px;">Why I made this</h2>
+      <div style="width: 44px; height: 3px; background: var(--accent); border-radius: 2px; margin: 12px 0 22px;"></div>
+      <div style="display: flex; flex-direction: column; gap: 18px; font-size: 16px; line-height: 1.72; color: #44403c;">
+        <p style="margin: 0;">It started with a single hex code: <b>#008080</b>. That specific teal was the first thing millions of us saw when a computer finished booting — and one day I realized I couldn't find it written down anywhere. Not the exact value, not what it was called, not which systems shipped it.</p>
+        <p style="margin: 0;">So I started collecting. Windows, Amiga, the Unix desktops, the forgotten ones in between. Every default background, every alternate the settings panel offered, pulled from screenshots, manuals, and disk images, then checked against the real thing.</p>
+        <p style="margin: 0;">These colors are small, ordinary, and easy to lose — which is exactly why they're worth keeping. This page is my attempt to hold onto them, and to let you take any one back to your own desktop.</p>
+      </div>
+      <div style="margin-top: 26px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--card-border); border-radius: 14px; display: flex; align-items: center; gap: 16px;">
+        <div style="flex: none; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #008080, #3a6ea5); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);"></div>
+        <div style="min-width: 0;">
+          <div style="font: 500 15px var(--font-ui);">Built &amp; maintained by one person</div>
+          <div style="font: 400 13px var(--font-mono); color: var(--faint); margin-top: 3px;">A nights-and-weekends project · no ads, no tracking</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUPPORT RAIL -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <!-- BUY ME A COFFEE -->
+      <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
+        <div style="height: 8px; background: #ffdd00;"></div>
+        <div style="padding: 22px 22px 24px;">
+          <div style="font-size: 30px; line-height: 1;">☕</div>
+          <h3 style="font: 700 19px var(--font-ui); letter-spacing: -0.3px; margin: 14px 0 0;">Buy me a coffee</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: var(--muted); margin: 8px 0 0;">If this archive saved you a search — or brought back a memory — a coffee keeps the servers on and the next batch of colors coming.</p>
+          <!-- TODO(owner): real Buy Me a Coffee handle -->
+          <a href="https://www.buymeacoffee.com/" target="_blank" rel="noopener" style="display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 18px; background: #ffdd00; color: #1c1917; font: 700 15px var(--font-ui); padding: 13px 18px; border-radius: 11px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"><span style="font-size: 17px;">☕</span> Buy me a coffee</a>
+        </div>
+      </div>
+      <!-- GERMAN DONATION -->
+      <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
+        <div style="height: 8px; background: linear-gradient(90deg, #000 0 33%, #dd0000 33% 66%, #ffce00 66% 100%);"></div>
+        <div style="padding: 22px 22px 24px;">
+          <div style="display: inline-flex; align-items: center; gap: 7px; font: 500 10px var(--font-mono); color: var(--faint); letter-spacing: 1.4px;"><span style="font-size: 13px;">🇩🇪</span> FÜR DEUTSCHSPRACHIGE BESUCHER</div>
+          <h3 style="font: 700 19px var(--font-ui); letter-spacing: -0.3px; margin: 12px 0 0;">Lieber etwas Gutes tun?</h3>
+          <p style="font-size: 14px; line-height: 1.65; color: var(--muted); margin: 8px 0 0;">Statt eines Kaffees für mich: Die <b>Straßenambulanz des KMFV</b> in München versorgt wohnungslose Menschen medizinisch — kostenlos und unbürokratisch. Eine Spende dorthin ist mir mehr wert als jeder Kaffee.</p>
+          <a href="https://kmfv.de/was-wir-tun/strassenambulanz/" target="_blank" rel="noopener" style="display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 18px; background: var(--ink); color: #fff; font: 700 15px var(--font-ui); padding: 13px 18px; border-radius: 11px;">Zur Straßenambulanz ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOSING CTA -->
+  <div style="padding: 20px 32px 72px; max-width: 1120px;">
+    <div style="margin-top: 24px; padding: 26px 28px; border: 1px dashed #cfcac4; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div>
+        <div style="font: 700 18px var(--font-ui); letter-spacing: -0.3px;">Go find your color.</div>
+        <div style="font-size: 14px; color: var(--muted); margin-top: 4px;">Browse by platform, or sort every shade by popularity.</div>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="/" style="background: var(--ink); color: #fff; font: 500 14px var(--font-ui); padding: 12px 18px; border-radius: 10px;">Browse platforms</a>
+        <a href="/explorer" style="background: var(--panel); color: var(--ink); border: 1px solid var(--field-border); font: 500 14px var(--font-ui); padding: 12px 18px; border-radius: 10px;">Open Color Explorer</a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .about-body { grid-template-columns: 1fr; }
+    @media (min-width: 860px) { .about-body { grid-template-columns: 1.5fr 1fr; } }
+  </style>
+</Base>
