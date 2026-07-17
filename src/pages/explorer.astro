@@ -1,0 +1,14 @@
+---
+import Base from "../layouts/Base.astro";
+import { Explorer } from "../islands/Explorer";
+import { loadCatalog } from "../lib/loadCatalog";
+import { toExplorerColors } from "../lib/explorer";
+
+const catalog = await loadCatalog();
+const colors = toExplorerColors(catalog);
+const styleBySlug: Record<string, string> = {};
+for (const o of catalog.osList) styleBySlug[o.slug] = o.desktopStyle;
+---
+<Base title="Color Explorer — desktopcolors.com" description="Every solid desktop background color, grouped by hue or tone and ranked by popularity." active="explorer">
+  <Explorer colors={colors} styleBySlug={styleBySlug} client:load />
+</Base>
