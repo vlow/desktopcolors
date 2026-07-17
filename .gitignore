@@ -10,3 +10,6 @@ scores.json
 test-results/
 playwright-report/
 /playwright/.cache/
+
+# macOS
+.DS_Store
