@@ -17,7 +17,7 @@ export function MobileNav({ active }: { active?: string }) {
       {open && (
         <div style="position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; min-width: 180px; background: #fff; border: 1px solid var(--field-border); border-radius: 12px; box-shadow: 0 14px 34px rgba(0,0,0,0.16); padding: 6px; display: flex; flex-direction: column;">
           {LINKS.map((l) => (
-            <a key={l.key} href={l.href} onClick={() => setOpen(false)} style={`display: block; padding: 11px 13px; border-radius: 8px; font: 500 14px var(--font-ui); color: ${l.key === active ? "var(--ink)" : "var(--muted)"};;`}>{l.label}</a>
+            <a key={l.key} href={l.href} onClick={() => setOpen(false)} style={`display: block; padding: 11px 13px; border-radius: 8px; font: 500 14px var(--font-ui); color: ${l.key === active ? "var(--ink)" : "var(--muted)"};`}>{l.label}</a>
           ))}
         </div>
       )}

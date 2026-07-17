@@ -20,7 +20,7 @@ export function OsDetail({ view, initialHex }: Props) {
   const startIdx = useMemo(() => {
     const wanted = (initialHex === undefined ? readInitialHex() : initialHex);
     if (!wanted) return 0;
-    const i = colors.findIndex((c) => c.hex.toLowerCase() === decodeURIComponent(wanted).toLowerCase());
+    const i = colors.findIndex((c) => c.hex.toLowerCase() === wanted.toLowerCase());
     return i >= 0 ? i : 0;
   }, [colors, initialHex]);
 
@@ -34,7 +34,7 @@ export function OsDetail({ view, initialHex }: Props) {
   const c: DetailColor = colors[sel] ?? colors[0];
 
   const copy = (key: CopyKey, text: string) => {
-    try { navigator.clipboard?.writeText(text); } catch { /* ignore */ }
+    try { navigator.clipboard?.writeText(text)?.catch(() => {}); } catch { /* ignore */ }
     track({ kind: "copy", hex: c.hex, os: os.slug });
     setCopied(key);
     window.setTimeout(() => setCopied(null), 1300);
@@ -105,7 +105,7 @@ export function OsDetail({ view, initialHex }: Props) {
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
             <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">DETAILS</div>
             <div style="display: flex; justify-content: space-between; padding: 7px 14px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">Palette index</span><span style="font: 500 13px var(--font-mono);">{c.index}</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 7px 14px 11px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">First known use</span><a href={c.firstUse.href} style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year} ↗</a></div>
+            <div style="display: flex; justify-content: space-between; padding: 7px 14px 11px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">First known use</span>{c.firstUse.self ? <span style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year}</span> : <a href={c.firstUse.href} style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year} ↗</a>}</div>
           </div>
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
             <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">COLOR VALUES · CLICK TO COPY</div>

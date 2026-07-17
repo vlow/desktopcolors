@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/preact";
+import { render, screen, fireEvent } from "@testing-library/preact";
 import { OsDetail } from "./OsDetail";
 import type { OsDetailView } from "../lib/detail";
 
