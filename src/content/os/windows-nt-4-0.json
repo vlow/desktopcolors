@@ -1,0 +1,14 @@
+{
+  "name": "Windows NT 4.0",
+  "year": 1996,
+  "family": "Windows",
+  "tagline": "The workstation blue that ran the late-90s office.",
+  "description": "Windows NT 4.0 brought the Windows 95 shell to the enterprise, with a distinctive blue-gray palette suited to professional workstations. Its default NT Blue projected seriousness over the consumer teal.",
+  "desktopStyle": "win9x",
+  "colors": [
+    { "hex": "#3a6ea5", "name": "NT Blue", "note": "The workstation blue that ran the late-90s office.", "default": true },
+    { "hex": "#008080", "name": "Teal", "index": "3" },
+    { "hex": "#4f6070", "name": "Slate" },
+    { "hex": "#000080", "name": "Navy", "index": "1" }
+  ]
+}
