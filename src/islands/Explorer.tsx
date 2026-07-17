@@ -68,7 +68,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
             return (
               <button key={f.key} onClick={() => toggleFamily(f.key)} style={`cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 8px 14px 8px 10px; font: 500 13px var(--font-ui); border: 1px solid ${active ? "var(--ink)" : "var(--field-border)"}; background: ${active ? "var(--ink)" : "#fff"}; color: ${active ? "#fff" : "var(--ink)"};`}>
                 <span style={`width: 15px; height: 15px; border-radius: 50%; background-color: ${f.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
-                <span>{f.name} {counts[f.key]}</span>
+                {f.name}<span style="font: 400 11px var(--font-mono); opacity: 0.6;">{counts[f.key]}</span>
               </button>
             );
           })}
@@ -99,7 +99,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
               <div>
                 <div style="display: inline-flex; align-items: center; gap: 9px;">
                   <span style={`width: 20px; height: 20px; border-radius: 6px; background-color: ${b.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
-                  <span style="font: 500 18px var(--font-ui);">{b.name}</span>
+                  <span data-testid="band-name" style="font: 500 18px var(--font-ui);">{b.name}</span>
                 </div>
                 <div style="font: 400 11px var(--font-mono); color: var(--faint); margin-top: 6px;">{b.colors.length} colors</div>
               </div>

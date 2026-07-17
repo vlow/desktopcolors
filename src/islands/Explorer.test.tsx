@@ -12,15 +12,17 @@ const styleBySlug = { "windows-95": "win9x" as const };
 describe("Explorer", () => {
   it("renders grouped bands by hue by default", () => {
     render(<Explorer colors={colors} styleBySlug={styleBySlug} />);
-    expect(screen.getByText("Teals")).toBeTruthy();
-    expect(screen.getByText("Reds")).toBeTruthy();
+    const names = screen.getAllByTestId("band-name").map((n) => n.textContent);
+    expect(names).toContain("Teals");
+    expect(names).toContain("Reds");
   });
 
   it("filters to a family when its chip is clicked", () => {
     render(<Explorer colors={colors} styleBySlug={styleBySlug} />);
     fireEvent.click(screen.getByRole("button", { name: /Teals/ }));
-    expect(screen.queryByText("Reds")).toBeNull();
-    expect(screen.getByText("Teals")).toBeTruthy();
+    const names = screen.getAllByTestId("band-name").map((n) => n.textContent);
+    expect(names).toContain("Teals");
+    expect(names).not.toContain("Reds");
   });
 
   it("switches to the leaderboard when Ungrouped is chosen", () => {
