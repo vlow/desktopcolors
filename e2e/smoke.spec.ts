@@ -18,6 +18,18 @@ async function captureEvents(
   return bodies;
 }
 
+/** True if some captured beacon body parses to an object matching every key in `expected`. */
+function sawEvent(bodies: string[], expected: Record<string, string>): boolean {
+  return bodies.some((b) => {
+    try {
+      const e = JSON.parse(b) as Record<string, unknown>;
+      return Object.entries(expected).every(([k, v]) => e[k] === v);
+    } catch {
+      return false;
+    }
+  });
+}
+
 test("home lists platforms and search filters", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("The desktop color archive")).toBeVisible();
@@ -33,7 +45,7 @@ test("opening an OS page fires an osview beacon", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Windows 95" })).toBeVisible();
   // beacon fires on mount; give the island a tick to hydrate + send.
   await expect
-    .poll(() => events.some((b) => b.includes('"kind":"osview"')))
+    .poll(() => sawEvent(events, { kind: "osview", os: "windows-95" }))
     .toBe(true);
 });
 
@@ -44,7 +56,7 @@ test("copying a color value fires a copy beacon", async ({ page, context }) => {
   await page.getByTestId("copy-hex").click();
   await expect(page.getByText("Copied ✓")).toBeVisible();
   await expect
-    .poll(() => events.some((b) => b.includes('"kind":"copy"')))
+    .poll(() => sawEvent(events, { kind: "copy", hex: "#008080", os: "windows-95" }))
     .toBe(true);
 });
 
@@ -57,6 +69,6 @@ test("download sheet generates a wallpaper and fires a download beacon", async (
   const file = await download;
   expect(file.suggestedFilename()).toMatch(/windows-95-teal-008080-1920x1080\.png/);
   await expect
-    .poll(() => events.some((b) => b.includes('"kind":"download"')))
+    .poll(() => sawEvent(events, { kind: "download", hex: "#008080", os: "windows-95" }))
     .toBe(true);
 });
