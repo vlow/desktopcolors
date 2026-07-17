@@ -70,11 +70,10 @@ func (l *Limiter) rotateSalt(t time.Time) {
 	l.buckets = map[string]*bucket{}
 }
 
-func (l *Limiter) key(ip string, t time.Time) string {
+func (l *Limiter) key(ip string) string {
 	h := sha256.New()
 	h.Write(l.salt)
 	h.Write([]byte(truncateIP(ip)))
-	_ = t
 	return hex.EncodeToString(h.Sum(nil))
 }
 
@@ -88,7 +87,7 @@ func (l *Limiter) Allow(ip string) bool {
 		l.rotateSalt(t)
 	}
 
-	k := l.key(ip, t)
+	k := l.key(ip)
 	b := l.buckets[k]
 	if b == nil {
 		b = &bucket{tokens: l.cap, lastFill: t, lastSeen: t}
@@ -126,13 +125,6 @@ func (l *Limiter) Len() int {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	return len(l.buckets)
-}
-
-func min(a, b float64) float64 {
-	if a < b {
-		return a
-	}
-	return b
 }
 
 // truncateIP zeroes host bits: IPv4 -> /24, IPv6 -> /64. Unparseable input is
