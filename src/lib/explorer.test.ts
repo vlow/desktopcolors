@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
-  toExplorerColors, groupIntoBands, rankColors, familyCounts, FAMILY_DEFS,
+  toExplorerColors, groupIntoBands, rankColors, familyCounts, shadeCountsFor, FAMILY_DEFS,
 } from "./explorer";
 import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
 import type { OsEntry } from "./derive";
 import type { OsInput } from "../content/config";
+import type { ExplorerColor } from "./explorer";
 
 const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => ({
   name: "X", year: 2000, family: "Fam", tagline: "t", description: "d",
@@ -72,5 +73,76 @@ describe("rankColors", () => {
     expect(ranked[0].pct).toBe(100);
     const red = ranked.find((c) => c.hex === "#ff0000")!;
     expect(red.pct).toBe(20); // 1000/5000
+  });
+
+  it("all-zero-scores → pct 0 (no divide-by-zero, no NaN)", () => {
+    const zeroScores: ExplorerColor[] = [
+      {
+        hex: "#ff0000", name: "Red", family: "red", tone: "bright", shade: "mid",
+        h: 0, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%23ff0000",
+      },
+      {
+        hex: "#00ff00", name: "Green", family: "green", tone: "bright", shade: "light",
+        h: 120, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "b", href: "/os/b?hex=%2300ff00",
+      },
+      {
+        hex: "#0000ff", name: "Blue", family: "blue", tone: "bright", shade: "dark",
+        h: 240, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "c", href: "/os/c?hex=%230000ff",
+      },
+    ];
+    const ranked = rankColors(zeroScores, { family: null, sort: "pop" });
+    expect(ranked).toHaveLength(3);
+    ranked.forEach((r, i) => {
+      expect(r.rank).toBe(i + 1);
+      expect(r.pct).toBe(0); // no divide-by-zero, all 0
+      expect(Number.isNaN(r.pct)).toBe(false);
+    });
+  });
+});
+
+describe("shadeCountsFor", () => {
+  it("counts colors per shade within a family", () => {
+    // Build fixture with differing lightness: deep (<32), mid (<55), light (<80), pale (>=80)
+    const fixture: ExplorerColor[] = [
+      {
+        hex: "#1a1a1a", name: "Deep Red", family: "red", tone: "dark", shade: "deep",
+        h: 0, s: 100, l: 15, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%231a1a1a",
+      },
+      {
+        hex: "#8b0000", name: "Mid Red", family: "red", tone: "bright", shade: "mid",
+        h: 0, s: 100, l: 42, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%238b0000",
+      },
+      {
+        hex: "#ff6666", name: "Light Red", family: "red", tone: "bright", shade: "light",
+        h: 0, s: 100, l: 70, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%23ff6666",
+      },
+      {
+        hex: "#ff9999", name: "Pale Red", family: "red", tone: "pastel", shade: "pale",
+        h: 0, s: 100, l: 85, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%23ff9999",
+      },
+      {
+        hex: "#ffcccc", name: "Pale Red 2", family: "red", tone: "pastel", shade: "pale",
+        h: 0, s: 100, l: 90, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%23ffcccc",
+      },
+      // Add a different-family color to verify filtering
+      {
+        hex: "#0000ff", name: "Blue", family: "blue", tone: "bright", shade: "mid",
+        h: 240, s: 100, l: 50, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
+        yearRange: "2000–2001", primarySlug: "b", href: "/os/b?hex=%230000ff",
+      },
+    ];
+    const counts = shadeCountsFor(fixture, "red");
+    expect(counts.deep).toBe(1);
+    expect(counts.mid).toBe(1);
+    expect(counts.light).toBe(1);
+    expect(counts.pale).toBe(2);
   });
 });
