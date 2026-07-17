@@ -24,10 +24,21 @@ export function parseScores(raw: unknown): Scores {
 }
 
 export function loadScores(path = "scores.json"): Scores {
+  let raw: string;
   try {
-    return parseScores(JSON.parse(readFileSync(path, "utf8")));
+    raw = readFileSync(path, "utf8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      console.warn(`[scores] scores.json not found — defaulting all scores to 0`);
+    } else {
+      console.warn(`[scores] ${path} not found or invalid — defaulting all scores to 0`);
+    }
+    return { colors: {}, os: {} };
+  }
+  try {
+    return parseScores(JSON.parse(raw));
   } catch {
-    console.warn(`[scores] ${path} not found or invalid — defaulting all scores to 0`);
+    console.error(`[scores] ${path} is malformed JSON — defaulting all scores to 0`);
     return { colors: {}, os: {} };
   }
 }

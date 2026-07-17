@@ -80,13 +80,13 @@ function toColorView(hex: string, name: string, index: string, note: string, isD
 }
 
 export function buildCatalog(entries: OsEntry[], scores: Scores): Catalog {
-  const slugs = new Set(entries.map((e) => e.slug));
+  const entryBySlug = new Map(entries.map((e) => [e.slug, e]));
   const refOf = (slug: string | undefined, field: string, from: string): OsRef | null => {
     if (!slug) return null;
-    if (!slugs.has(slug)) {
+    const target = entryBySlug.get(slug);
+    if (!target) {
       throw new Error(`Unresolved ${field} "${slug}" referenced by "${from}"`);
     }
-    const target = entries.find((e) => e.slug === slug)!;
     return { slug, name: target.data.name, year: target.data.year };
   };
 
@@ -108,8 +108,7 @@ export function buildCatalog(entries: OsEntry[], scores: Scores): Catalog {
   const bySlug = new Map(osList.map((o) => [o.slug, o]));
 
   const colors: MergedColorView[] = mergeColorsByHex(entries).map((m) => {
-    const [, , l] = hexToHsl(m.hex);
-    const [h, s] = hexToHsl(m.hex);
+    const [h, s, l] = hexToHsl(m.hex);
     const score = colorScore(scores, m.hex);
     return {
       ...m,
