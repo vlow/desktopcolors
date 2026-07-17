@@ -28,7 +28,7 @@ export function loadScores(path = "scores.json"): Scores {
   try {
     raw = readFileSync(path, "utf8");
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+    if ((err as { code?: string }).code === "ENOENT") {
       console.warn(`[scores] scores.json not found — defaulting all scores to 0`);
     } else {
       console.warn(`[scores] ${path} not found or invalid — defaulting all scores to 0`);

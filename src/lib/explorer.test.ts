@@ -10,7 +10,7 @@ import type { ExplorerColor } from "./explorer";
 
 const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => ({
   name: "X", year: 2000, family: "Fam", tagline: "t", description: "d",
-  desktopStyle: "generic", colors: over.colors, ...over,
+  desktopStyle: "generic", ...over,
 });
 
 const entries: OsEntry[] = [
@@ -88,7 +88,7 @@ describe("rankColors", () => {
         yearRange: "2000–2001", primarySlug: "b", href: "/os/b?hex=%2300ff00",
       },
       {
-        hex: "#0000ff", name: "Blue", family: "blue", tone: "bright", shade: "dark",
+        hex: "#0000ff", name: "Blue", family: "blue", tone: "bright", shade: "mid",
         h: 240, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
         yearRange: "2000–2001", primarySlug: "c", href: "/os/c?hex=%230000ff",
       },

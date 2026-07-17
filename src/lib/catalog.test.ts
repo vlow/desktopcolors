@@ -6,7 +6,7 @@ import { parseScores } from "./scores";
 
 const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => ({
   name: "X", year: 2000, family: "Fam", tagline: "t", description: "d",
-  desktopStyle: "generic", colors: over.colors, ...over,
+  desktopStyle: "generic", ...over,
 });
 
 const entries: OsEntry[] = [
