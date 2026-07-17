@@ -14,4 +14,6 @@ Environment=DB_PATH=/var/lib/desktopcolors/counter.db
 Environment=COUNTER_BIN=/opt/desktopcolors/counter/counter
 ExecStart=/usr/bin/env bash /opt/desktopcolors/deploy/rebuild.sh
 # Build + publish needs to write the release dir and the repo's node_modules/dist.
-ReadWritePaths=/var/www/desktopcolors /opt/desktopcolors
+# /var/lib/desktopcolors is included so `counter dump` can open the SQLite DB
+# (WAL creates -wal/-shm files) even if ProtectSystem=strict is added later.
+ReadWritePaths=/var/www/desktopcolors /opt/desktopcolors /var/lib/desktopcolors
