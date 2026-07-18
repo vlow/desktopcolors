@@ -4,6 +4,7 @@ import {
   type OsEntry, type SimilarColor, type EraPeer, type FirstUse,
 } from "./derive";
 import type { Catalog, OsView, ColorView } from "./catalog";
+import { colorPath } from "./links";
 
 export interface RalMatch { code: string; name: string; hex: string }
 
@@ -37,9 +38,6 @@ export function dedupeSimilarByHex(list: SimilarColor[]): SimilarColor[] {
   return out;
 }
 
-const colorHref = (slug: string, hex: string): string =>
-  `/os/${slug}?hex=${encodeURIComponent(hex)}`;
-
 export function buildOsDetail(entries: OsEntry[], catalog: Catalog, slug: string): OsDetailView {
   const os = catalog.bySlug.get(slug);
   const entry = entries.find((e) => e.slug === slug);
@@ -51,7 +49,7 @@ export function buildOsDetail(entries: OsEntry[], catalog: Catalog, slug: string
       .slice(0, 6)
       .map((s): SimilarView => ({
         hex: s.hex, name: s.name, osSlug: s.osSlug, osName: s.osName,
-        match: s.match, onColor: onColor(s.hex), href: colorHref(s.osSlug, s.hex),
+        match: s.match, onColor: onColor(s.hex), href: colorPath(s.osSlug, s.hex),
       }));
     const fu = firstKnownUse(c.hex, entries);
     return {

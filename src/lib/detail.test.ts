@@ -58,7 +58,7 @@ describe("buildOsDetail", () => {
     const tealMatches = teal.similar.filter((s) => s.hex === "#008080");
     expect(tealMatches.length).toBe(1);
     expect(teal.similar.every((s) => s.osSlug !== "windows-95")).toBe(true);
-    expect(teal.similar[0].href).toMatch(/^\/os\/.+\?hex=/);
+    expect(teal.similar[0].href).toMatch(/^\/os\/.+\/[0-9a-f]{6}$/);
   });
   it("computes first known use with self flag", () => {
     const teal = view.colors[0]; // teal first shipped by CDE (1993) < Win95 (1995)

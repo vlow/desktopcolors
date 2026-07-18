@@ -39,7 +39,7 @@ describe("BrowseControls", () => {
     fireEvent.click(screen.getByRole("button", { name: /List/ }));
     // list view renders a color swatch link to the color's detail URL
     const link = screen.getByRole("link", { name: /Teal swatch/ });
-    expect(link).toHaveAttribute("href", "/os/windows-95?hex=%23008080");
+    expect(link).toHaveAttribute("href", "/os/windows-95/008080");
   });
 
   it("toggles back to card view", () => {

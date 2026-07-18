@@ -1,6 +1,5 @@
 ---
-import Base from "../../layouts/Base.astro";
-import { OsDetail } from "../../islands/OsDetail";
+import OsDetailPage from "../../components/OsDetailPage.astro";
 import { loadCatalog } from "../../lib/loadCatalog";
 import { loadEntries } from "../../lib/entries";
 import { buildOsDetail } from "../../lib/detail";
@@ -14,11 +13,5 @@ const { slug } = Astro.params;
 const catalog = await loadCatalog();
 const entries = await loadEntries();
 const view = buildOsDetail(entries, catalog, slug!);
-const { os } = view;
 ---
-<Base
-  title={`${os.name} desktop colors — desktopcolors.com`}
-  description={`${os.name} (${os.year}) desktop background colors: ${os.defaultHex} and ${os.colorCount - 1} more, with previews and downloadable wallpapers.`}
->
-  <OsDetail view={view} client:load />
-</Base>
+<OsDetailPage view={view} />

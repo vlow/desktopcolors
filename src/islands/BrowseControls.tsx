@@ -1,4 +1,5 @@
 import { useMemo, useState } from "preact/hooks";
+import { colorPath } from "../lib/links";
 
 export interface BrowseItem {
   slug: string;
@@ -117,7 +118,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
               </div>
               <div style="display: flex; gap: 14px; flex-wrap: wrap;">
                 {it.listColors.map((c) => (
-                  <a key={c.hex} href={`/os/${it.slug}?hex=${encodeURIComponent(c.hex)}`} aria-label={`${c.name} swatch`} style="width: 100px;">
+                  <a key={c.hex} href={colorPath(it.slug, c.hex)} aria-label={`${c.name} swatch`} style="width: 100px;">
                     <div style={`height: 76px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.09);`} />
                     <div style="font: 500 12px var(--font-mono); margin-top: 8px;">{c.hex}</div>
                     <div style="font-size: 11px; color: var(--faint);">{c.name}</div>

@@ -30,7 +30,7 @@ describe("toExplorerColors", () => {
     const teal = colors.find((c) => c.hex === "#008080")!;
     expect(teal.family).toBe("teal");
     expect(teal.h).toBeGreaterThan(0);
-    expect(teal.href).toMatch(/^\/os\/.+\?hex=/);
+    expect(teal.href).toMatch(/^\/os\/.+\/[0-9a-f]{6}$/);
   });
 });
 
@@ -80,17 +80,17 @@ describe("rankColors", () => {
       {
         hex: "#ff0000", name: "Red", family: "red", tone: "bright", shade: "mid",
         h: 0, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%23ff0000",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/ff0000",
       },
       {
         hex: "#00ff00", name: "Green", family: "green", tone: "bright", shade: "light",
         h: 120, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "b", href: "/os/b?hex=%2300ff00",
+        yearRange: "2000–2001", primarySlug: "b", href: "/os/b/00ff00",
       },
       {
         hex: "#0000ff", name: "Blue", family: "blue", tone: "bright", shade: "mid",
         h: 240, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "c", href: "/os/c?hex=%230000ff",
+        yearRange: "2000–2001", primarySlug: "c", href: "/os/c/0000ff",
       },
     ];
     const ranked = rankColors(zeroScores, { family: null, sort: "pop" });
@@ -110,33 +110,33 @@ describe("shadeCountsFor", () => {
       {
         hex: "#1a1a1a", name: "Deep Red", family: "red", tone: "dark", shade: "deep",
         h: 0, s: 100, l: 15, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%231a1a1a",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/1a1a1a",
       },
       {
         hex: "#8b0000", name: "Mid Red", family: "red", tone: "bright", shade: "mid",
         h: 0, s: 100, l: 42, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%238b0000",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/8b0000",
       },
       {
         hex: "#ff6666", name: "Light Red", family: "red", tone: "bright", shade: "light",
         h: 0, s: 100, l: 70, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%23ff6666",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/ff6666",
       },
       {
         hex: "#ff9999", name: "Pale Red", family: "red", tone: "pastel", shade: "pale",
         h: 0, s: 100, l: 85, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%23ff9999",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/ff9999",
       },
       {
         hex: "#ffcccc", name: "Pale Red 2", family: "red", tone: "pastel", shade: "pale",
         h: 0, s: 100, l: 90, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a?hex=%23ffcccc",
+        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/ffcccc",
       },
       // Add a different-family color to verify filtering
       {
         hex: "#0000ff", name: "Blue", family: "blue", tone: "bright", shade: "mid",
         h: 240, s: 100, l: 50, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "b", href: "/os/b?hex=%230000ff",
+        yearRange: "2000–2001", primarySlug: "b", href: "/os/b/0000ff",
       },
     ];
     const counts = shadeCountsFor(fixture, "red");

@@ -1,5 +1,6 @@
 import { hexToHsl, type FamilyKey, type ToneKey, type ShadeKey } from "./color";
 import type { Catalog } from "./catalog";
+import { colorPath } from "./links";
 
 export interface ExplorerColor {
   hex: string; name: string;
@@ -43,7 +44,7 @@ export function toExplorerColors(catalog: Catalog): ExplorerColor[] {
       hex: c.hex, name: c.name, family: c.family, tone: c.tone, shade: c.shade,
       h, s, l, onColor: c.onColor, score: c.score, scoreLabel: c.scoreLabel,
       yearRange: c.yearRange, primarySlug: c.primarySlug,
-      href: `/os/${c.primarySlug}?hex=${encodeURIComponent(c.hex)}`,
+      href: colorPath(c.primarySlug, c.hex),
     };
   });
 }

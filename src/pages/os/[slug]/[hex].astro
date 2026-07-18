@@ -1,0 +1,19 @@
+---
+import OsDetailPage from "../../../components/OsDetailPage.astro";
+import { loadCatalog } from "../../../lib/loadCatalog";
+import { loadEntries } from "../../../lib/entries";
+import { buildOsDetail } from "../../../lib/detail";
+
+export async function getStaticPaths() {
+  const catalog = await loadCatalog();
+  return catalog.osList.flatMap((o) =>
+    o.colors.map((c) => ({ params: { slug: o.slug, hex: c.hex.slice(1) } })),
+  );
+}
+
+const { slug, hex } = Astro.params;
+const catalog = await loadCatalog();
+const entries = await loadEntries();
+const view = buildOsDetail(entries, catalog, slug!);
+---
+<OsDetailPage view={view} initialHex={`#${hex}`} />

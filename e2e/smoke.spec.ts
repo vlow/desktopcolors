@@ -49,6 +49,29 @@ test("opening an OS page fires an osview beacon", async ({ page }) => {
     .toBe(true);
 });
 
+test("a per-color page selects that color from the first paint, not the default", async ({ page }) => {
+  // This is the path a cross-design color link produces (similar color, explorer
+  // swatch, browse swatch). The page is statically built, so the correct color
+  // must be baked into the HTML — no client-side flash of the default.
+  await page.goto("/os/windows-95/000080"); // Navy, not the default (Teal)
+  await expect(page.getByRole("heading", { name: "Windows 95" })).toBeVisible();
+
+  // The selected-color panel reflects Navy, and the DEFAULT badge (shown only when
+  // the default color is selected) is absent.
+  await expect(page.getByText("0, 0, 128")).toBeVisible(); // navy RGB
+  await expect(page.getByText("DEFAULT")).toHaveCount(0);
+
+  // Exactly one color is highlighted in the list, and it is Navy.
+  const highlighted = page.locator("div[style*='oklch(0.96 0.03 255)']");
+  await expect(highlighted).toHaveCount(1);
+  await expect(highlighted).toContainText("Navy");
+
+  // Selecting a different color updates the URL so it can be copied/shared.
+  // Target the list row by its unique "<hex> · idx <n>" label (Teal = #008080).
+  await page.getByText("#008080 · idx 3").click();
+  await expect(page).toHaveURL(/\/os\/windows-95\/008080$/);
+});
+
 test("copying a color value fires a copy beacon", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   const events = await captureEvents(page);

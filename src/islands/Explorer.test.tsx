@@ -4,8 +4,8 @@ import { Explorer } from "./Explorer";
 import type { ExplorerColor } from "../lib/explorer";
 
 const colors: ExplorerColor[] = [
-  { hex: "#008080", name: "Teal", family: "teal", tone: "dark", shade: "deep", h: 180, s: 100, l: 25, onColor: "#ffffff", score: 5000, scoreLabel: "5k", yearRange: "1995", primarySlug: "windows-95", href: "/os/windows-95?hex=%23008080" },
-  { hex: "#ff0000", name: "Red", family: "red", tone: "bright", shade: "mid", h: 0, s: 100, l: 50, onColor: "#ffffff", score: 1000, scoreLabel: "1k", yearRange: "1995", primarySlug: "windows-95", href: "/os/windows-95?hex=%23ff0000" },
+  { hex: "#008080", name: "Teal", family: "teal", tone: "dark", shade: "deep", h: 180, s: 100, l: 25, onColor: "#ffffff", score: 5000, scoreLabel: "5k", yearRange: "1995", primarySlug: "windows-95", href: "/os/windows-95/008080" },
+  { hex: "#ff0000", name: "Red", family: "red", tone: "bright", shade: "mid", h: 0, s: 100, l: 50, onColor: "#ffffff", score: 1000, scoreLabel: "1k", yearRange: "1995", primarySlug: "windows-95", href: "/os/windows-95/ff0000" },
 ];
 const styleBySlug = { "windows-95": "win9x" as const };
 

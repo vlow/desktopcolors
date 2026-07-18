@@ -1,30 +1,29 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { OsDetailView, DetailColor } from "../lib/detail";
 import { DesktopPreview } from "./DesktopPreview";
 import { FullscreenPreview } from "./FullscreenPreview";
 import { DownloadSheet } from "./DownloadSheet";
 import { track } from "../lib/track";
+import { colorPath } from "../lib/links";
 
 interface Props { view: OsDetailView; initialHex?: string | null }
-
-function readInitialHex(): string | null {
-  try { return new URLSearchParams(window.location.search).get("hex"); }
-  catch { return null; }
-}
 
 type CopyKey = "hex" | "rgb" | "hsl" | "ral";
 
 export function OsDetail({ view, initialHex }: Props) {
   const { os, colors, eraPeers } = view;
 
-  const startIdx = useMemo(() => {
-    const wanted = (initialHex === undefined ? readInitialHex() : initialHex);
-    if (!wanted) return 0;
-    const i = colors.findIndex((c) => c.hex.toLowerCase() === wanted.toLowerCase());
+  // The selected color comes from the server-provided `initialHex` — it is baked
+  // into the URL path (/os/<slug>/<hex>), so server and client render identically
+  // from the very first paint. No `window`/query reading, so no hydration
+  // mismatch and no flash of the default color.
+  const idxOfHex = (hex?: string | null): number => {
+    if (!hex) return 0;
+    const i = colors.findIndex((c) => c.hex.toLowerCase() === hex.toLowerCase());
     return i >= 0 ? i : 0;
-  }, [colors, initialHex]);
+  };
 
-  const [sel, setSel] = useState(startIdx);
+  const [sel, setSel] = useState(() => idxOfHex(initialHex));
   const [sheet, setSheet] = useState(false);
   const [full, setFull] = useState(false);
   const [copied, setCopied] = useState<CopyKey | null>(null);
@@ -32,6 +31,17 @@ export function OsDetail({ view, initialHex }: Props) {
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
 
   const c: DetailColor = colors[sel] ?? colors[0];
+
+  // Keep the URL in sync with the selected color so it can be copied/shared.
+  // Skip the initial mount so the entry URL (a default page or a deep link) is
+  // left untouched; replaceState (not push) avoids polluting the back history.
+  const didMount = useRef(false);
+  useEffect(() => {
+    if (!didMount.current) { didMount.current = true; return; }
+    try {
+      window.history.replaceState(window.history.state, "", colorPath(os.slug, c.hex));
+    } catch { /* ignore */ }
+  }, [sel]);
 
   const copy = (key: CopyKey, text: string) => {
     try { navigator.clipboard?.writeText(text)?.catch(() => {}); } catch { /* ignore */ }
