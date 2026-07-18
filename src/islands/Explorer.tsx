@@ -107,7 +107,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
                 {b.colors.map((c, i) => (
                   <div key={c.hex} style="width: 116px;">
                     <a href={c.href} style="display: block;">
-                      <div style={`position: relative; height: 78px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);`}>
+                      <div class="dc-swatch" style={`position: relative; height: 78px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);`}>
                         <span style={`position: absolute; left: 9px; bottom: 8px; font: 500 11px var(--font-mono); color: ${c.onColor}; opacity: 0.9;`}>{c.hex}</span>
                       </div>
                       <div style="font: 500 13px var(--font-ui); margin-top: 8px;">{c.name}</div>
@@ -123,7 +123,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
       ) : (
         <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 4px; max-width: 1000px;">
           {ranking.map((c, i) => (
-            <div key={c.hex} data-testid="rank-row" style="display: grid; grid-template-columns: 40px 56px 1fr 220px 84px; gap: 16px; align-items: center; padding: 10px; border-radius: 12px;">
+            <div key={c.hex} data-testid="rank-row" class="dc-rank-row" style="display: grid; grid-template-columns: 40px 56px 1fr 220px 84px; gap: 16px; align-items: center; padding: 10px; border-radius: 12px;">
               <a href={c.href} style="font: 600 20px var(--font-mono); color: #cbc7c2; text-align: right;">{c.rank}</a>
               <a href={c.href} style={`display: block; height: 56px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);`} />
               <a href={c.href}>

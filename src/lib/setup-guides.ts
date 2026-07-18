@@ -9,6 +9,8 @@ export interface SetupGuideEntry {
   steps: string[];
   code?: string;
   article: string[];
+  // Optional labelled slots for screenshots shown alongside the full guide.
+  shots?: { label: string }[];
 }
 
 export const SETUP_GUIDES: SetupGuideEntry[] = [
@@ -23,6 +25,7 @@ export const SETUP_GUIDES: SetupGuideEntry[] = [
       "Windows 11 keeps a built-in solid-color mode, so you never need a wallpaper image. The custom-color picker accepts any RGB value — the exact hex from any color on this site.",
       "The choice is per-account and syncs if you have Windows backup on, so signing into another PC brings your color with you.",
     ],
+    shots: [{ label: "Background settings" }, { label: "Custom color picker" }],
   },
   {
     key: "win10", os: "Windows 10", note: "Settings app", swatch: "#3a6ea5", cat: "desktop",
@@ -34,6 +37,7 @@ export const SETUP_GUIDES: SetupGuideEntry[] = [
     article: [
       "Windows 10 works almost identically to 11 — the Solid color option lives in the same Background pane, with a Custom color button for precise values.",
     ],
+    shots: [{ label: "Background pane" }],
   },
   {
     key: "macos", os: "macOS", note: "Ventura and later", swatch: "#004e98", cat: "desktop",
@@ -46,6 +50,7 @@ export const SETUP_GUIDES: SetupGuideEntry[] = [
       "Recent macOS versions moved wallpaper into System Settings. The Colors group offers presets plus a + tile that opens the standard macOS color picker — use its sliders or the hex field for an exact match.",
       "On older macOS (System Preferences → Desktop & Screen Saver), choose the “Solid Colors” collection, or click Custom Color at the bottom.",
     ],
+    shots: [{ label: "Wallpaper → Colors" }, { label: "Custom color sheet" }],
   },
   {
     key: "gnome", os: "GNOME · Ubuntu", note: "solid color via terminal", swatch: "#4e9a9a", cat: "desktop",
@@ -63,6 +68,7 @@ export const SETUP_GUIDES: SetupGuideEntry[] = [
       "Modern GNOME dropped the solid-color control from Settings, but the underlying key still exists. Clearing both picture-uri keys removes any image, and primary-color sets the flat fill.",
       "For a gradient instead, set color-shading-type to 'vertical' or 'horizontal' and add a secondary-color key.",
     ],
+    shots: [{ label: "Terminal result" }],
   },
   {
     key: "kde", os: "KDE Plasma", note: "Desktop settings", swatch: "#5a7ea5", cat: "desktop",
@@ -74,6 +80,7 @@ export const SETUP_GUIDES: SetupGuideEntry[] = [
     article: [
       "Plasma is the most flexible of the Linux desktops here — Plain Color is a first-class wallpaper type, with a full color dialog that takes hex input directly.",
     ],
+    shots: [{ label: "Wallpaper config" }],
   },
   {
     key: "ios", os: "iOS · iPhone", note: "iOS 16 and later", swatch: "#800080", cat: "mobile",
@@ -86,6 +93,7 @@ export const SETUP_GUIDES: SetupGuideEntry[] = [
       "Since iOS 16 the wallpaper gallery includes a Color option that produces a flat background — no need to save an image. Tapping the large swatch opens a picker where you can dial in an exact color.",
       "You can set it for the Lock Screen, Home Screen, or both from the same flow.",
     ],
+    shots: [{ label: "Add wallpaper → Color" }, { label: "Color picker" }],
   },
   {
     key: "android", os: "Android", note: "varies by skin", swatch: "#808000", cat: "mobile",
@@ -98,6 +106,7 @@ export const SETUP_GUIDES: SetupGuideEntry[] = [
       "Stock Android has no built-in solid-color wallpaper, so the reliable route is a solid-color image — download one at your target resolution and set it like any photo.",
       "Some skins add a shortcut: Samsung One UI has a “Color palette” wallpaper, and several launchers expose a solid-color option directly.",
     ],
+    shots: [{ label: "Wallpaper & style" }],
   },
 ];
 

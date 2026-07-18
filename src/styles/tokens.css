@@ -18,3 +18,25 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); }
 a { color: inherit; text-decoration: none; }
+
+/* Hover affordances — inline styles can't express :hover, so islands opt in
+   with these classes (Browse cards & swatches, Explorer swatches & rows). */
+.dc-card { transition: transform 0.14s ease, box-shadow 0.14s ease; }
+.dc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(0, 0, 0, 0.14); }
+
+.dc-swatch { transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.dc-swatch:hover {
+  transform: translateY(-3px);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.09), 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+.dc-rank-row { transition: background 0.12s ease; }
+.dc-rank-row:hover { background: #f1efec; }
+
+/* Setup Guide: an expanded card spans the full grid width and lays its steps
+   beside the full-guide article + screenshots (single column on narrow). */
+.dc-guide-card--expanded { grid-column: 1 / -1; }
+.dc-guide-content { display: grid; grid-template-columns: 1fr; gap: 22px; min-width: 0; margin-top: 16px; }
+@media (min-width: 760px) {
+  .dc-guide-card--expanded .dc-guide-content { grid-template-columns: 1.1fr 1fr; }
+}

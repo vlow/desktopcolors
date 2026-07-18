@@ -12,7 +12,7 @@ const items: BrowseItem[] = ordered.map((o) => ({
   altColors: o.colors.filter((c) => !c.isDefault).map((c) => ({ hex: c.hex, name: c.name })),
   href: `/os/${o.slug}`,
   listColors: [
-    { hex: o.defaultHex, name: o.colors.find((c) => c.isDefault)?.name ?? o.colors[0].name },
+    { hex: o.defaultHex, name: o.colors.find((c) => c.isDefault)?.name ?? o.colors[0].name, default: true },
     ...o.colors.filter((c) => !c.isDefault).map((c) => ({ hex: c.hex, name: c.name })),
   ],
 }));
