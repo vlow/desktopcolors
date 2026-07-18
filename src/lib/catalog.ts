@@ -1,5 +1,5 @@
 import {
-  hexToRgb, hexToHsl, onColor, hueFamily, tone, shade, formatScore,
+  hexToRgb, hexToHsl, hexToCmyk, onColor, hueFamily, tone, shade, formatScore,
   type FamilyKey, type ToneKey, type ShadeKey,
 } from "./color";
 import {
@@ -16,6 +16,7 @@ export interface ColorView {
   isDefault: boolean;
   rgb: string;
   hsl: string;
+  cmyk: string;
   onColor: string;
   family: FamilyKey;
   tone: ToneKey;
@@ -66,11 +67,13 @@ function toColorView(hex: string, name: string, index: string, note: string, isD
   const key = hex.toLowerCase();
   const [r, g, b] = hexToRgb(key);
   const [h, s, l] = hexToHsl(key);
+  const [c, m, y, kk] = hexToCmyk(key);
   const score = colorScore(scores, key);
   return {
     hex: key, name, index, note, isDefault,
     rgb: `${r}, ${g}, ${b}`,
     hsl: `${h}° ${s}% ${l}%`,
+    cmyk: `${c}% ${m}% ${y}% ${kk}%`,
     onColor: onColor(key),
     family: hueFamily(h, s),
     tone: tone(h, s, l),

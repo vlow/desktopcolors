@@ -1,4 +1,4 @@
-import { RAL_CLASSIC, type RalColor } from "./ral";
+import { RAL_CLASSIC, RAL_DESIGN_PLUS, type RalColor } from "./ral";
 
 export type FamilyKey =
   | "red" | "orange" | "yellow" | "green" | "teal"
@@ -32,6 +32,22 @@ export function rgbToHsl(r: number, g: number, b: number): [number, number, numb
 export function hexToHsl(hex: string): [number, number, number] {
   const [r, g, b] = hexToRgb(hex);
   return rgbToHsl(r, g, b);
+}
+
+// Naive RGB -> CMYK (no ICC profile), integer percentages 0–100.
+export function rgbToCmyk(r: number, g: number, b: number): [number, number, number, number] {
+  const rr = r / 255, gg = g / 255, bb = b / 255;
+  const k = 1 - Math.max(rr, gg, bb);
+  if (k === 1) return [0, 0, 0, 100]; // pure black — avoid divide-by-zero
+  const c = (1 - rr - k) / (1 - k);
+  const m = (1 - gg - k) / (1 - k);
+  const y = (1 - bb - k) / (1 - k);
+  return [Math.round(c * 100), Math.round(m * 100), Math.round(y * 100), Math.round(k * 100)];
+}
+
+export function hexToCmyk(hex: string): [number, number, number, number] {
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToCmyk(r, g, b);
 }
 
 export function onColor(hex: string): "#1c1917" | "#ffffff" {
@@ -94,15 +110,19 @@ export function shade(l: number): ShadeKey {
   return "pale";
 }
 
-export function closestRal(hex: string): RalColor {
+export function closestRal(hex: string, palette: RalColor[] = RAL_CLASSIC): RalColor {
   const target = hexToOklab(hex);
-  let best = RAL_CLASSIC[0];
+  let best = palette[0];
   let bestD = Infinity;
-  for (const ral of RAL_CLASSIC) {
+  for (const ral of palette) {
     const d = oklabDistance(target, hexToOklab(ral.hex));
     if (d < bestD) { bestD = d; best = ral; }
   }
   return best;
+}
+
+export function closestRalDesign(hex: string): RalColor {
+  return closestRal(hex, RAL_DESIGN_PLUS);
 }
 
 export function formatScore(points: number): string {

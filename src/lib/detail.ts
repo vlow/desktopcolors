@@ -1,4 +1,4 @@
-import { closestRal, onColor } from "./color";
+import { closestRal, closestRalDesign, onColor } from "./color";
 import {
   similarColors, eraPeers, firstKnownUse,
   type OsEntry, type SimilarColor, type EraPeer, type FirstUse,
@@ -15,6 +15,7 @@ export interface SimilarView {
 
 export interface DetailColor extends ColorView {
   ral: RalMatch;
+  ralDesign: RalMatch;
   similar: SimilarView[];
   firstUse: FirstUse & { self: boolean; href: string };
 }
@@ -45,6 +46,7 @@ export function buildOsDetail(entries: OsEntry[], catalog: Catalog, slug: string
 
   const colors: DetailColor[] = os.colors.map((c: ColorView) => {
     const ral = closestRal(c.hex);
+    const ralDesign = closestRalDesign(c.hex);
     const similar = dedupeSimilarByHex(similarColors(c.hex, entries, slug, 24))
       .slice(0, 6)
       .map((s): SimilarView => ({
@@ -55,6 +57,7 @@ export function buildOsDetail(entries: OsEntry[], catalog: Catalog, slug: string
     return {
       ...c,
       ral: { code: ral.code, name: ral.name, hex: ral.hex },
+      ralDesign: { code: ralDesign.code, name: ralDesign.name, hex: ralDesign.hex },
       similar,
       firstUse: { ...fu, self: fu.slug === slug, href: `/os/${fu.slug}` },
     };

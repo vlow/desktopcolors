@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { RAL_CLASSIC } from "./ral";
+import { RAL_CLASSIC, RAL_DESIGN_PLUS } from "./ral";
 
 describe("RAL_CLASSIC dataset", () => {
   it("has the full classic set", () => {
@@ -22,5 +22,27 @@ describe("RAL_CLASSIC dataset", () => {
     expect(by("RAL 5015")?.hex).toBe("#007caf");
     expect(by("RAL 6027")?.hex).toBe("#7ebab5");
     expect(by("RAL 1023")?.hex).toBe("#f7b500");
+  });
+});
+
+describe("RAL_DESIGN_PLUS dataset", () => {
+  it("has the full Design System+ set", () => {
+    // The Wikipedia "RAL Design System+" table currently lists 1825 entries.
+    expect(RAL_DESIGN_PLUS.length).toBe(1825);
+  });
+
+  it("every entry is well-formed", () => {
+    for (const r of RAL_DESIGN_PLUS) {
+      expect(r.code).toMatch(/^RAL \d{3} \d{2} \d{2}$/);
+      expect(r.hex).toMatch(/^#[0-9a-f]{6}$/);
+      expect(r.name.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("matches known anchor colors", () => {
+    const by = (code: string) => RAL_DESIGN_PLUS.find((r) => r.code === code);
+    expect(by("RAL 000 15 00")?.name).toBe("Ink Black");
+    expect(by("RAL 000 15 00")?.hex).toBe("#212122");
+    expect(by("RAL 360 93 05")?.name).toBe("Arrowhead White");
   });
 });

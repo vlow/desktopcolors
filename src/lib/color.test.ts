@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   hexToRgb, rgbToHsl, hexToHsl, onColor, rgbDistance,
-  hexToOklab, oklabDistance, hueFamily, tone, shade, closestRal, formatScore,
+  hexToOklab, oklabDistance, hueFamily, tone, shade, closestRal, closestRalDesign,
+  rgbToCmyk, hexToCmyk, formatScore,
 } from "./color";
 
 describe("hexToRgb", () => {
@@ -100,6 +101,33 @@ describe("closestRal", () => {
   });
   it("matches a near-traffic-yellow to RAL 1023", () => {
     expect(closestRal("#f7b400").code).toBe("RAL 1023");
+  });
+});
+
+describe("rgbToCmyk / hexToCmyk", () => {
+  it("returns pure K for black without dividing by zero", () => {
+    expect(rgbToCmyk(0, 0, 0)).toEqual([0, 0, 0, 100]);
+    expect(hexToCmyk("#000000")).toEqual([0, 0, 0, 100]);
+  });
+  it("returns all zeros for white", () => {
+    expect(hexToCmyk("#ffffff")).toEqual([0, 0, 0, 0]);
+  });
+  it("converts a pure primary (red)", () => {
+    expect(rgbToCmyk(255, 0, 0)).toEqual([0, 100, 100, 0]);
+  });
+  it("converts teal (#008080)", () => {
+    expect(hexToCmyk("#008080")).toEqual([100, 0, 0, 50]);
+  });
+});
+
+describe("closestRalDesign", () => {
+  it("matches a near-black to a dark RAL Design+ color", () => {
+    const m = closestRalDesign("#212122");
+    expect(m.code).toBe("RAL 000 15 00");
+    expect(m.name).toBe("Ink Black");
+  });
+  it("returns a valid RAL Design+ code for an arbitrary color", () => {
+    expect(closestRalDesign("#008080").code).toMatch(/^RAL \d{3} \d{2} \d{2}$/);
   });
 });
 

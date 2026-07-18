@@ -8,7 +8,7 @@ import { colorPath } from "../lib/links";
 
 interface Props { view: OsDetailView; initialHex?: string | null }
 
-type CopyKey = "hex" | "rgb" | "hsl" | "ral";
+type CopyKey = "hex" | "rgb" | "hsl" | "cmyk" | "ral" | "ralDesign";
 
 export function OsDetail({ view, initialHex }: Props) {
   const { os, colors, eraPeers } = view;
@@ -132,7 +132,9 @@ export function OsDetail({ view, initialHex }: Props) {
             {copyRow("hex", "HEX", c.hex, c.hex)}
             {copyRow("rgb", "RGB", c.rgb, `rgb(${c.rgb})`)}
             {copyRow("hsl", "HSL", c.hsl, c.hsl)}
-            {copyRow("ral", "Closest RAL", `${c.ral.code} · ${c.ral.name}`, `${c.ral.code} · ${c.ral.name}`, c.ral.hex)}
+            {copyRow("cmyk", "CMYK", c.cmyk, `cmyk(${c.cmyk.replace(/ /g, ", ")})`)}
+            {copyRow("ral", "Closest RAL Classic", `${c.ral.code} · ${c.ral.name}`, `${c.ral.code} · ${c.ral.name}`, c.ral.hex)}
+            {copyRow("ralDesign", "Closest RAL Design+", `${c.ralDesign.code} · ${c.ralDesign.name}`, `${c.ralDesign.code} · ${c.ralDesign.name}`, c.ralDesign.hex)}
           </div>
         </div>
       </div>
