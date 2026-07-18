@@ -31,6 +31,10 @@ Three parts, designed so the site is fully static and the only runtime backend i
 3. **nginx** serves the static files and reverse-proxies `/api/*` to the localhost counter, with
    IP-anonymized access logs.
 
+For a module-by-module map of each tier — packages, responsibilities, key interfaces, and where a
+given change belongs — see **[`docs/architecture-frontend.md`](docs/architecture-frontend.md)** (the
+static site) and **[`docs/architecture-edge.md`](docs/architecture-edge.md)** (the counter service).
+
 **Data flow.** Popularity is *written* live (the browser fires a fire-and-forget `sendBeacon` to
 `/api/event`) but *read* only at build time: a scheduled rebuild runs `counter dump` → `scores.json` →
 `astro build` (which bakes the scores and ordering into the HTML) → an **atomic symlink swap** into the
