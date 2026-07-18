@@ -77,12 +77,22 @@ export function OsDetail({ view, initialHex }: Props) {
       </div>
 
       <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: stretch; min-height: 372px;">
-        <div style="position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--field-border); box-shadow: 0 10px 28px rgba(0,0,0,0.12); min-height: 340px;">
-          <DesktopPreview hex={c.hex} onColor={c.onColor} style={os.desktopStyle} />
-          <button onClick={() => setFull(true)} style="position: absolute; top: 12px; right: 12px; z-index: 2; cursor: pointer; background: rgba(255,255,255,0.92); border: none; border-radius: 9px; padding: 8px 12px; font: 500 12px var(--font-ui);">⤢ Expand</button>
+        <div style="border-radius: 14px; overflow: hidden; border: 1px solid var(--field-border); box-shadow: 0 10px 28px rgba(0,0,0,0.12); background: var(--panel); display: flex; flex-direction: column; min-height: 340px;">
+          <div style="height: 28px; background: #f0eeec; border-bottom: 1px solid var(--field-border); display: flex; align-items: center; gap: 9px; padding: 0 12px; flex: none;">
+            <span style="width: 13px; height: 10px; border-radius: 2px; background: #cbc7c1;" />
+            <span style="font: 500 11px var(--font-ui); color: #78716c;">Preview</span>
+            <span style="margin-left: auto; font: 400 11px var(--font-mono); color: var(--faint);">{c.hex}</span>
+          </div>
+          <div style="position: relative; flex: 1; min-height: 0;">
+            <DesktopPreview hex={c.hex} onColor={c.onColor} style={os.desktopStyle} />
+            <button onClick={() => setFull(true)} style="position: absolute; top: 12px; right: 12px; z-index: 2; cursor: pointer; background: rgba(255,255,255,0.92); border: none; border-radius: 9px; padding: 8px 12px; font: 500 12px var(--font-ui);">⤢ Expand</button>
+          </div>
         </div>
         <div style="border: 1px solid var(--card-border); border-radius: 14px; background: var(--panel); overflow: hidden; display: flex; flex-direction: column;">
-          <div style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font: 500 14px var(--font-ui);">All colors <span style="font: 400 11px var(--font-mono); color: var(--faint);">· {os.colorCount}</span></div>
+          <div style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+            <span style="font: 500 14px var(--font-ui);">All colors</span>
+            <span style="font: 400 11px var(--font-mono); color: var(--faint);">{os.colorCount} · click to preview</span>
+          </div>
           <div style="flex: 1; overflow-y: auto; padding: 8px; max-height: 320px;">
             {colors.map((col, i) => (
               <div key={col.hex} onClick={() => setSel(i)} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "oklch(0.96 0.03 255)" : "transparent"};`}>
@@ -128,7 +138,10 @@ export function OsDetail({ view, initialHex }: Props) {
       </div>
 
       <div style="border-top: 1px solid var(--hairline); margin-top: 34px; padding-top: 26px;">
-        <h2 style="font: 500 20px var(--font-ui); margin: 0 0 18px;">Similar colors elsewhere</h2>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 18px;">
+          <h2 style="font: 500 20px var(--font-ui); margin: 0;">Similar colors elsewhere</h2>
+          <span style="font: 400 12px var(--font-mono); color: var(--faint);">closest to {c.name} · {c.hex}</span>
+        </div>
         {c.similar.length === 0 ? (
           <div style="font: 400 13px var(--font-mono); color: var(--faint);">No close matches on other platforms.</div>
         ) : (
@@ -150,7 +163,10 @@ export function OsDetail({ view, initialHex }: Props) {
       </div>
 
       <div style="border-top: 1px solid var(--hairline); margin-top: 34px; padding-top: 26px;">
-        <h2 style="font: 500 20px var(--font-ui); margin: 0 0 18px;">Colors of the same era</h2>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 18px;">
+          <h2 style="font: 500 20px var(--font-ui); margin: 0;">Colors of the same era</h2>
+          <span style="font: 400 12px var(--font-mono); color: var(--faint);">platforms released around {os.year} · popular defaults</span>
+        </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;">
           {eraPeers.map((e) => (
             <a key={e.slug} href={e.href} style="border: 1px solid var(--card-border); border-radius: 13px; overflow: hidden; background: var(--panel); display: block;">

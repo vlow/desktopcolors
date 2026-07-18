@@ -89,4 +89,26 @@ describe("OsDetail", () => {
     expect(era).toBeTruthy();
     expect(screen.getByText("CDE")).toBeTruthy();
   });
+
+  it("labels the preview header with a name and the selected hex", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.getByText("Preview")).toBeTruthy();
+    // header shows the selected color's hex (teal default)
+    expect(screen.getAllByText("#008080").length).toBeGreaterThan(0);
+  });
+
+  it("labels the All colors list with a click-to-preview hint", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.getByText(/click to preview/i)).toBeTruthy();
+  });
+
+  it("labels the Similar colors section with what it lists", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.getByText("closest to Teal · #008080")).toBeTruthy();
+  });
+
+  it("labels the Same era section with what it lists", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.getByText("platforms released around 1995 · popular defaults")).toBeTruthy();
+  });
 });

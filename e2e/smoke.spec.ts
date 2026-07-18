@@ -59,7 +59,7 @@ test("a per-color page selects that color from the first paint, not the default"
   // The selected-color panel reflects Navy, and the DEFAULT badge (shown only when
   // the default color is selected) is absent.
   await expect(page.getByText("0, 0, 128")).toBeVisible(); // navy RGB
-  await expect(page.getByText("DEFAULT")).toHaveCount(0);
+  await expect(page.getByText("DEFAULT", { exact: true })).toHaveCount(0); // the badge, not "popular defaults"
 
   // Exactly one color is highlighted in the list, and it is Navy.
   const highlighted = page.locator("div[style*='oklch(0.96 0.03 255)']");
