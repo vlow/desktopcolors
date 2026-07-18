@@ -1,5 +1,5 @@
 import { useMemo, useState } from "preact/hooks";
-import type { DesktopStyle } from "../content/config";
+import type { DesktopStyle } from "../lib/desktopStyle";
 import type { FamilyKey, ShadeKey } from "../lib/color";
 import {
   groupIntoBands, rankColors, familyCounts, shadeCountsFor,

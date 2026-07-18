@@ -59,7 +59,7 @@ src/
 counter/                 # Go module: cmd (serve|dump) + internal/{scoring,store,ratelimit,server}
 deploy/                  # rebuild.sh, nginx conf, systemd units, SETUP.md (deployment runbook)
 e2e/                     # Playwright cross-stack smoke test
-docs/superpowers/        # design spec + the four implementation plans
+docs/                    # adding-a-preview-style.md guide; superpowers/ = design spec + implementation plans
 .github/workflows/ci.yml # CI: astro check + vitest + build, go vet + test, Playwright e2e
 ```
 
@@ -144,6 +144,15 @@ CI (`.github/workflows/ci.yml`) runs all of the above on every push/PR.
 2. `npm run build`. The Zod schema validates the file (a bad hex, missing field, >1 default, or dangling
    predecessor/successor **fails the build**), and the new platform automatically flows into Browse, the
    Explorer, similarity matches, and era sections — no other edits needed.
+
+## Adding a preview style
+
+`desktopStyle` picks the schematic desktop chrome (icons, taskbar, menu bar, …) drawn behind a color on the
+detail and fullscreen previews. To point a platform at an existing style, just set `"desktopStyle"` in its
+JSON. To add a **new** style, add its name to `DESKTOP_STYLES` (`src/lib/desktopStyle.ts`) and an entry to
+the type-checked `STYLE_CHROME` registry (`src/islands/DesktopPreview.tsx`) — a missing entry fails the
+build. See the full guide, written for humans and LLM agents, in
+**[`docs/adding-a-preview-style.md`](docs/adding-a-preview-style.md)**.
 
 ## Deploy
 

@@ -6,7 +6,7 @@ import {
   defaultColor, mergeColorsByHex, type OsEntry, type MergedColor,
 } from "./derive";
 import { colorScore, osScore, type Scores } from "./scores";
-import type { DesktopStyle } from "../content/config";
+import type { DesktopStyle } from "./desktopStyle";
 
 export interface ColorView {
   hex: string;

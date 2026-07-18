@@ -1,9 +1,9 @@
 import { defineCollection, z } from "astro:content";
+import { DESKTOP_STYLES } from "../lib/desktopStyle";
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "must be #rrggbb");
 
-const desktopStyle = z.enum(["win9x", "macos8", "kde", "cde", "amiga", "generic"]);
-export type DesktopStyle = z.infer<typeof desktopStyle>;
+const desktopStyle = z.enum(DESKTOP_STYLES);
 
 const osColor = z.object({
   hex,

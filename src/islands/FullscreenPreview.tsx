@@ -1,5 +1,5 @@
 import { useEffect } from "preact/hooks";
-import type { DesktopStyle } from "../content/config";
+import type { DesktopStyle } from "../lib/desktopStyle";
 import { DesktopPreview } from "./DesktopPreview";
 
 interface Props {

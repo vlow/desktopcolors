@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import { Explorer } from "../islands/Explorer";
 import { loadCatalog } from "../lib/loadCatalog";
 import { toExplorerColors } from "../lib/explorer";
-import type { DesktopStyle } from "../content/config";
+import type { DesktopStyle } from "../lib/desktopStyle";
 
 const catalog = await loadCatalog();
 const colors = toExplorerColors(catalog);
