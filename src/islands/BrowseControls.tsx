@@ -95,6 +95,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
           ><span style="font-size: 13px;">&#9635;</span> Cards</button>
           <span style="color: #d6d3d1;">|</span>
           <button
+            class="dc-list-toggle"
             onClick={() => setView("list")}
             style={`cursor: pointer; border: none; background: none; padding: 0; font: 500 15px var(--font-ui); color: ${view === "list" ? "var(--ink)" : "var(--faint)"}; ${underline(view === "list")}`}
           ><span style="font-size: 13px;">&#9776;</span> List</button>
@@ -116,6 +117,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
             );
           })}
         </div>
+        <div class="dc-list-note" style="font: 400 12px var(--font-mono); color: var(--faint); margin-top: 10px;">List view needs a wider screen</div>
       </div>
 
       {shown.length === 0 ? (
@@ -152,7 +154,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
       ) : (
         <main style="padding: 6px 48px 80px;">
           {shown.map((it) => (
-            <div key={it.slug} style="display: grid; grid-template-columns: 230px 1fr; gap: 32px; padding: 26px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
+            <div key={it.slug} class="dc-browse-list-row" style="display: grid; grid-template-columns: 230px 1fr; gap: 32px; padding: 26px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
               <div>
                 <a href={it.href} data-testid="os-name" style="font: 500 19px var(--font-ui);">{it.name} ↗</a>
                 <div style="font: 400 12px var(--font-mono); color: var(--faint); margin-top: 6px;">{it.year} · {it.family} · {it.colorCount} colors</div>

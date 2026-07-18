@@ -46,8 +46,9 @@ export function DownloadSheet({ osSlug, color, onClose, onDownload = downloadWal
   const stop = (e: Event) => e.stopPropagation();
 
   return (
-    <div onClick={onClose} style="position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; display: flex; align-items: center; justify-content: center;">
-      <div onClick={stop} style="width: 100%; max-width: 460px; max-height: 92vh; overflow-y: auto; background: var(--bg); border-radius: 18px; padding: 18px 20px 22px; box-shadow: 0 14px 40px rgba(0,0,0,0.25);">
+    <div onClick={onClose} class="dc-sheet-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; display: flex; align-items: center; justify-content: center;">
+      <div onClick={stop} class="dc-sheet" style="width: 100%; max-width: 460px; max-height: 92vh; overflow-y: auto; background: var(--bg); border-radius: 18px; padding: 18px 20px 22px; box-shadow: 0 14px 40px rgba(0,0,0,0.25);">
+        <div class="dc-sheet-handle" style="width: 44px; height: 5px; border-radius: 3px; background: #d6d3d1; margin: 0 auto 12px;" />
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
           <div style="display: flex; align-items: center; gap: 10px;">
             <div style={`width: 34px; height: 34px; border-radius: 8px; background-color: ${color.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />

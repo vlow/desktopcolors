@@ -38,7 +38,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
   const toggleFamily = (k: FamilyKey) => { setFamily((f) => f === k ? null : k); setShade(null); };
 
   return (
-    <div style="max-width: 1180px; margin: 0 auto; padding: 26px 32px 56px;">
+    <div class="dc-explorer" style="max-width: 1180px; margin: 0 auto; padding: 26px 32px 56px;">
       <h1 style="font: 700 32px var(--font-ui); letter-spacing: -0.8px; margin: 0;">Color Explorer</h1>
       <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 8px 0 0;">Group by hue or tone to browse, or ungroup to rank colors by how often people download and copy them.</p>
 
@@ -95,7 +95,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
       {group !== "flat" ? (
         <div style="margin-top: 18px;">
           {bands.map((b) => (
-            <div key={b.key} style="display: grid; grid-template-columns: 190px 1fr; gap: 28px; padding: 22px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
+            <div key={b.key} class="dc-explorer-band" style="display: grid; grid-template-columns: 190px 1fr; gap: 28px; padding: 22px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
               <div>
                 <div style="display: inline-flex; align-items: center; gap: 9px;">
                   <span style={`width: 20px; height: 20px; border-radius: 6px; background-color: ${b.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
@@ -125,16 +125,16 @@ export function Explorer({ colors, styleBySlug }: Props) {
           {ranking.map((c, i) => (
             <div key={c.hex} data-testid="rank-row" class="dc-rank-row" style="display: grid; grid-template-columns: 40px 56px 1fr 220px 84px; gap: 16px; align-items: center; padding: 10px; border-radius: 12px;">
               <a href={c.href} style="font: 600 20px var(--font-mono); color: #cbc7c2; text-align: right;">{c.rank}</a>
-              <a href={c.href} style={`display: block; height: 56px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);`} />
+              <a href={c.href} class="dc-rank-swatch" style={`display: block; height: 56px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);`} />
               <a href={c.href}>
                 <span style="display: block; font: 500 15px var(--font-ui);">{c.name}</span>
                 <span style="display: block; font: 400 12px var(--font-mono); color: var(--faint);">{c.hex} · {c.yearRange}</span>
               </a>
-              <span style="display: flex; align-items: center; gap: 10px;">
+              <span class="dc-rank-bar" style="display: flex; align-items: center; gap: 10px;">
                 <span style="flex: 1; height: 8px; border-radius: 999px; background: var(--card-border); overflow: hidden;"><span style={`display: block; height: 100%; width: ${c.pct}%; background: var(--accent);`} /></span>
                 <span style="flex: none; min-width: 52px; text-align: right; font: 500 12px var(--font-mono); color: var(--muted);">{c.scoreLabel}</span>
               </span>
-              <button onClick={() => openPv(ranking, i)} style="cursor: pointer; border: none; background: none; font: 500 12px var(--font-ui); color: var(--accent-strong); text-align: right;">⤢ Preview</button>
+              <button class="dc-rank-pv" onClick={() => openPv(ranking, i)} aria-label="Open fullscreen preview" style="cursor: pointer; border: none; background: none; font: 500 12px var(--font-ui); color: var(--accent-strong); text-align: right;">⤢<span class="dc-rank-pv-label"> Preview</span></button>
             </div>
           ))}
         </div>

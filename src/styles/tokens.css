@@ -40,3 +40,60 @@ a { color: inherit; text-decoration: none; }
 @media (min-width: 760px) {
   .dc-guide-card--expanded .dc-guide-content { grid-template-columns: 1.1fr 1fr; }
 }
+
+/* ===========================================================================
+   Mobile layout parity (< 760px). Islands are Preact .tsx with no scoped
+   <style>, so their responsive rules live here and hook onto class names.
+   Desktop styling stays inline on the elements; these are narrow overrides,
+   so they use !important to win over the inline `style` attribute.
+   =========================================================================== */
+
+/* Browse — list view is a wide-screen affordance. Below 760px the List toggle
+   is greyed and inert, a note explains why, and (as a safety net for a resize
+   from a wide list view) the list rows collapse to a single column. */
+.dc-list-note { display: none; }
+@media (max-width: 759.98px) {
+  .dc-list-toggle { pointer-events: none; color: #cbc7c1 !important; }
+  .dc-list-note { display: block; }
+  .dc-browse-list-row { grid-template-columns: 1fr !important; gap: 16px !important; }
+}
+
+/* OS Detail — stack the preview over the color list, drop to a single column
+   of values/details, shrink the title/padding, and make Download full-width. */
+@media (max-width: 759.98px) {
+  .dc-detail { padding-left: 18px !important; padding-right: 18px !important; }
+  .dc-detail h1 { font-size: 24px !important; }
+  .dc-detail-hero { grid-template-columns: 1fr !important; min-height: 0 !important; }
+  .dc-detail-meta { grid-template-columns: 1fr !important; }
+  .dc-detail-selrow { flex-wrap: wrap; }
+  .dc-detail-dl { flex: 1 1 100%; text-align: center; margin-top: 4px; }
+}
+
+/* Color Explorer — compact header, single-column hue/tone bands, and a
+   two-row leaderboard: rank · swatch · name · icon on top, the score bar
+   spanning underneath. The preview button collapses to its icon. */
+.dc-rank-pv-label { display: inline; }
+@media (max-width: 759.98px) {
+  .dc-explorer { padding: 20px 16px 48px !important; }
+  .dc-explorer h1 { font-size: 24px !important; }
+  .dc-explorer-band { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .dc-rank-row {
+    grid-template-columns: 28px 44px 1fr 30px !important;
+    grid-template-rows: auto auto;
+    column-gap: 12px !important;
+    row-gap: 6px;
+  }
+  .dc-rank-swatch { height: 44px !important; }
+  .dc-rank-pv { grid-column: 4; grid-row: 1; }
+  .dc-rank-pv-label { display: none; }
+  .dc-rank-bar { grid-column: 3 / -1; grid-row: 2; }
+}
+
+/* Download sheet — a centered modal on desktop becomes a bottom sheet on
+   mobile: bottom-anchored, full-width, top-rounded, with a grab handle. */
+.dc-sheet-handle { display: none; }
+@media (max-width: 759.98px) {
+  .dc-sheet-overlay { align-items: flex-end !important; }
+  .dc-sheet { max-width: 100% !important; border-radius: 22px 22px 0 0 !important; }
+  .dc-sheet-handle { display: block; }
+}

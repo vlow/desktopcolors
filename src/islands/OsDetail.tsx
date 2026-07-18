@@ -65,7 +65,7 @@ export function OsDetail({ view, initialHex }: Props) {
   );
 
   return (
-    <div style="max-width: 1180px; margin: 0 auto; padding: 18px 32px 56px;">
+    <div class="dc-detail" style="max-width: 1180px; margin: 0 auto; padding: 18px 32px 56px;">
       <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
       <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-top: 14px;">{os.family} · {os.year}</div>
       <h1 style="font: 700 36px var(--font-ui); letter-spacing: -0.8px; margin: 6px 0 8px;">{os.name}</h1>
@@ -76,7 +76,7 @@ export function OsDetail({ view, initialHex }: Props) {
         {os.successor && <a href={`/os/${os.successor.slug}`} style="border: 1px solid var(--card-border); border-radius: 9px; background: var(--panel); padding: 8px 13px; font: 500 13px var(--font-ui);">{os.successor.name} →</a>}
       </div>
 
-      <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: stretch; min-height: 372px;">
+      <div class="dc-detail-hero" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: stretch; min-height: 372px;">
         <div style="border-radius: 14px; overflow: hidden; border: 1px solid var(--field-border); box-shadow: 0 10px 28px rgba(0,0,0,0.12); background: var(--panel); display: flex; flex-direction: column; min-height: 340px;">
           <div style="height: 28px; background: #f0eeec; border-bottom: 1px solid var(--field-border); display: flex; align-items: center; gap: 9px; padding: 0 12px; flex: none;">
             <span style="width: 13px; height: 10px; border-radius: 2px; background: #cbc7c1;" />
@@ -109,7 +109,7 @@ export function OsDetail({ view, initialHex }: Props) {
       </div>
 
       <div style="border: 1px solid var(--card-border); border-radius: 12px; background: var(--panel); padding: 18px 20px; margin-top: 20px;">
-        <div style="display: flex; align-items: center; gap: 14px;">
+        <div class="dc-detail-selrow" style="display: flex; align-items: center; gap: 14px;">
           <div style={`width: 48px; height: 48px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
           <div style="flex: 1;">
             <div style="display: inline-flex; align-items: center; gap: 9px;">
@@ -118,10 +118,10 @@ export function OsDetail({ view, initialHex }: Props) {
             </div>
             <div style="font: 400 12px var(--font-mono); color: var(--muted); margin-top: 2px;">{c.note}</div>
           </div>
-          <button onClick={() => setSheet(true)} style="border: none; cursor: pointer; background: var(--ink); color: #fff; font: 500 13px var(--font-ui); padding: 11px 17px; border-radius: 10px;">↓ Download</button>
+          <button class="dc-detail-dl" onClick={() => setSheet(true)} style="border: none; cursor: pointer; background: var(--ink); color: #fff; font: 500 13px var(--font-ui); padding: 11px 17px; border-radius: 10px;">↓ Download</button>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
+        <div class="dc-detail-meta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
             <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">DETAILS</div>
             <div style="display: flex; justify-content: space-between; padding: 7px 14px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">Palette index</span><span style="font: 500 13px var(--font-mono);">{c.index}</span></div>
