@@ -31,12 +31,20 @@ describe("DesktopPreview", () => {
       const { container } = render(<DesktopPreview hex={HEX} onColor={onColor(HEX)} style={style} />);
       return [...container.querySelectorAll("[data-testid^='chrome-']")].map((el) => el.getAttribute("data-testid"));
     };
+    expect(chromeFor("modern")).toEqual(["chrome-desk-icons", "chrome-windows", "chrome-dock"]);
     expect(chromeFor("win9x")).toEqual(["chrome-icons", "chrome-taskbar"]);
     expect(chromeFor("generic")).toEqual(["chrome-icons"]); // icons, but no taskbar
     expect(chromeFor("macos8")).toEqual(["chrome-menubar"]);
     expect(chromeFor("amiga")).toEqual(["chrome-titlebar"]);
     expect(chromeFor("kde")).toEqual(["chrome-panel"]);
     expect(chromeFor("cde")).toEqual(["chrome-panel"]); // kde and cde share the panel
+  });
+
+  it("renders the modern default scene (windows + dock clock)", () => {
+    const { getByText, getAllByText } = render(<DesktopPreview hex={HEX} onColor={onColor(HEX)} style="modern" />);
+    expect(getByText("Documents")).toBeTruthy();
+    expect(getAllByText("Files").length).toBeGreaterThan(0); // icon label + back window
+    expect(getByText("10:42")).toBeTruthy(); // dock clock
   });
 
   it("colors icon labels with onColor for contrast on the wallpaper", () => {

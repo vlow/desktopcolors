@@ -9,6 +9,6 @@
  *
  * To add a preview style, see `docs/adding-a-preview-style.md`.
  */
-export const DESKTOP_STYLES = ["win9x", "macos8", "kde", "cde", "amiga", "generic"] as const;
+export const DESKTOP_STYLES = ["modern", "win9x", "macos8", "kde", "cde", "amiga", "generic"] as const;
 
 export type DesktopStyle = (typeof DESKTOP_STYLES)[number];

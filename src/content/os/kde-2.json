@@ -5,7 +5,7 @@
   "tagline": "The Konqueror era — deeper, more confident blues.",
   "description": "KDE 2 marked a major leap in polish and capability, with a desktop palette that moved from quiet teal toward deeper, more assured blues. It established KDE as a genuine contender in the desktop environment landscape.",
   "predecessor": "kde-1",
-  "desktopStyle": "kde",
+  "desktopStyle": "modern",
   "colors": [
     { "hex": "#5a7ea5", "name": "Blue", "note": "The Konqueror era — deeper, more confident blues.", "default": true },
     { "hex": "#47617e", "name": "Slate" },

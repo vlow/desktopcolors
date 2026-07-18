@@ -6,7 +6,7 @@
   "description": "The operating system that put a solid teal desktop in front of millions. Windows 95 let you pick any of the 16 VGA palette colors as your background — but teal was the face of the era.",
   "predecessor": "windows-3-1",
   "successor": "windows-98",
-  "desktopStyle": "win9x",
+  "desktopStyle": "modern",
   "colors": [
     { "hex": "#008080", "name": "Teal", "index": "3", "note": "The signature default background of Windows 95.", "default": true },
     { "hex": "#808080", "name": "Gray", "index": "8", "note": "A neutral, low-distraction desktop." },

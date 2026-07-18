@@ -131,7 +131,7 @@ CI (`.github/workflows/ci.yml`) runs all of the above on every push/PR.
 1. Drop a JSON file in `src/content/os/`, e.g. `beos.json`:
    ```json
    {
-     "name": "BeOS", "year": 1995, "family": "BeOS", "desktopStyle": "generic",
+     "name": "BeOS", "year": 1995, "family": "BeOS",
      "tagline": "…", "description": "…",
      "colors": [
        { "hex": "#33aabb", "name": "Cyan", "note": "…", "default": true },
@@ -140,7 +140,8 @@ CI (`.github/workflows/ci.yml`) runs all of the above on every push/PR.
    }
    ```
    (`slug` defaults to the filename; `predecessor`/`successor` are optional slug refs; `desktopStyle` is
-   one of `win9x | macos8 | kde | cde | amiga | generic`.)
+   optional and defaults to `modern` — the platform-neutral default preview — or one of
+   `win9x | macos8 | kde | cde | amiga | generic`, see [Adding a preview style](#adding-a-preview-style).)
 2. `npm run build`. The Zod schema validates the file (a bad hex, missing field, >1 default, or dangling
    predecessor/successor **fails the build**), and the new platform automatically flows into Browse, the
    Explorer, similarity matches, and era sections — no other edits needed.

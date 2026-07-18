@@ -44,15 +44,20 @@ src/content/os/<slug>.json  ──"desktopStyle"──▶  Zod schema (src/conte
 
 | `desktopStyle` | chrome it draws | modeled on |
 |----------------|-----------------|------------|
+| `modern`  | corner icons + two windows + segmented dock with a clock | platform-neutral default |
 | `win9x`   | desktop icons + Start taskbar | Windows 9x/2000/XP/NT |
 | `macos8`  | top menu bar (File/Edit/View) | Mac OS 8 |
 | `kde`     | bottom panel with launchers   | KDE |
 | `cde`     | bottom panel with launchers (same as `kde`) | CDE |
 | `amiga`   | top Workbench title bar       | Amiga Workbench |
-| `generic` | desktop icons only            | fallback / anything else |
+| `generic` | desktop icons only            | minimal fallback |
 
-`generic` is the default (`desktopStyle` is optional in the schema) and the runtime
-fallback if a style somehow has no chrome.
+`modern` is the **default**: `desktopStyle` is optional in the schema and defaults to
+`modern`, and every shipped platform uses it. It's the polished, platform-neutral
+scene ported from the source design; its parts (`DeskIcons`, `WindowStack`, `Dock`)
+size in `cqw` so they scale with the preview box, and derive their surface tints from
+`onColor`. `generic` remains the minimal icons-only style and the runtime fallback if
+a style somehow has no chrome.
 
 ## Task A — use an existing style
 
@@ -127,7 +132,10 @@ point is that it stays legible on **any** background:
   `rgba(0,0,0,x)` for dark ones. Never use an opaque color that could clash with the
   wallpaper.
 - **Absolute-positioned, pinned to an edge.** Bars use `position: absolute; left: 0;
-  right: 0;` plus `top: 0` or `bottom: 0`, with a fixed pixel height.
+  right: 0;` plus `top: 0` or `bottom: 0`. Size in `px` for fixed chrome, or in `cqw`
+  (container-query width units) to scale with the preview box — the `DesktopPreview`
+  root sets `container-type: inline-size`, so `1cqw` = 1% of the preview width (the
+  `modern` style uses `cqw`).
 - **Text on a chrome surface** is hardcoded dark ink `#1c1917` (it sits on a light
   overlay). **Text drawn directly on the wallpaper** (like icon labels) must use the
   `onColor` prop for contrast.

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import { z } from "zod";
+import { DESKTOP_STYLES } from "../lib/desktopStyle";
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const osColor = z.object({
@@ -19,7 +20,7 @@ const osSchema = z.object({
   description: z.string().min(1),
   predecessor: z.string().optional(),
   successor: z.string().optional(),
-  desktopStyle: z.enum(["win9x", "macos8", "kde", "cde", "amiga", "generic"]).optional(),
+  desktopStyle: z.enum(DESKTOP_STYLES).optional(),
   colors: z.array(osColor).min(1),
 });
 

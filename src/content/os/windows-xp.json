@@ -5,7 +5,7 @@
   "tagline": "The solid blue that sat quietly behind Bliss.",
   "description": "Windows XP's Luna theme introduced themed desktops, but the solid-color fallbacks — deep blue, neutral silver, earthy olive — anchored millions of offices and homes for over a decade.",
   "predecessor": "windows-2000",
-  "desktopStyle": "win9x",
+  "desktopStyle": "modern",
   "colors": [
     { "hex": "#004e98", "name": "XP Blue", "note": "The solid blue that sat quietly behind Bliss.", "default": true },
     { "hex": "#ece9d8", "name": "Silver", "note": "Luna neutral" },

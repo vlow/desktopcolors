@@ -4,7 +4,7 @@
   "family": "BeOS",
   "tagline": "The Be Operating System's bright cyan desktop.",
   "description": "BeOS arrived with a confident bright cyan desktop that matched its multimedia-first ambitions. Sleek and modern for its era, it attracted a devoted following despite never reaching the mainstream.",
-  "desktopStyle": "generic",
+  "desktopStyle": "modern",
   "colors": [
     { "hex": "#33aabb", "name": "Cyan", "note": "The Be Operating System's bright cyan desktop.", "default": true },
     { "hex": "#dedede", "name": "Light Gray" }
