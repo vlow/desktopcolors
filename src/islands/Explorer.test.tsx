@@ -42,6 +42,16 @@ describe("Explorer", () => {
     expect(names).not.toContain("Reds");
   });
 
+  it("single-selects color types — picking another replaces the first", () => {
+    render(<Explorer colors={colors} styleBySlug={styleBySlug} />);
+    fireEvent.click(screen.getByRole("button", { name: /^Cool/ }));
+    let names = screen.getAllByTestId("band-name").map((n) => n.textContent);
+    expect(names).toEqual(["Teals"]); // cool → teal only
+    fireEvent.click(screen.getByRole("button", { name: /^Warm/ }));
+    names = screen.getAllByTestId("band-name").map((n) => n.textContent);
+    expect(names).toEqual(["Reds"]); // warm replaces cool → red only, not additive
+  });
+
   it("shows contextual/total counts and disables zero-in-context type pills", () => {
     render(<Explorer colors={colors} styleBySlug={styleBySlug} />);
     // No filter yet: Cool's contextual count equals its total (1 teal), so a single number.
