@@ -76,7 +76,7 @@ a { color: inherit; text-decoration: none; }
   .dc-detail-dl { flex: 1 1 100%; text-align: center; margin-top: 4px; }
 }
 
-/* Color Explorer — compact header, single-column hue/tone bands, and a
+/* Color Explorer — compact header, single-column hue bands, and a
    two-row leaderboard: rank · swatch · name · icon on top, the score bar
    spanning underneath. The preview button collapses to its icon. */
 .dc-rank-pv-label { display: inline; }
