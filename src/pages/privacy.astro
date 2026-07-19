@@ -1,0 +1,78 @@
+---
+import Base from "../layouts/Base.astro";
+
+// The "last updated" date is the date this notice last changed — keep it static
+// and bump it by hand when the wording changes (not the build date).
+const updated = "2026-07-19";
+const email = "hello@desktopcolors.com";
+const clauses = [
+  {
+    title: "What we collect", dot: "#008080",
+    plain: "Barely anything. You can browse and download without an account.",
+    formal: "We do not require accounts and do not ask for personal information to browse the archive or download wallpapers.",
+  },
+  {
+    title: "Analytics", dot: "#3a6ea5",
+    plain: "Anonymous, aggregate counts only — no cross-site tracking.",
+    formal: "We use privacy-respecting, cookieless analytics that record aggregate page views without tracking individuals across sites.",
+  },
+  {
+    title: "Cookies", dot: "#808000",
+    plain: "One local preference, for your chosen view and last color.",
+    formal: "A single local preference stores your chosen view and most recent color. No third-party or advertising cookies are set.",
+  },
+  {
+    title: "Your rights", dot: "#800080",
+    plain: "There's essentially nothing to delete — but ask us anytime.",
+    formal: "As we hold no personal records, there is little to export or erase. You may contact us at any time with questions under applicable law (GDPR/CCPA).",
+  },
+];
+---
+<Base title="Privacy Notice — desktopcolors.com" description="What desktopcolors.com does and doesn't collect — the short version: barely anything.">
+  <!-- HERO -->
+  <div class="dc-page-x" style="padding-block: 46px 30px; border-bottom: 1px solid var(--hairline);">
+    <div style="max-width: 720px;">
+      <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.8px;">PRIVACY NOTICE · UPDATED {updated}</div>
+      <h1 style="font: 700 40px var(--font-ui); letter-spacing: -1px; margin: 10px 0 0; line-height: 1.08;">The short version: we barely collect a thing.</h1>
+      <p style="font-size: 17px; line-height: 1.6; color: var(--muted); margin: 16px 0 0; text-wrap: pretty;">The formal wording is on the left of each row. The plain-English version is on the right. Both say the same thing — read whichever you trust more.</p>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="dc-page-x" style="padding-block: 40px 20px; max-width: 900px;">
+    <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
+      {clauses.map((c, i) => (
+        <div class="dc-privacy-row" style={`display: grid; gap: 24px; padding: 26px 28px; border-top: ${i === 0 ? "none" : "1px solid #f0eeec"}; align-items: start;`}>
+          <div>
+            <div style="display: flex; align-items: center; gap: 11px;">
+              <span style={`width: 12px; height: 12px; border-radius: 4px; background-color: ${c.dot}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`}></span>
+              <div style="font: 500 17px var(--font-ui); color: var(--ink);">{c.title}</div>
+            </div>
+            <p style="font-size: 15px; line-height: 1.65; color: var(--muted); margin: 12px 0 0; max-width: 460px; text-wrap: pretty;">{c.formal}</p>
+          </div>
+          <div style={`background: #f6f7f7; border-left: 2px solid ${c.dot}; border-radius: 0 10px 10px 0; padding: 13px 16px;`}>
+            <div style="font: 600 9px var(--font-mono); color: #8a847c; letter-spacing: 1.2px;">PLAIN ENGLISH</div>
+            <div style="font: 400 14px var(--font-ui); line-height: 1.5; color: #44403c; margin-top: 5px;">{c.plain}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- CONTACT -->
+    <div style="margin-top: 22px; padding: 22px 24px; border: 1px dashed #cfcac4; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div>
+        <div style="font: 700 17px var(--font-ui); letter-spacing: -0.3px;">Questions about your data?</div>
+        <div style="font-size: 14px; color: #78716c; margin-top: 4px;">There's very little of it, but you can always ask.</div>
+      </div>
+      <a class="dc-privacy-contact" href={`mailto:${email}`} style="background: var(--ink); color: #fff; font: 500 14px var(--font-ui); padding: 12px 18px; border-radius: 10px;">{email}</a>
+    </div>
+  </div>
+  <div style="height: 40px;"></div>
+
+  <style>
+    .dc-privacy-row { grid-template-columns: 1fr; }
+    @media (min-width: 860px) { .dc-privacy-row { grid-template-columns: 1fr 300px; } }
+    .dc-privacy-contact { transition: background 0.12s ease; }
+    .dc-privacy-contact:hover { background: oklch(0.42 0.14 255); }
+  </style>
+</Base>
