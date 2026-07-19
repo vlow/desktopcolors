@@ -65,7 +65,7 @@ export function OsDetail({ view, initialHex }: Props) {
   );
 
   return (
-    <div class="dc-detail" style="max-width: 1180px; margin: 0 auto; padding: 18px 32px 56px;">
+    <div class="dc-detail dc-page-x" style="padding-block: 18px 56px;">
       <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
       <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-top: 14px;">{os.family} · {os.year}</div>
       <h1 style="font: 700 36px var(--font-ui); letter-spacing: -0.8px; margin: 6px 0 8px;">{os.name}</h1>

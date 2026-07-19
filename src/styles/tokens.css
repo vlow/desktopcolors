@@ -13,11 +13,18 @@
   --accent-strong: oklch(0.5 0.17 255);
   --font-ui: "Space Grotesk", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* Page-wide horizontal inset. Header, page content, and footer all use it
+     (via .dc-page-x) so they line up edge-to-edge. Change here to retune. */
+  --page-px: 48px;
 }
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); }
 a { color: inherit; text-decoration: none; }
+
+/* Shared page-wide horizontal inset (header, content, footer). Elements set
+   their own vertical padding via `padding-block`; this owns left/right only. */
+.dc-page-x { padding-inline: var(--page-px); }
 
 /* Hover affordances — inline styles can't express :hover, so islands opt in
    with these classes (Browse cards & swatches, Explorer swatches & rows). */

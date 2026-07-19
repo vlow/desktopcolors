@@ -38,7 +38,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
   const toggleFamily = (k: FamilyKey) => { setFamily((f) => f === k ? null : k); setShade(null); };
 
   return (
-    <div class="dc-explorer" style="max-width: 1180px; margin: 0 auto; padding: 26px 32px 56px;">
+    <div class="dc-explorer dc-page-x" style="padding-block: 26px 56px;">
       <h1 style="font: 700 32px var(--font-ui); letter-spacing: -0.8px; margin: 0;">Color Explorer</h1>
       <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 8px 0 0;">Group by hue or tone to browse, or ungroup to rank colors by how often people download and copy them.</p>
 

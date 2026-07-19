@@ -73,7 +73,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
 
   return (
     <div>
-      <div style="padding: 34px 48px 22px; border-bottom: 1px solid var(--hairline);">
+      <div class="dc-page-x" style="padding-block: 34px 22px; border-bottom: 1px solid var(--hairline);">
         <div style="font: 700 30px var(--font-ui); letter-spacing: -0.5px;">The desktop color archive</div>
         <div style="color: var(--muted); font-size: 15px; margin-top: 6px; max-width: 560px; line-height: 1.5;">
           Every solid desktop background color shipped by classic operating systems and desktop environments.
@@ -121,12 +121,12 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
       </div>
 
       {shown.length === 0 ? (
-        <div style="padding: 72px 48px; text-align: center; color: var(--muted);">
+        <div class="dc-page-x" style="padding-block: 72px; text-align: center; color: var(--muted);">
           <div style="font: 500 20px var(--font-ui); color: var(--ink);">No platforms or colors match &ldquo;{query}&rdquo;</div>
           <div style="font-size: 14px; margin-top: 8px;">Try a platform name, a color name like &ldquo;teal&rdquo;, or a hex value.</div>
         </div>
       ) : view === "card" ? (
-        <main style="padding: 32px 48px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+        <main class="dc-page-x" style="padding-block: 32px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
           {shown.map((it) => (
             <a key={it.slug} href={it.href} class="dc-card" style="border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; background: var(--panel); display: block;">
               <div style={`position: relative; height: 132px; background-color: ${it.defaultHex};`}>
@@ -152,7 +152,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
           ))}
         </main>
       ) : (
-        <main style="padding: 6px 48px 80px;">
+        <main class="dc-page-x" style="padding-block: 6px 80px;">
           {shown.map((it) => (
             <div key={it.slug} class="dc-browse-list-row" style="display: grid; grid-template-columns: 230px 1fr; gap: 32px; padding: 26px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
               <div>

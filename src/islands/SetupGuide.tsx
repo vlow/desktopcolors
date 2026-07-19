@@ -22,13 +22,13 @@ export function SetupGuide({ guides }: { guides: SetupGuideEntry[] }) {
 
   return (
     <div>
-      <div style="padding: 34px 32px 4px; max-width: 1180px; margin: 0 auto;">
+      <div class="dc-page-x" style="padding-block: 34px 4px;">
         <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SETUP GUIDE</div>
         <h1 style="font: 700 34px var(--font-ui); letter-spacing: -0.8px; margin: 8px 0;">Set a solid color on a modern OS</h1>
         <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 0;">Every hex on this site works as a plain desktop background today. Pick a color, copy its hex, then follow the steps for your system.</p>
       </div>
 
-      <div style="padding: 20px 32px 6px; max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <div class="dc-page-x" style="padding-block: 20px 6px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
         <label style="flex: 1; min-width: 240px; max-width: 460px; display: flex; align-items: center; gap: 11px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 12px; padding: 0 15px; height: 46px;">
           <span style="color: var(--faint); transform: rotate(-45deg); display: inline-block;">⌕</span>
           <input value={query} onInput={(e) => setQuery((e.target as HTMLInputElement).value)} placeholder="Search systems — Windows, macOS, GNOME, iOS…" style="border: none; outline: none; background: transparent; font: 400 14px var(--font-ui); color: var(--ink); width: 100%;" />
@@ -43,12 +43,12 @@ export function SetupGuide({ guides }: { guides: SetupGuideEntry[] }) {
       </div>
 
       {shown.length === 0 ? (
-        <div style="padding: 60px 32px; max-width: 1180px; margin: 0 auto; text-align: center; color: var(--muted);">
+        <div class="dc-page-x" style="padding-block: 60px; text-align: center; color: var(--muted);">
           <div style="font: 500 19px var(--font-ui); color: var(--ink);">No systems match your filters</div>
           <div style="font-size: 14px; margin-top: 6px;">Try a different search term or switch categories.</div>
         </div>
       ) : (
-        <div style="padding: 16px 32px 72px; max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; align-items: start;">
+        <div class="dc-page-x" style="padding-block: 16px 72px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; align-items: start;">
           {shown.map((g) => {
             const expanded = open === g.key;
             return (
