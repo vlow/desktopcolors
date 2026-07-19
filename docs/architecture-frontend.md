@@ -101,12 +101,13 @@ interface Catalog {
 ```
 
 Every color is enriched once, here, into a `ColorView` — rgb/hsl strings, readable
-`onColor` (text color), `family`/`tone`/`shade` classification, and merged-by-hex `score` +
-`scoreLabel`. The math behind those lives in the two pure helpers:
+`onColor` (text color), `family` (hue) classification, multi-label `types` (OKLCH-defined color
+types), and merged-by-hex `score` + `scoreLabel`. The math behind those lives in the two pure
+helpers:
 
-- **`color.ts`** — all color math: `hexToRgb`, `hexToHsl`, `hueFamily`, `tone`, `shade`,
-  `onColor`, `closestRal` (perceptual **OKLab** distance via `hexToOklab`/`oklabDistance`),
-  and `formatScore` (points → `< 1k` / `1.2k` style labels).
+- **`color.ts`** — all color math: `hexToRgb`, `hexToHsl`, `hueFamily`, `colorTypes` (multi-label
+  types in OKLCH), `onColor`, `closestRal` (perceptual **OKLab** distance via `hexToOklab`/
+  `oklabDistance`), and `formatScore` (points → `< 1k` / `1.2k` style labels).
 - **`derive.ts`** — cross-platform relationships over the raw entries:
   `mergeColorsByHex`, `similarColors`, `eraPeers`, `firstKnownUse`, `defaultColor`.
 
@@ -117,9 +118,9 @@ These take the `Catalog` and shape it for one page:
 - **`detail.ts`** → `buildOsDetail(entries, catalog, slug): OsDetailView` — assembles an OS
   detail page: each color with its closest RAL match, up to 6 similar colors elsewhere (with
   hrefs), "first known use", and same-era peers.
-- **`explorer.ts`** — the Color Explorer model: `toExplorerColors`, family/tone/shade
-  definitions (`FAMILY_DEFS`, `TONE_DEFS`, `SHADE_DEFS`), counting (`familyCounts`,
-  `shadeCountsFor`), banding (`groupIntoBands`), and `rankColors`.
+- **`explorer.ts`** — the Color Explorer model: `toExplorerColors`, family definitions
+  (`FAMILY_DEFS`), color-type definitions (`COLOR_TYPE_DEFS`), counting (`familyCounts`,
+  `typeCounts`), banding (`groupIntoBands`), and `rankColors`.
 
 ### Supporting pure modules
 
@@ -172,7 +173,7 @@ them.
 |----------------------|-----------------------------------------------------------------------|
 | `BrowseControls.tsx` | The Browse page: search, sort (Popular/Year/A–Z), family filter, cards |
 | `OsDetail.tsx`       | The OS detail page: color picker, copy, preview, opens `DownloadSheet` |
-| `Explorer.tsx`       | The Color Explorer: family/tone/shade filtering and banding           |
+| `Explorer.tsx`       | The Color Explorer: family + multi-label color-type filtering, grouped by hue or ungrouped |
 | `DesktopPreview.tsx` | Renders the schematic desktop chrome behind a color (see `STYLE_CHROME`) |
 | `FullscreenPreview.tsx` | Full-viewport preview overlay                                      |
 | `DownloadSheet.tsx`  | Resolution picker → generates + downloads a wallpaper                  |
@@ -213,7 +214,7 @@ missing entry fails the build. Adding a style is a two-file change with its own 
 |--------------------------------------------------------|--------------------------------------------------|
 | Add/edit a platform or its colors                      | `content/os/*.json` (validated by `content/config.ts`) |
 | Add a field to the OS schema                           | `content/config.ts`, then thread it through `lib/catalog.ts` → view models |
-| Change color math (family/tone/shade, RAL, contrast)   | `lib/color.ts`                                   |
+| Change color math (family, color types, RAL, contrast) | `lib/color.ts`                                   |
 | Change cross-platform relations (similar, era, merge)  | `lib/derive.ts`                                  |
 | Change what a color/OS view model contains             | `lib/catalog.ts` (`ColorView` / `OsView` / `MergedColorView`) |
 | Change the OS detail page's data                       | `lib/detail.ts` (`OsDetailView`)                 |

@@ -1,14 +1,14 @@
 import { useMemo, useState } from "preact/hooks";
 import type { DesktopStyle } from "../lib/desktopStyle";
-import type { FamilyKey, ShadeKey } from "../lib/color";
+import type { FamilyKey, ColorTypeKey } from "../lib/color";
 import {
-  groupIntoBands, rankColors, familyCounts, shadeCountsFor,
-  FAMILY_DEFS, SHADE_DEFS, type ExplorerColor,
+  groupIntoBands, rankColors, familyCounts, typeCounts,
+  FAMILY_DEFS, COLOR_TYPE_DEFS, type ExplorerColor,
 } from "../lib/explorer";
 import { FullscreenPreview } from "./FullscreenPreview";
 
 interface Props { colors: ExplorerColor[]; styleBySlug: Record<string, DesktopStyle> }
-type Group = "hue" | "tone" | "flat";
+type Group = "hue" | "flat";
 type Sort = "spectrum" | "pop";
 
 const seg = (active: boolean): string =>
@@ -18,36 +18,41 @@ export function Explorer({ colors, styleBySlug }: Props) {
   const [group, setGroup] = useState<Group>("hue");
   const [sort, setSort] = useState<Sort>("spectrum");
   const [family, setFamily] = useState<FamilyKey | null>(null);
-  const [shade, setShade] = useState<ShadeKey | null>(null);
+  const [types, setTypes] = useState<ColorTypeKey[]>([]);
   const [pv, setPv] = useState<{ list: ExplorerColor[]; idx: number } | null>(null);
 
   const counts = useMemo(() => familyCounts(colors), [colors]);
-  const shadeCounts = useMemo(() => family ? shadeCountsFor(colors, family) : null, [colors, family]);
+  const tCounts = useMemo(() => typeCounts(colors), [colors]);
 
   const bands = useMemo(
-    () => group === "flat" ? [] : groupIntoBands(colors, { group: group === "tone" ? "tone" : "hue", family, shade, sort }),
-    [colors, group, family, shade, sort]);
-  const ranking = useMemo(
-    () => group === "flat" ? rankColors(colors, { family, sort }) : [],
-    [colors, group, family, sort]);
+    () => group === "flat" ? [] : groupIntoBands(colors, { group: "hue", family, types, sort }),
+    [colors, group, family, types, sort]);
+  const ranking = useMemo(() => {
+    if (group !== "flat") return [];
+    const filtered = types.length === 0
+      ? colors
+      : colors.filter((c) => types.some((t) => c.types.includes(t)));
+    return rankColors(filtered, { family, sort });
+  }, [colors, group, family, types, sort]);
 
   const openPv = (list: ExplorerColor[], idx: number) => setPv({ list, idx });
   const stepPv = (d: number) => setPv((s) => s ? { ...s, idx: (s.idx + d + s.list.length) % s.list.length } : s);
   const cur = pv ? pv.list[pv.idx] : null;
 
-  const toggleFamily = (k: FamilyKey) => { setFamily((f) => f === k ? null : k); setShade(null); };
+  const toggleFamily = (k: FamilyKey) => setFamily((f) => f === k ? null : k);
+  const toggleType = (k: ColorTypeKey) =>
+    setTypes((ts) => ts.includes(k) ? ts.filter((t) => t !== k) : [...ts, k]);
 
   return (
     <div class="dc-explorer dc-page-x" style="padding-block: 26px 56px;">
       <h1 style="font: 700 32px var(--font-ui); letter-spacing: -0.8px; margin: 0;">Color Explorer</h1>
-      <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 8px 0 0;">Group by hue or tone to browse, or ungroup to rank colors by how often people download and copy them.</p>
+      <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 8px 0 0;">Group by hue to browse, filter by color type, or ungroup to rank colors by how often people download and copy them.</p>
 
       <div style="display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin-top: 20px;">
         <div style="display: flex; align-items: center; gap: 9px;">
           <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">GROUP</span>
           <div style="display: inline-flex; background: #efedea; border-radius: 999px; padding: 3px;">
-            <button style={seg(group === "hue")} onClick={() => { setGroup("hue"); setShade(null); }}>By hue</button>
-            <button style={seg(group === "tone")} onClick={() => { setGroup("tone"); setShade(null); }}>By tone</button>
+            <button style={seg(group === "hue")} onClick={() => setGroup("hue")}>By hue</button>
             <button style={seg(group === "flat")} onClick={() => setGroup("flat")}>Ungrouped</button>
           </div>
         </div>
@@ -72,24 +77,23 @@ export function Explorer({ colors, styleBySlug }: Props) {
               </button>
             );
           })}
-          {family && <button onClick={() => { setFamily(null); setShade(null); }} style="cursor: pointer; background: transparent; border: none; color: var(--accent-strong); font: 500 13px var(--font-ui); padding: 8px 6px;">Clear ✕</button>}
+          {family && <button onClick={() => setFamily(null)} style="cursor: pointer; background: transparent; border: none; color: var(--accent-strong); font: 500 13px var(--font-ui); padding: 8px 6px;">Clear ✕</button>}
         </div>
-        {group === "hue" && family && shadeCounts && SHADE_DEFS.filter((s) => shadeCounts[s.key] > 0).length > 1 && (
-          <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px;">
-            <span style="font: 400 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SHADE</span>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              {SHADE_DEFS.filter((s) => shadeCounts[s.key] > 0).map((s) => {
-                const active = shade === s.key;
-                return (
-                  <button key={s.key} onClick={() => setShade((x) => x === s.key ? null : s.key)} style={`cursor: pointer; display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 6px 12px 6px 8px; font: 500 12px var(--font-ui); border: 1px solid ${active ? "var(--ink)" : "var(--field-border)"}; background: ${active ? "var(--ink)" : "#fff"}; color: ${active ? "#fff" : "var(--ink)"};`}>
-                    <span style={`width: 13px; height: 13px; border-radius: 50%; background-color: ${s.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
-                    {s.name}<span style="font: 400 10px var(--font-mono); opacity: 0.6;">{shadeCounts[s.key]}</span>
-                  </button>
-                );
-              })}
-            </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+          <span style="font: 400 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">TYPE</span>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            {COLOR_TYPE_DEFS.filter((t) => tCounts[t.key] > 0).map((t) => {
+              const active = types.includes(t.key);
+              return (
+                <button key={t.key} onClick={() => toggleType(t.key)} style={`cursor: pointer; display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 6px 12px 6px 8px; font: 500 12px var(--font-ui); border: 1px solid ${active ? "var(--ink)" : "var(--field-border)"}; background: ${active ? "var(--ink)" : "#fff"}; color: ${active ? "#fff" : "var(--ink)"};`}>
+                  <span style={`width: 13px; height: 13px; border-radius: 50%; background-color: ${t.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
+                  {t.name}<span style="font: 400 10px var(--font-mono); opacity: 0.6;">{tCounts[t.key]}</span>
+                </button>
+              );
+            })}
+            {types.length > 0 && <button onClick={() => setTypes([])} style="cursor: pointer; background: transparent; border: none; color: var(--accent-strong); font: 500 12px var(--font-ui); padding: 6px 4px;">Clear types ✕</button>}
           </div>
-        )}
+        </div>
       </div>
 
       {group !== "flat" ? (

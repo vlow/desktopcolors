@@ -4,9 +4,9 @@ export type FamilyKey =
   | "red" | "orange" | "yellow" | "green" | "teal"
   | "blue" | "purple" | "pink" | "neutral";
 
-export type ToneKey = "neon" | "bright" | "pastel" | "muted" | "dark";
-
-export type ShadeKey = "deep" | "mid" | "light" | "pale";
+export type ColorTypeKey =
+  | "pastel" | "light" | "dark" | "muted" | "neutral"
+  | "vivid" | "neon" | "jewel" | "earth" | "warm" | "cool" | "achromatic";
 
 export function hexToRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
@@ -83,6 +83,36 @@ export function oklabDistance(a: [number, number, number], b: [number, number, n
   return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
 }
 
+// OKLab -> OKLCH (cartesian a/b -> polar C/H). L and C on 0–1; H in degrees [0,360).
+export function hexToOklch(hex: string): { L: number; C: number; H: number } {
+  const [L, a, b] = hexToOklab(hex);
+  const C = Math.sqrt(a * a + b * b);
+  let H = (Math.atan2(b, a) * 180) / Math.PI;
+  if (H < 0) H += 360;
+  return { L, C, H };
+}
+
+// Multi-label perceptual color types (OKLCH). A color collects every tag it matches.
+// Every color lands at least one tag: anything with C >= 0.025 is warm or cool,
+// anything below is neutral.
+export function colorTypes(hex: string): ColorTypeKey[] {
+  const { L, C, H } = hexToOklch(hex);
+  const out: ColorTypeKey[] = [];
+  if (L >= 0.80 && C >= 0.03 && C <= 0.10) out.push("pastel");
+  if (L >= 0.82) out.push("light");
+  if (L <= 0.35) out.push("dark");
+  if (C >= 0.025 && C <= 0.09) out.push("muted");
+  if (C < 0.025) out.push("neutral");
+  if (C >= 0.16) out.push("vivid");
+  if (C >= 0.22 && L >= 0.55) out.push("neon");
+  if (L >= 0.30 && L <= 0.65 && C >= 0.12) out.push("jewel");
+  if (H >= 40 && H < 130 && C >= 0.03 && C <= 0.11 && L >= 0.25 && L <= 0.70) out.push("earth");
+  if (C >= 0.025 && (H < 130 || H >= 340)) out.push("warm");
+  if (C >= 0.025 && H >= 130 && H < 340) out.push("cool");
+  if (C < 0.02) out.push("achromatic");
+  return out;
+}
+
 export function hueFamily(h: number, s: number): FamilyKey {
   if (s < 12) return "neutral";
   if (h < 15 || h >= 345) return "red";
@@ -93,21 +123,6 @@ export function hueFamily(h: number, s: number): FamilyKey {
   if (h < 250) return "blue";
   if (h < 290) return "purple";
   return "pink";
-}
-
-export function tone(h: number, s: number, l: number): ToneKey {
-  if (l < 30) return "dark";
-  if (s >= 78 && l >= 42 && l <= 72) return "neon";
-  if (l >= 70 && s <= 65) return "pastel";
-  if (s >= 42) return "bright";
-  return "muted";
-}
-
-export function shade(l: number): ShadeKey {
-  if (l < 32) return "deep";
-  if (l < 55) return "mid";
-  if (l < 80) return "light";
-  return "pale";
 }
 
 export function closestRal(hex: string, palette: RalColor[] = RAL_CLASSIC): RalColor {

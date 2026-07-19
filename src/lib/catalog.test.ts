@@ -64,3 +64,13 @@ describe("buildCatalog", () => {
     expect(() => buildCatalog(bad, scores)).toThrow(/nope/);
   });
 });
+
+describe("buildCatalog color types", () => {
+  it("assigns a non-empty multi-label types array, tagging teal as cool", () => {
+    const cat = buildCatalog(entries, parseScores({ colors: {}, os: {} }));
+    const teal = cat.colors.find((c) => c.hex === "#008080")!;
+    expect(Array.isArray(teal.types)).toBe(true);
+    expect(teal.types.length).toBeGreaterThan(0);
+    expect(teal.types).toContain("cool");
+  });
+});

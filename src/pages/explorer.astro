@@ -10,6 +10,6 @@ const colors = toExplorerColors(catalog);
 const styleBySlug: Record<string, DesktopStyle> = {};
 for (const o of catalog.osList) styleBySlug[o.slug] = o.desktopStyle;
 ---
-<Base title="Color Explorer — desktopcolors.com" description="Every solid desktop background color, grouped by hue or tone and ranked by popularity." active="explorer">
+<Base title="Color Explorer — desktopcolors.com" description="Every solid desktop background color, grouped by hue, filterable by color type, and ranked by popularity." active="explorer">
   <Explorer colors={colors} styleBySlug={styleBySlug} client:load />
 </Base>

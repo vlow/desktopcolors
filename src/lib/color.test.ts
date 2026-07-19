@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   hexToRgb, rgbToHsl, hexToHsl, onColor, rgbDistance,
-  hexToOklab, oklabDistance, hueFamily, tone, shade, closestRal, closestRalDesign,
-  rgbToCmyk, hexToCmyk, formatScore,
+  hexToOklab, oklabDistance, hueFamily, closestRal, closestRalDesign,
+  rgbToCmyk, hexToCmyk, formatScore, hexToOklch, colorTypes,
 } from "./color";
 
 describe("hexToRgb", () => {
@@ -74,27 +74,6 @@ describe("hueFamily", () => {
   });
 });
 
-describe("tone", () => {
-  it("classifies very dark as dark", () => {
-    expect(tone(240, 100, 25)).toBe("dark");
-  });
-  it("classifies high-sat mid-light as neon", () => {
-    expect(tone(180, 90, 55)).toBe("neon");
-  });
-  it("classifies light low-sat as pastel", () => {
-    expect(tone(240, 40, 80)).toBe("pastel");
-  });
-});
-
-describe("shade", () => {
-  it("buckets lightness", () => {
-    expect(shade(20)).toBe("deep");
-    expect(shade(40)).toBe("mid");
-    expect(shade(60)).toBe("light");
-    expect(shade(90)).toBe("pale");
-  });
-});
-
 describe("closestRal", () => {
   it("matches a near-black to Jet black (RAL 9005)", () => {
     expect(closestRal("#050505").code).toBe("RAL 9005");
@@ -140,5 +119,75 @@ describe("formatScore", () => {
     expect(formatScore(1000)).toBe("1k");
     expect(formatScore(1200)).toBe("1.2k");
     expect(formatScore(48200)).toBe("48.2k");
+  });
+});
+
+describe("hexToOklch", () => {
+  it("maps pure red to its OKLCH coordinates", () => {
+    const { L, C, H } = hexToOklch("#ff0000");
+    expect(L).toBeCloseTo(0.628, 2);
+    expect(C).toBeCloseTo(0.258, 2);
+    expect(H).toBeCloseTo(29.2, 0);
+  });
+  it("maps blue with a hue in [0,360)", () => {
+    const { H } = hexToOklch("#0000ff");
+    expect(H).toBeCloseTo(264.1, 0);
+    expect(H).toBeGreaterThanOrEqual(0);
+    expect(H).toBeLessThan(360);
+  });
+  it("gives gray near-zero chroma", () => {
+    expect(hexToOklch("#808080").C).toBeLessThan(0.02);
+  });
+});
+
+describe("colorTypes", () => {
+  it("tags a gray as neutral + achromatic and neither warm nor cool", () => {
+    const t = colorTypes("#808080");
+    expect(t).toContain("neutral");
+    expect(t).toContain("achromatic");
+    expect(t).not.toContain("warm");
+    expect(t).not.toContain("cool");
+    expect(t).not.toContain("vivid");
+  });
+  it("tags a light gray as light too", () => {
+    expect(colorTypes("#e0e0e0")).toEqual(
+      expect.arrayContaining(["neutral", "achromatic", "light"]));
+  });
+  it("tags pure red as vivid + neon + warm", () => {
+    expect(colorTypes("#ff0000")).toEqual(
+      expect.arrayContaining(["vivid", "neon", "warm"]));
+  });
+  it("tags navy as dark + vivid + cool", () => {
+    expect(colorTypes("#000080")).toEqual(
+      expect.arrayContaining(["dark", "vivid", "cool"]));
+  });
+  it("tags a tan as earth + muted + warm", () => {
+    expect(colorTypes("#a67b5b")).toEqual(
+      expect.arrayContaining(["earth", "muted", "warm"]));
+  });
+  it("tags dark-olive as earth (hue ceiling reaches 130)", () => {
+    expect(colorTypes("#556b2f")).toContain("earth");
+  });
+  it("tags a soft blue tint with multiple labels incl. pastel + light + cool", () => {
+    expect(colorTypes("#b7c9e8")).toEqual(
+      expect.arrayContaining(["pastel", "light", "cool"]));
+  });
+  it("does NOT tag fully-saturated cyan as pastel (chroma cap excludes vivid lights)", () => {
+    // #00ffff is electric cyan (C≈0.155); with the 0.10 chroma cap it is light+cool, not pastel.
+    expect(colorTypes("#00ffff")).not.toContain("pastel");
+  });
+  it("treats hues >= 340 as warm (crimson/pink wrap)", () => {
+    expect(colorTypes("#ff1493")).toContain("warm");
+  });
+  it("treats magenta (~328) as cool, not warm", () => {
+    const t = colorTypes("#ff00ff");
+    expect(t).toContain("cool");
+    expect(t).not.toContain("warm");
+  });
+  it("never returns an empty tag list for a range of colors", () => {
+    for (const hex of ["#000000", "#ffffff", "#808080", "#ff0000", "#00ff00",
+      "#0000ff", "#556b2f", "#a67b5b", "#c9b6e8", "#008080"]) {
+      expect(colorTypes(hex).length).toBeGreaterThan(0);
+    }
   });
 });

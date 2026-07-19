@@ -50,7 +50,7 @@ through all predicates; every match is added to its `types` array.
 
 | Type | Key | Predicate |
 |---|---|---|
-| Pastel | `pastel` | `L >= 0.78 && C >= 0.03 && C <= 0.16` |
+| Pastel | `pastel` | `L >= 0.80 && C >= 0.03 && C <= 0.10` |
 | Light | `light` | `L >= 0.82` |
 | Dark | `dark` | `L <= 0.35` |
 | Muted / dusty | `muted` | `C >= 0.025 && C <= 0.09` |
@@ -74,6 +74,13 @@ Notes:
   (`#556b2f` ≈ H 126°) qualify — olive is named in the source table.
 - **Overlaps are intentional and correct** for a multi-label system: Neon ⊂ Vivid,
   Achromatic ⊂ Neutral, most Pastels are also Light.
+- **Pastel chroma cap is `0.10`, not `0.16`.** In OKLCH, cyan is a low-chroma
+  primary (pure `#00ffff` ≈ C 0.155), so a `0.16` cap mislabels fully-saturated
+  cyan as pastel. The `0.10` cap keeps genuine soft tints (baby blue ≈ C 0.05,
+  lavender ≈ C 0.07) while excluding electric/vivid lights.
+- **Chip display order** (`COLOR_TYPE_DEFS`) is by general perceptual commonness,
+  not by predicate order or catalog count: Neutral, Light, Dark, Warm, Cool,
+  Muted, Vivid, Pastel, Earth, Jewel, Neon, Achromatic.
 - **No orphan swatches:** anything with `C >= 0.025` gets at least Warm or Cool;
   anything below gets Neutral. Every color lands ≥ 1 tag.
 

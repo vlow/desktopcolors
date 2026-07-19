@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  toExplorerColors, groupIntoBands, rankColors, familyCounts, shadeCountsFor, FAMILY_DEFS,
+  toExplorerColors, groupIntoBands, rankColors, familyCounts, typeCounts,
+  COLOR_TYPE_DEFS, FAMILY_DEFS,
 } from "./explorer";
 import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
@@ -52,14 +53,14 @@ describe("familyCounts", () => {
 
 describe("groupIntoBands", () => {
   it("groups by hue and drops empty bands", () => {
-    const bands = groupIntoBands(colors, { group: "hue", family: null, shade: null, sort: "spectrum" });
+    const bands = groupIntoBands(colors, { group: "hue", family: null, types: [], sort: "spectrum" });
     const keys = bands.map((b) => b.key);
     expect(keys).toContain("teal");
     expect(keys).toContain("red");
     expect(bands.every((b) => b.colors.length > 0)).toBe(true);
   });
   it("filters to a single family", () => {
-    const bands = groupIntoBands(colors, { group: "hue", family: "teal", shade: null, sort: "spectrum" });
+    const bands = groupIntoBands(colors, { group: "hue", family: "teal", types: [], sort: "spectrum" });
     expect(bands.length).toBe(1);
     expect(bands[0].colors[0].hex).toBe("#008080");
   });
@@ -78,17 +79,17 @@ describe("rankColors", () => {
   it("all-zero-scores → pct 0 (no divide-by-zero, no NaN)", () => {
     const zeroScores: ExplorerColor[] = [
       {
-        hex: "#ff0000", name: "Red", family: "red", tone: "bright", shade: "mid",
+        hex: "#ff0000", name: "Red", family: "red", types: ["vivid", "warm"],
         h: 0, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
         yearRange: "2000–2001", primarySlug: "a", href: "/os/a/ff0000",
       },
       {
-        hex: "#00ff00", name: "Green", family: "green", tone: "bright", shade: "light",
+        hex: "#00ff00", name: "Green", family: "green", types: ["vivid"],
         h: 120, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
         yearRange: "2000–2001", primarySlug: "b", href: "/os/b/00ff00",
       },
       {
-        hex: "#0000ff", name: "Blue", family: "blue", tone: "bright", shade: "mid",
+        hex: "#0000ff", name: "Blue", family: "blue", types: ["vivid", "cool"],
         h: 240, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
         yearRange: "2000–2001", primarySlug: "c", href: "/os/c/0000ff",
       },
@@ -103,46 +104,40 @@ describe("rankColors", () => {
   });
 });
 
-describe("shadeCountsFor", () => {
-  it("counts colors per shade within a family", () => {
-    // Build fixture with differing lightness: deep (<32), mid (<55), light (<80), pale (>=80)
-    const fixture: ExplorerColor[] = [
-      {
-        hex: "#1a1a1a", name: "Deep Red", family: "red", tone: "dark", shade: "deep",
-        h: 0, s: 100, l: 15, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/1a1a1a",
-      },
-      {
-        hex: "#8b0000", name: "Mid Red", family: "red", tone: "bright", shade: "mid",
-        h: 0, s: 100, l: 42, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/8b0000",
-      },
-      {
-        hex: "#ff6666", name: "Light Red", family: "red", tone: "bright", shade: "light",
-        h: 0, s: 100, l: 70, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/ff6666",
-      },
-      {
-        hex: "#ff9999", name: "Pale Red", family: "red", tone: "pastel", shade: "pale",
-        h: 0, s: 100, l: 85, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/ff9999",
-      },
-      {
-        hex: "#ffcccc", name: "Pale Red 2", family: "red", tone: "pastel", shade: "pale",
-        h: 0, s: 100, l: 90, onColor: "#1c1917", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "a", href: "/os/a/ffcccc",
-      },
-      // Add a different-family color to verify filtering
-      {
-        hex: "#0000ff", name: "Blue", family: "blue", tone: "bright", shade: "mid",
-        h: 240, s: 100, l: 50, onColor: "#ffffff", score: 100, scoreLabel: "< 1k",
-        yearRange: "2000–2001", primarySlug: "b", href: "/os/b/0000ff",
-      },
-    ];
-    const counts = shadeCountsFor(fixture, "red");
-    expect(counts.deep).toBe(1);
-    expect(counts.mid).toBe(1);
-    expect(counts.light).toBe(1);
-    expect(counts.pale).toBe(2);
+describe("COLOR_TYPE_DEFS", () => {
+  it("covers all twelve types in a stable order", () => {
+    expect(COLOR_TYPE_DEFS.map((d) => d.key)).toEqual([
+      "neutral", "light", "dark", "warm", "cool", "muted",
+      "vivid", "pastel", "earth", "jewel", "neon", "achromatic",
+    ]);
+  });
+});
+
+describe("typeCounts", () => {
+  it("counts colors per type across the whole set", () => {
+    const counts = typeCounts(colors);
+    // #008080 (teal) and #000080 (navy) are both cool; #ff0000 is warm.
+    expect(counts.cool).toBeGreaterThanOrEqual(2);
+    expect(counts.warm).toBeGreaterThanOrEqual(1);
+    // Every type key is present (0 allowed), never undefined.
+    for (const d of COLOR_TYPE_DEFS) expect(typeof counts[d.key]).toBe("number");
+  });
+});
+
+describe("groupIntoBands with a type filter", () => {
+  it("keeps only colors carrying at least one selected type (OR)", () => {
+    const bands = groupIntoBands(colors, {
+      group: "hue", family: null, types: ["warm"], sort: "spectrum",
+    });
+    const hexes = bands.flatMap((b) => b.colors.map((c) => c.hex));
+    expect(hexes).toContain("#ff0000"); // warm
+    expect(hexes).not.toContain("#008080"); // cool teal, filtered out
+  });
+  it("with no types selected, includes everything (family filter still applies)", () => {
+    const bands = groupIntoBands(colors, {
+      group: "hue", family: "teal", types: [], sort: "spectrum",
+    });
+    expect(bands.length).toBe(1);
+    expect(bands[0].colors[0].hex).toBe("#008080");
   });
 });
