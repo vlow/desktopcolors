@@ -38,7 +38,7 @@ describe("toExplorerColors", () => {
 describe("FAMILY_DEFS", () => {
   it("covers all nine families", () => {
     expect(FAMILY_DEFS.map((f) => f.key)).toEqual(
-      ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "neutral"]);
+      ["red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "achromatic"]);
   });
 });
 
@@ -105,10 +105,10 @@ describe("rankColors", () => {
 });
 
 describe("COLOR_TYPE_DEFS", () => {
-  it("covers all twelve types in a stable order", () => {
+  it("covers all eleven types in a stable order", () => {
     expect(COLOR_TYPE_DEFS.map((d) => d.key)).toEqual([
       "neutral", "light", "dark", "warm", "cool", "muted",
-      "vivid", "pastel", "earth", "jewel", "neon", "achromatic",
+      "vivid", "pastel", "earth", "jewel", "neon",
     ]);
   });
 });

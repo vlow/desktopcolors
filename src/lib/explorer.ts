@@ -19,7 +19,7 @@ export const FAMILY_DEFS: { key: FamilyKey; name: string; chip: string }[] = [
   { key: "blue", name: "Blues", chip: "#3a6ea5" },
   { key: "purple", name: "Purples", chip: "#8a5cc0" },
   { key: "pink", name: "Pinks", chip: "#c0559a" },
-  { key: "neutral", name: "Neutrals", chip: "#9a9a96" },
+  { key: "achromatic", name: "Achromatic", chip: "#9a9a96" },
 ];
 
 export const COLOR_TYPE_DEFS: { key: ColorTypeKey; name: string; chip: string }[] = [
@@ -34,7 +34,6 @@ export const COLOR_TYPE_DEFS: { key: ColorTypeKey; name: string; chip: string }[
   { key: "earth", name: "Earth", chip: "#8a5a2b" },
   { key: "jewel", name: "Jewel", chip: "#7a1f5c" },
   { key: "neon", name: "Neon", chip: "#16d6c1" },
-  { key: "achromatic", name: "Achromatic", chip: "#c9c7c2" },
 ];
 
 export function toExplorerColors(catalog: Catalog): ExplorerColor[] {

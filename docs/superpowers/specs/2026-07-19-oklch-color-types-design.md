@@ -61,7 +61,6 @@ through all predicates; every match is added to its `types` array.
 | Earth tone | `earth` | `H >= 40 && H < 130 && C >= 0.03 && C <= 0.11 && L >= 0.25 && L <= 0.70` |
 | Warm | `warm` | `C >= 0.025 && (H < 130 || H >= 340)` |
 | Cool | `cool` | `C >= 0.025 && H >= 130 && H < 340` |
-| Achromatic | `achromatic` | `C < 0.02` |
 
 Notes:
 
@@ -73,14 +72,21 @@ Notes:
   hue ceiling is `< 130` (aligned with the Warm/Cool split) so dark-olive hues
   (`#556b2f` ≈ H 126°) qualify — olive is named in the source table.
 - **Overlaps are intentional and correct** for a multi-label system: Neon ⊂ Vivid,
-  Achromatic ⊂ Neutral, most Pastels are also Light.
+  most Pastels are also Light.
+- **Name-collision resolution.** The color-TYPE `neutral` (`C < 0.025`) once clashed
+  with a color-FAMILY `neutral`, and there was a near-duplicate TYPE `achromatic`
+  (`C < 0.02`). Resolved by: dropping the TYPE `achromatic` (it was a strict subset of
+  TYPE `neutral`, so no coverage is lost); keeping the TYPE `neutral`; and renaming the
+  hue-FAMILY from `neutral`/"Neutrals" to `achromatic`/"Achromatic" (same HSL `s < 12`
+  definition, just relabelled). Result: FAMILY "Achromatic" (hue bucket for
+  low-saturation colors) and TYPE "Neutral" (`C < 0.025`) no longer share a name.
 - **Pastel chroma cap is `0.10`, not `0.16`.** In OKLCH, cyan is a low-chroma
   primary (pure `#00ffff` ≈ C 0.155), so a `0.16` cap mislabels fully-saturated
   cyan as pastel. The `0.10` cap keeps genuine soft tints (baby blue ≈ C 0.05,
   lavender ≈ C 0.07) while excluding electric/vivid lights.
 - **Chip display order** (`COLOR_TYPE_DEFS`) is by general perceptual commonness,
   not by predicate order or catalog count: Neutral, Light, Dark, Warm, Cool,
-  Muted, Vivid, Pastel, Earth, Jewel, Neon, Achromatic.
+  Muted, Vivid, Pastel, Earth, Jewel, Neon.
 - **No orphan swatches:** anything with `C >= 0.025` gets at least Warm or Cool;
   anything below gets Neutral. Every color lands ≥ 1 tag.
 
@@ -106,7 +112,7 @@ Touch points:
 
 - Grouping toggle: drop "By tone" → **"By hue / Ungrouped"** only.
 - Remove the shade sub-filter chip row.
-- Add a **type filter chip row**: all 12 types with per-type counts (`typeCounts`),
+- Add a **type filter chip row**: all 11 types with per-type counts (`typeCounts`),
   multi-select. Selecting types filters with **OR** (a color shows if it has any
   selected type). A Family selection combines as **AND** (that family, matching any
   selected type). Chips use `COLOR_TYPE_DEFS` colors and the existing `.dc-card`
@@ -119,8 +125,8 @@ Unit tests:
 - `hexToOklch` — a handful of known hex → expected `{L, C, H}` (within tolerance),
   including pure red/green/blue and a gray.
 - `colorTypes` — one representative hex per type asserting the expected tag(s);
-  a multi-tag case (e.g. soft blue → Pastel + Light + Cool); a neutral/gray case
-  asserting `Neutral` (+ `Achromatic`) and no Warm/Cool; a "never empty" assertion.
+  a multi-tag case (e.g. soft blue → Pastel + Light + Cool); a gray case
+  asserting `Neutral` and no Warm/Cool; a "never empty" assertion.
 
 ## Out of scope
 
