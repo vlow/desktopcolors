@@ -17,10 +17,17 @@ export function OsDetail({ view, initialHex }: Props) {
   // into the URL path (/os/<slug>/<hex>), so server and client render identically
   // from the very first paint. No `window`/query reading, so no hydration
   // mismatch and no flash of the default color.
+  //
+  // When no color is deep-linked (e.g. opening /os/<slug> from Browse), start on
+  // the OS's default color rather than whatever happens to be first in the list.
+  const defaultIdx = (): number => {
+    const d = colors.findIndex((c) => c.isDefault);
+    return d >= 0 ? d : 0;
+  };
   const idxOfHex = (hex?: string | null): number => {
-    if (!hex) return 0;
+    if (!hex) return defaultIdx();
     const i = colors.findIndex((c) => c.hex.toLowerCase() === hex.toLowerCase());
-    return i >= 0 ? i : 0;
+    return i >= 0 ? i : defaultIdx();
   };
 
   const [sel, setSel] = useState(() => idxOfHex(initialHex));

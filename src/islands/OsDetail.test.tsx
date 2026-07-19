@@ -50,6 +50,24 @@ describe("OsDetail", () => {
     expect(highlighted[0]).not.toContain("Teal");
   });
 
+  it("selects the default color, not the first listed, when no color is deep-linked", () => {
+    // Default deliberately placed AFTER a non-default color — mirrors the real
+    // Windows 95 palette, where Teal is well down the list rather than first.
+    const reordered: OsDetailView = {
+      ...view,
+      colors: [view.colors[1], view.colors[0]], // Navy first, Teal (default) second
+    };
+    const html = renderToString(<OsDetail view={reordered} initialHex={null} />);
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    const highlighted = Array.from(container.querySelectorAll("div"))
+      .filter((d) => (d.getAttribute("style") || "").includes("oklch(0.96 0.03 255)"))
+      .map((d) => d.textContent || "");
+    expect(highlighted.length).toBe(1);
+    expect(highlighted[0]).toContain("Teal");
+    expect(highlighted[0]).not.toContain("Navy");
+  });
+
   it("switches the selected color on click", () => {
     render(<OsDetail view={view} initialHex={null} />);
     fireEvent.click(screen.getByText("Navy"));
