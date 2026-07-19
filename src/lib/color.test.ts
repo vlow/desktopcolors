@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  hexToRgb, rgbToHsl, hexToHsl, onColor, rgbDistance,
+  hexToRgb, rgbToHsl, hexToHsl, onColor, relativeLuminance, rgbDistance,
   hexToOklab, oklabDistance, hueFamily, closestRal, closestRalDesign,
   rgbToCmyk, hexToCmyk, formatScore, hexToOklch, colorTypes,
 } from "./color";
@@ -34,6 +34,30 @@ describe("onColor", () => {
   });
   it("returns white over a dark color", () => {
     expect(onColor("#000080")).toBe("#ffffff");
+  });
+  // Bright, saturated hues sit at HSL lightness 50 but are perceptually bright,
+  // so they need dark ink. The old lightness test wrongly gave them white.
+  it("returns dark ink over bright/mid saturated hues (yellow/cyan/lime/red)", () => {
+    expect(onColor("#ffff00")).toBe("#1c1917"); // yellow
+    expect(onColor("#00ffff")).toBe("#1c1917"); // cyan
+    expect(onColor("#00ff00")).toBe("#1c1917"); // lime
+    expect(onColor("#ff0000")).toBe("#1c1917"); // red — black is the higher-contrast pick
+  });
+  it("keeps white over deep/dark hues", () => {
+    expect(onColor("#008080")).toBe("#ffffff"); // teal
+    expect(onColor("#000080")).toBe("#ffffff"); // navy
+    expect(onColor("#0000ff")).toBe("#ffffff"); // blue
+    expect(onColor("#800000")).toBe("#ffffff"); // maroon
+  });
+  it("picks the higher-contrast ink, never the lower one", () => {
+    for (const hex of ["#ffff00", "#00ffff", "#808080", "#008080", "#000000", "#ffffff"]) {
+      const L = relativeLuminance(hex);
+      const cr = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      const chosen = onColor(hex);
+      const cDark = cr(L, relativeLuminance("#1c1917"));
+      const cLight = cr(L, relativeLuminance("#ffffff"));
+      expect(chosen).toBe(cDark >= cLight ? "#1c1917" : "#ffffff");
+    }
   });
 });
 

@@ -50,9 +50,32 @@ export function hexToCmyk(hex: string): [number, number, number, number] {
   return rgbToCmyk(r, g, b);
 }
 
+// WCAG relative luminance (0 = black … 1 = white) from linearized sRGB.
+// Weights perceived brightness by channel, so bright hues like yellow read as
+// bright — unlike HSL lightness, which puts #ffff00 and #0000ff both at 50%.
+export function relativeLuminance(hex: string): number {
+  const [r, g, b] = hexToRgb(hex);
+  return 0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
+}
+
+// WCAG contrast ratio (1 … 21) between two relative luminances.
+function contrastRatio(a: number, b: number): number {
+  const hi = Math.max(a, b), lo = Math.min(a, b);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+// The two inks the preview draws on the wallpaper.
+const INK_DARK = "#1c1917";
+const INK_LIGHT = "#ffffff";
+const L_INK_DARK = relativeLuminance(INK_DARK); // ≈ 0.011
+
+// Pick whichever ink has the higher WCAG contrast against the background, so
+// foreground text/chrome is always the more legible of the two. Chooses by
+// perceptual luminance rather than HSL lightness, which misjudged bright
+// saturated hues (yellow, cyan, lime) as needing white text.
 export function onColor(hex: string): "#1c1917" | "#ffffff" {
-  const [, , l] = hexToHsl(hex);
-  return l > 55 ? "#1c1917" : "#ffffff";
+  const L = relativeLuminance(hex);
+  return contrastRatio(L, L_INK_DARK) >= contrastRatio(L, 1) ? INK_DARK : INK_LIGHT;
 }
 
 export function rgbDistance(a: [number, number, number], b: [number, number, number]): number {
