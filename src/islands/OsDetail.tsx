@@ -10,6 +10,19 @@ interface Props { view: OsDetailView; initialHex?: string | null }
 
 type CopyKey = "hex" | "rgb" | "hsl" | "cmyk" | "ral" | "ralDesign";
 
+// scrollTop that centers an item (at `itemOffset` within the container's content
+// box, `itemHeight` tall) inside a scroll container, clamped to its scrollable
+// range. Pure so the centering logic can be unit-tested without a layout engine.
+export function centerScrollTop(
+  itemOffset: number,
+  itemHeight: number,
+  clientHeight: number,
+  scrollHeight: number,
+): number {
+  const ideal = itemOffset - (clientHeight - itemHeight) / 2;
+  return Math.max(0, Math.min(ideal, scrollHeight - clientHeight));
+}
+
 export function OsDetail({ view, initialHex }: Props) {
   const { os, colors, eraPeers } = view;
 
@@ -36,6 +49,22 @@ export function OsDetail({ view, initialHex }: Props) {
   const [copied, setCopied] = useState<CopyKey | null>(null);
 
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
+
+  // On first paint, center the initially-selected swatch in the "All colors"
+  // list. A deep link (/os/<slug>/<hex>) or a mid-list default (Windows 95's
+  // Teal) would otherwise sit below the fold with the list scrolled to the top,
+  // reading as if the first swatch were selected. Centering keeps neighbours
+  // above and below visible. Mount-only: later clicks must not yank the list.
+  // Scrolls the list's own overflow, never the page.
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const list = listRef.current;
+    const item = list?.children[sel] as HTMLElement | undefined;
+    if (!list || !item) return;
+    const itemOffset = item.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+    list.scrollTop = centerScrollTop(itemOffset, item.offsetHeight, list.clientHeight, list.scrollHeight);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const c: DetailColor = colors[sel] ?? colors[0];
 
@@ -100,7 +129,7 @@ export function OsDetail({ view, initialHex }: Props) {
             <span style="font: 500 14px var(--font-ui);">All colors</span>
             <span style="font: 400 11px var(--font-mono); color: var(--faint);">{os.colorCount} · click to preview</span>
           </div>
-          <div style="flex: 1; overflow-y: auto; padding: 8px; max-height: 320px;">
+          <div ref={listRef} style="flex: 1; overflow-y: auto; padding: 8px; max-height: 320px;">
             {colors.map((col, i) => (
               <div key={col.hex} onClick={() => setSel(i)} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "oklch(0.96 0.03 255)" : "transparent"};`}>
                 <div style={`width: 32px; height: 32px; border-radius: 7px; background-color: ${col.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />

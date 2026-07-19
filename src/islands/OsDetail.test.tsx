@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/preact";
 import { renderToString } from "preact-render-to-string";
-import { OsDetail } from "./OsDetail";
+import { OsDetail, centerScrollTop } from "./OsDetail";
 import type { OsDetailView } from "../lib/detail";
 
 const view: OsDetailView = {
@@ -144,5 +144,28 @@ describe("OsDetail", () => {
   it("labels the Same era section with what it lists", () => {
     render(<OsDetail view={view} initialHex={null} />);
     expect(screen.getByText("platforms released around 1995 · popular defaults")).toBeTruthy();
+  });
+});
+
+describe("centerScrollTop", () => {
+  // A 320px-tall list of 48-tall items; total content 2304, scrollable 0..1984.
+  const CLIENT = 320, SCROLL = 2304, ITEM = 48;
+
+  it("centers a mid-list item so neighbours show above and below", () => {
+    // item at offset 1000 → 1000 - (320-48)/2 = 864
+    expect(centerScrollTop(1000, ITEM, CLIENT, SCROLL)).toBe(864);
+  });
+
+  it("clamps to the top rather than scrolling negative for an early item", () => {
+    expect(centerScrollTop(0, ITEM, CLIENT, SCROLL)).toBe(0);
+  });
+
+  it("clamps to the bottom for a late item", () => {
+    // last item at offset 2256 → ideal 2120, but max scroll is 2304-320=1984
+    expect(centerScrollTop(2256, ITEM, CLIENT, SCROLL)).toBe(1984);
+  });
+
+  it("does not scroll a list that fits without overflow", () => {
+    expect(centerScrollTop(80, ITEM, 320, 320)).toBe(0);
   });
 });
