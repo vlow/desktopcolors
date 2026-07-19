@@ -42,9 +42,9 @@ served directory. So the site never queries the counter at request time, scores 
 shipped HTML (no client-side reorder flicker), and the site works even if the counter is down.
 
 **Single source of truth.** Each OS is one JSON file in `src/content/os/`, validated by a Zod schema at
-build time. Everything derived — RGB/HSL, hue family, tone, closest RAL (perceptual **OKLab** distance),
-"first known use", "similar colors elsewhere", same-era peers, merged-by-hex popularity — is computed at
-build time by pure, unit-tested TypeScript in `src/lib/`.
+build time. Everything derived — RGB/HSL, hue family, multi-label OKLCH color types, closest RAL
+(perceptual **OKLab** distance), "first known use", "similar colors elsewhere", same-era peers, merged-by-hex
+popularity — is computed at build time by pure, unit-tested TypeScript in `src/lib/`.
 
 **Privacy.** Wallpapers are generated in the browser via `<canvas>` (the server never touches images). The
 counter keeps only aggregate scores; its rate limiter keys on `SHA-256(rotating-salt ‖ truncated-IP)` in
