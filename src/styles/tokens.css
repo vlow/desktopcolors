@@ -80,6 +80,9 @@ a { color: inherit; text-decoration: none; }
    two-row leaderboard: rank · swatch · name · icon on top, the score bar
    spanning underneath. The preview button collapses to its icon. */
 .dc-rank-pv-label { display: inline; }
+/* Filter-pill count slot: fixed width + tabular figures so a pill never resizes
+   when its count changes (e.g. "9" → "0/9" as cross-filters narrow). */
+.dc-pill-count { display: inline-block; min-width: 3.4em; text-align: right; font-variant-numeric: tabular-nums; }
 @media (max-width: 759.98px) {
   .dc-explorer { padding: 20px 16px 48px !important; }
   .dc-explorer h1 { font-size: 24px !important; }

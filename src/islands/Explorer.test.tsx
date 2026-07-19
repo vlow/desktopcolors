@@ -41,4 +41,17 @@ describe("Explorer", () => {
     expect(names).toContain("Teals");
     expect(names).not.toContain("Reds");
   });
+
+  it("shows contextual/total counts and disables zero-in-context type pills", () => {
+    render(<Explorer colors={colors} styleBySlug={styleBySlug} />);
+    // No filter yet: Cool's contextual count equals its total (1 teal), so a single number.
+    expect(screen.getByRole("button", { name: /^Cool/ }).textContent).toContain("1");
+    // Narrow to the Red family — the only cool color (teal) is now out of scope.
+    fireEvent.click(screen.getByRole("button", { name: /Reds/ }));
+    const cool = screen.getByRole("button", { name: /^Cool/ }) as HTMLButtonElement;
+    expect(cool.disabled).toBe(true);            // C: zero-in-context pill is disabled
+    expect(cool.textContent).toContain("0/1");   // B: contextual/total, 0 of 1
+    const warm = screen.getByRole("button", { name: /^Warm/ }) as HTMLButtonElement;
+    expect(warm.disabled).toBe(false);           // red is warm, so still selectable
+  });
 });
