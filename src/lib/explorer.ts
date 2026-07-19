@@ -1,10 +1,10 @@
-import { hexToHsl, type FamilyKey, type ToneKey, type ShadeKey } from "./color";
+import { hexToHsl, type FamilyKey, type ColorTypeKey } from "./color";
 import type { Catalog } from "./catalog";
 import { colorPath } from "./links";
 
 export interface ExplorerColor {
   hex: string; name: string;
-  family: FamilyKey; tone: ToneKey; shade: ShadeKey;
+  family: FamilyKey; types: ColorTypeKey[];
   h: number; s: number; l: number;
   onColor: string; score: number; scoreLabel: string;
   yearRange: string; primarySlug: string; href: string;
@@ -22,26 +22,26 @@ export const FAMILY_DEFS: { key: FamilyKey; name: string; chip: string }[] = [
   { key: "neutral", name: "Neutrals", chip: "#9a9a96" },
 ];
 
-export const TONE_DEFS: { key: ToneKey; name: string; chip: string }[] = [
-  { key: "neon", name: "Neon", chip: "#16d6c1" },
-  { key: "bright", name: "Bright", chip: "#e0512f" },
+export const COLOR_TYPE_DEFS: { key: ColorTypeKey; name: string; chip: string }[] = [
   { key: "pastel", name: "Pastel", chip: "#c9b6e8" },
-  { key: "muted", name: "Muted", chip: "#8f978f" },
+  { key: "light", name: "Light", chip: "#e6e6e6" },
   { key: "dark", name: "Dark", chip: "#2b303c" },
-];
-
-export const SHADE_DEFS: { key: ShadeKey; name: string; chip: string }[] = [
-  { key: "deep", name: "Deep", chip: "#2a2a2a" },
-  { key: "mid", name: "Mid", chip: "#6b6b6b" },
-  { key: "light", name: "Light", chip: "#b0b0b0" },
-  { key: "pale", name: "Pale", chip: "#e6e6e6" },
+  { key: "muted", name: "Muted", chip: "#8f978f" },
+  { key: "neutral", name: "Neutral", chip: "#9a9a96" },
+  { key: "vivid", name: "Vivid", chip: "#e0512f" },
+  { key: "neon", name: "Neon", chip: "#16d6c1" },
+  { key: "jewel", name: "Jewel", chip: "#7a1f5c" },
+  { key: "earth", name: "Earth", chip: "#8a5a2b" },
+  { key: "warm", name: "Warm", chip: "#d2762f" },
+  { key: "cool", name: "Cool", chip: "#3a6ea5" },
+  { key: "achromatic", name: "Achromatic", chip: "#c9c7c2" },
 ];
 
 export function toExplorerColors(catalog: Catalog): ExplorerColor[] {
   return catalog.colors.map((c) => {
     const [h, s, l] = hexToHsl(c.hex);
     return {
-      hex: c.hex, name: c.name, family: c.family, tone: c.tone, shade: c.shade,
+      hex: c.hex, name: c.name, family: c.family, types: c.types,
       h, s, l, onColor: c.onColor, score: c.score, scoreLabel: c.scoreLabel,
       yearRange: c.yearRange, primarySlug: c.primarySlug,
       href: colorPath(c.primarySlug, c.hex),
@@ -56,10 +56,10 @@ export function familyCounts(colors: ExplorerColor[]): Record<FamilyKey, number>
   return out;
 }
 
-export function shadeCountsFor(colors: ExplorerColor[], family: FamilyKey): Record<ShadeKey, number> {
-  const out = {} as Record<ShadeKey, number>;
-  for (const d of SHADE_DEFS) out[d.key] = 0;
-  for (const c of colors) if (c.family === family) out[c.shade]++;
+export function typeCounts(colors: ExplorerColor[]): Record<ColorTypeKey, number> {
+  const out = {} as Record<ColorTypeKey, number>;
+  for (const d of COLOR_TYPE_DEFS) out[d.key] = 0;
+  for (const c of colors) for (const t of c.types) out[t]++;
   return out;
 }
 
@@ -72,19 +72,17 @@ export interface Band { key: string; name: string; chip: string; colors: Explore
 
 export function groupIntoBands(
   colors: ExplorerColor[],
-  opts: { group: "hue" | "tone"; family: FamilyKey | null; shade: ShadeKey | null; sort: "spectrum" | "pop" },
+  opts: { group: "hue"; family: FamilyKey | null; types: ColorTypeKey[]; sort: "spectrum" | "pop" },
 ): Band[] {
   const match = (c: ExplorerColor): boolean =>
-    (!opts.family || c.family === opts.family) && (!opts.shade || c.shade === opts.shade);
-  const defs = opts.group === "tone"
-    ? TONE_DEFS
-    : (opts.family ? FAMILY_DEFS.filter((d) => d.key === opts.family) : FAMILY_DEFS);
-  const keyOf = (c: ExplorerColor): string => (opts.group === "tone" ? c.tone : c.family);
+    (!opts.family || c.family === opts.family) &&
+    (opts.types.length === 0 || opts.types.some((t) => c.types.includes(t)));
+  const defs = opts.family ? FAMILY_DEFS.filter((d) => d.key === opts.family) : FAMILY_DEFS;
   const cmp = opts.sort === "pop" ? popCmp : spectrumCmp;
   return defs
     .map((d) => ({
       key: d.key, name: d.name, chip: d.chip,
-      colors: colors.filter((c) => keyOf(c) === d.key && match(c)).slice().sort(cmp),
+      colors: colors.filter((c) => c.family === d.key && match(c)).slice().sort(cmp),
     }))
     .filter((b) => b.colors.length > 0);
 }
