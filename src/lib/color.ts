@@ -2,11 +2,11 @@ import { RAL_CLASSIC, RAL_DESIGN_PLUS, type RalColor } from "./ral";
 
 export type FamilyKey =
   | "red" | "orange" | "yellow" | "green" | "teal"
-  | "blue" | "purple" | "pink" | "neutral";
+  | "blue" | "purple" | "pink" | "achromatic";
 
 export type ColorTypeKey =
   | "pastel" | "light" | "dark" | "muted" | "neutral"
-  | "vivid" | "neon" | "jewel" | "earth" | "warm" | "cool" | "achromatic";
+  | "vivid" | "neon" | "jewel" | "earth" | "warm" | "cool";
 
 export function hexToRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
@@ -109,12 +109,11 @@ export function colorTypes(hex: string): ColorTypeKey[] {
   if (H >= 40 && H < 130 && C >= 0.03 && C <= 0.11 && L >= 0.25 && L <= 0.70) out.push("earth");
   if (C >= 0.025 && (H < 130 || H >= 340)) out.push("warm");
   if (C >= 0.025 && H >= 130 && H < 340) out.push("cool");
-  if (C < 0.02) out.push("achromatic");
   return out;
 }
 
 export function hueFamily(h: number, s: number): FamilyKey {
-  if (s < 12) return "neutral";
+  if (s < 12) return "achromatic";
   if (h < 15 || h >= 345) return "red";
   if (h < 45) return "orange";
   if (h < 70) return "yellow";

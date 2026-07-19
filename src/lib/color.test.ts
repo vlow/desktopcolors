@@ -60,8 +60,8 @@ describe("hexToOklab / oklabDistance", () => {
 });
 
 describe("hueFamily", () => {
-  it("classifies low saturation as neutral", () => {
-    expect(hueFamily(200, 5)).toBe("neutral");
+  it("classifies low saturation as achromatic", () => {
+    expect(hueFamily(200, 5)).toBe("achromatic");
   });
   it("classifies teal hue", () => {
     expect(hueFamily(180, 100)).toBe("teal");
@@ -141,17 +141,16 @@ describe("hexToOklch", () => {
 });
 
 describe("colorTypes", () => {
-  it("tags a gray as neutral + achromatic and neither warm nor cool", () => {
+  it("tags a gray as the neutral type and neither warm nor cool", () => {
     const t = colorTypes("#808080");
     expect(t).toContain("neutral");
-    expect(t).toContain("achromatic");
     expect(t).not.toContain("warm");
     expect(t).not.toContain("cool");
     expect(t).not.toContain("vivid");
   });
   it("tags a light gray as light too", () => {
     expect(colorTypes("#e0e0e0")).toEqual(
-      expect.arrayContaining(["neutral", "achromatic", "light"]));
+      expect.arrayContaining(["neutral", "light"]));
   });
   it("tags pure red as vivid + neon + warm", () => {
     expect(colorTypes("#ff0000")).toEqual(
