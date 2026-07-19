@@ -168,9 +168,13 @@ describe("colorTypes", () => {
   it("tags dark-olive as earth (hue ceiling reaches 130)", () => {
     expect(colorTypes("#556b2f")).toContain("earth");
   });
-  it("tags a soft cyan with multiple labels incl. pastel + light + cool", () => {
-    expect(colorTypes("#00e5ff")).toEqual(
+  it("tags a soft blue tint with multiple labels incl. pastel + light + cool", () => {
+    expect(colorTypes("#b7c9e8")).toEqual(
       expect.arrayContaining(["pastel", "light", "cool"]));
+  });
+  it("does NOT tag fully-saturated cyan as pastel (chroma cap excludes vivid lights)", () => {
+    // #00ffff is electric cyan (C≈0.155); with the 0.10 chroma cap it is light+cool, not pastel.
+    expect(colorTypes("#00ffff")).not.toContain("pastel");
   });
   it("treats hues >= 340 as warm (crimson/pink wrap)", () => {
     expect(colorTypes("#ff1493")).toContain("warm");

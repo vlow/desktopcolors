@@ -98,7 +98,7 @@ export function hexToOklch(hex: string): { L: number; C: number; H: number } {
 export function colorTypes(hex: string): ColorTypeKey[] {
   const { L, C, H } = hexToOklch(hex);
   const out: ColorTypeKey[] = [];
-  if (L >= 0.78 && C >= 0.03 && C <= 0.16) out.push("pastel");
+  if (L >= 0.80 && C >= 0.03 && C <= 0.10) out.push("pastel");
   if (L >= 0.82) out.push("light");
   if (L <= 0.35) out.push("dark");
   if (C >= 0.025 && C <= 0.09) out.push("muted");

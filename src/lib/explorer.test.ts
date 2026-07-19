@@ -107,8 +107,8 @@ describe("rankColors", () => {
 describe("COLOR_TYPE_DEFS", () => {
   it("covers all twelve types in a stable order", () => {
     expect(COLOR_TYPE_DEFS.map((d) => d.key)).toEqual([
-      "pastel", "light", "dark", "muted", "neutral", "vivid",
-      "neon", "jewel", "earth", "warm", "cool", "achromatic",
+      "neutral", "light", "dark", "warm", "cool", "muted",
+      "vivid", "pastel", "earth", "jewel", "neon", "achromatic",
     ]);
   });
 });

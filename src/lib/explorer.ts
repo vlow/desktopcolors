@@ -23,17 +23,17 @@ export const FAMILY_DEFS: { key: FamilyKey; name: string; chip: string }[] = [
 ];
 
 export const COLOR_TYPE_DEFS: { key: ColorTypeKey; name: string; chip: string }[] = [
-  { key: "pastel", name: "Pastel", chip: "#c9b6e8" },
+  { key: "neutral", name: "Neutral", chip: "#9a9a96" },
   { key: "light", name: "Light", chip: "#e6e6e6" },
   { key: "dark", name: "Dark", chip: "#2b303c" },
-  { key: "muted", name: "Muted", chip: "#8f978f" },
-  { key: "neutral", name: "Neutral", chip: "#9a9a96" },
-  { key: "vivid", name: "Vivid", chip: "#e0512f" },
-  { key: "neon", name: "Neon", chip: "#16d6c1" },
-  { key: "jewel", name: "Jewel", chip: "#7a1f5c" },
-  { key: "earth", name: "Earth", chip: "#8a5a2b" },
   { key: "warm", name: "Warm", chip: "#d2762f" },
   { key: "cool", name: "Cool", chip: "#3a6ea5" },
+  { key: "muted", name: "Muted", chip: "#8f978f" },
+  { key: "vivid", name: "Vivid", chip: "#e0512f" },
+  { key: "pastel", name: "Pastel", chip: "#c9b6e8" },
+  { key: "earth", name: "Earth", chip: "#8a5a2b" },
+  { key: "jewel", name: "Jewel", chip: "#7a1f5c" },
+  { key: "neon", name: "Neon", chip: "#16d6c1" },
   { key: "achromatic", name: "Achromatic", chip: "#c9c7c2" },
 ];
 
