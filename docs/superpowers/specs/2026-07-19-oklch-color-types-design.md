@@ -58,7 +58,7 @@ through all predicates; every match is added to its `types` array.
 | Vivid / saturated | `vivid` | `C >= 0.16` |
 | Neon | `neon` | `C >= 0.22 && L >= 0.55` |
 | Jewel tone | `jewel` | `L >= 0.30 && L <= 0.65 && C >= 0.12` |
-| Earth tone | `earth` | `H >= 40 && H <= 120 && C >= 0.03 && C <= 0.11 && L >= 0.25 && L <= 0.70` |
+| Earth tone | `earth` | `H >= 40 && H < 130 && C >= 0.03 && C <= 0.11 && L >= 0.25 && L <= 0.70` |
 | Warm | `warm` | `C >= 0.025 && (H < 130 || H >= 340)` |
 | Cool | `cool` | `C >= 0.025 && H >= 130 && H < 340` |
 | Achromatic | `achromatic` | `C < 0.02` |
@@ -69,7 +69,9 @@ Notes:
   hue descriptions ("reds, oranges, yellows…"; "brown, ochre, rust, olive, clay").
   OKLCH hue reference points used: red ≈ 29°, orange ≈ 55°, yellow ≈ 110°,
   green ≈ 142°, cyan ≈ 195°, blue ≈ 264°, magenta ≈ 328°. Warm covers red→yellow-green
-  plus the crimson wrap (`H >= 340`); Cool covers green→violet/magenta.
+  plus the crimson wrap (`H >= 340`); Cool covers green→violet/magenta. Earth tone's
+  hue ceiling is `< 130` (aligned with the Warm/Cool split) so dark-olive hues
+  (`#556b2f` ≈ H 126°) qualify — olive is named in the source table.
 - **Overlaps are intentional and correct** for a multi-label system: Neon ⊂ Vivid,
   Achromatic ⊂ Neutral, most Pastels are also Light.
 - **No orphan swatches:** anything with `C >= 0.025` gets at least Warm or Cool;
