@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   hexToRgb, rgbToHsl, hexToHsl, onColor, rgbDistance,
-  hexToOklab, oklabDistance, hueFamily, tone, shade, closestRal, closestRalDesign,
+  hexToOklab, oklabDistance, hueFamily, closestRal, closestRalDesign,
   rgbToCmyk, hexToCmyk, formatScore, hexToOklch, colorTypes,
 } from "./color";
 
@@ -71,27 +71,6 @@ describe("hueFamily", () => {
   });
   it("classifies blue", () => {
     expect(hueFamily(215, 50)).toBe("blue");
-  });
-});
-
-describe("tone", () => {
-  it("classifies very dark as dark", () => {
-    expect(tone(240, 100, 25)).toBe("dark");
-  });
-  it("classifies high-sat mid-light as neon", () => {
-    expect(tone(180, 90, 55)).toBe("neon");
-  });
-  it("classifies light low-sat as pastel", () => {
-    expect(tone(240, 40, 80)).toBe("pastel");
-  });
-});
-
-describe("shade", () => {
-  it("buckets lightness", () => {
-    expect(shade(20)).toBe("deep");
-    expect(shade(40)).toBe("mid");
-    expect(shade(60)).toBe("light");
-    expect(shade(90)).toBe("pale");
   });
 });
 

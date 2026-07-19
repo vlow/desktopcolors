@@ -1,6 +1,6 @@
 import {
-  hexToRgb, hexToHsl, hexToCmyk, onColor, hueFamily, tone, shade, formatScore,
-  type FamilyKey, type ToneKey, type ShadeKey,
+  hexToRgb, hexToHsl, hexToCmyk, onColor, hueFamily, colorTypes, formatScore,
+  type FamilyKey, type ColorTypeKey,
 } from "./color";
 import {
   defaultColor, mergeColorsByHex, type OsEntry, type MergedColor,
@@ -19,8 +19,7 @@ export interface ColorView {
   cmyk: string;
   onColor: string;
   family: FamilyKey;
-  tone: ToneKey;
-  shade: ShadeKey;
+  types: ColorTypeKey[];
   score: number;
   scoreLabel: string;
 }
@@ -50,8 +49,7 @@ export interface OsView {
 
 export interface MergedColorView extends MergedColor {
   onColor: string;
-  tone: ToneKey;
-  shade: ShadeKey;
+  types: ColorTypeKey[];
   score: number;
   scoreLabel: string;
   primarySlug: string;
@@ -76,8 +74,7 @@ function toColorView(hex: string, name: string, index: string, note: string, isD
     cmyk: `${c}% ${m}% ${y}% ${kk}%`,
     onColor: onColor(key),
     family: hueFamily(h, s),
-    tone: tone(h, s, l),
-    shade: shade(l),
+    types: colorTypes(key),
     score, scoreLabel: formatScore(score),
   };
 }
@@ -111,13 +108,11 @@ export function buildCatalog(entries: OsEntry[], scores: Scores): Catalog {
   const bySlug = new Map(osList.map((o) => [o.slug, o]));
 
   const colors: MergedColorView[] = mergeColorsByHex(entries).map((m) => {
-    const [h, s, l] = hexToHsl(m.hex);
     const score = colorScore(scores, m.hex);
     return {
       ...m,
       onColor: onColor(m.hex),
-      tone: tone(h, s, l),
-      shade: shade(l),
+      types: colorTypes(m.hex),
       score, scoreLabel: formatScore(score),
       primarySlug: m.platforms[0].slug,
     };

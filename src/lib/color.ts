@@ -4,10 +4,6 @@ export type FamilyKey =
   | "red" | "orange" | "yellow" | "green" | "teal"
   | "blue" | "purple" | "pink" | "neutral";
 
-export type ToneKey = "neon" | "bright" | "pastel" | "muted" | "dark";
-
-export type ShadeKey = "deep" | "mid" | "light" | "pale";
-
 export type ColorTypeKey =
   | "pastel" | "light" | "dark" | "muted" | "neutral"
   | "vivid" | "neon" | "jewel" | "earth" | "warm" | "cool" | "achromatic";
@@ -127,21 +123,6 @@ export function hueFamily(h: number, s: number): FamilyKey {
   if (h < 250) return "blue";
   if (h < 290) return "purple";
   return "pink";
-}
-
-export function tone(h: number, s: number, l: number): ToneKey {
-  if (l < 30) return "dark";
-  if (s >= 78 && l >= 42 && l <= 72) return "neon";
-  if (l >= 70 && s <= 65) return "pastel";
-  if (s >= 42) return "bright";
-  return "muted";
-}
-
-export function shade(l: number): ShadeKey {
-  if (l < 32) return "deep";
-  if (l < 55) return "mid";
-  if (l < 80) return "light";
-  return "pale";
 }
 
 export function closestRal(hex: string, palette: RalColor[] = RAL_CLASSIC): RalColor {
