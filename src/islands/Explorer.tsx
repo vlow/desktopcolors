@@ -18,7 +18,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
   const [group, setGroup] = useState<Group>("hue");
   const [sort, setSort] = useState<Sort>("spectrum");
   const [family, setFamily] = useState<FamilyKey | null>(null);
-  const [types, setTypes] = useState<ColorTypeKey[]>([]);
+  const [type, setType] = useState<ColorTypeKey | null>(null);
   const [pv, setPv] = useState<{ list: ExplorerColor[]; idx: number } | null>(null);
 
   // Facet counts. Each pill shows a contextual count (colors matching the OTHER
@@ -27,8 +27,8 @@ export function Explorer({ colors, styleBySlug }: Props) {
   // against the other — not itself — keeps every pill's number consistent with what
   // clicking it actually yields.
   const counts = useMemo(
-    () => familyCounts(colors.filter((c) => types.length === 0 || types.some((t) => c.types.includes(t)))),
-    [colors, types]);
+    () => familyCounts(colors.filter((c) => !type || c.types.includes(type))),
+    [colors, type]);
   const countsAll = useMemo(() => familyCounts(colors), [colors]);
   const tCounts = useMemo(
     () => typeCounts(colors.filter((c) => !family || c.family === family)),
@@ -40,23 +40,20 @@ export function Explorer({ colors, styleBySlug }: Props) {
   const countLabel = (n: number, total: number) => (n === total ? `${total}` : `${n}/${total}`);
 
   const bands = useMemo(
-    () => group === "flat" ? [] : groupIntoBands(colors, { group: "hue", family, types, sort }),
-    [colors, group, family, types, sort]);
+    () => group === "flat" ? [] : groupIntoBands(colors, { group: "hue", family, types: type ? [type] : [], sort }),
+    [colors, group, family, type, sort]);
   const ranking = useMemo(() => {
     if (group !== "flat") return [];
-    const filtered = types.length === 0
-      ? colors
-      : colors.filter((c) => types.some((t) => c.types.includes(t)));
+    const filtered = type ? colors.filter((c) => c.types.includes(type)) : colors;
     return rankColors(filtered, { family, sort });
-  }, [colors, group, family, types, sort]);
+  }, [colors, group, family, type, sort]);
 
   const openPv = (list: ExplorerColor[], idx: number) => setPv({ list, idx });
   const stepPv = (d: number) => setPv((s) => s ? { ...s, idx: (s.idx + d + s.list.length) % s.list.length } : s);
   const cur = pv ? pv.list[pv.idx] : null;
 
   const toggleFamily = (k: FamilyKey) => setFamily((f) => f === k ? null : k);
-  const toggleType = (k: ColorTypeKey) =>
-    setTypes((ts) => ts.includes(k) ? ts.filter((t) => t !== k) : [...ts, k]);
+  const toggleType = (k: ColorTypeKey) => setType((t) => t === k ? null : k);
 
   return (
     <div class="dc-explorer dc-page-x" style="padding-block: 26px 56px;">
@@ -100,7 +97,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
           <span style="font: 400 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">TYPE</span>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             {COLOR_TYPE_DEFS.filter((t) => tCountsAll[t.key] > 0).map((t) => {
-              const active = types.includes(t.key);
+              const active = type === t.key;
               const n = tCounts[t.key] ?? 0;
               const dim = n === 0 && !active;
               return (
@@ -110,7 +107,7 @@ export function Explorer({ colors, styleBySlug }: Props) {
                 </button>
               );
             })}
-            {types.length > 0 && <button onClick={() => setTypes([])} style="cursor: pointer; background: transparent; border: none; color: var(--accent-strong); font: 500 12px var(--font-ui); padding: 6px 4px;">Clear types ✕</button>}
+            {type && <button onClick={() => setType(null)} style="cursor: pointer; background: transparent; border: none; color: var(--accent-strong); font: 500 12px var(--font-ui); padding: 6px 4px;">Clear type ✕</button>}
           </div>
         </div>
       </div>

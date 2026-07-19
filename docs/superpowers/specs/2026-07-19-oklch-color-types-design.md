@@ -24,8 +24,11 @@ cannot be single-select.
 - **Scope: replace Tone + Shade.** The new type set absorbs the old Tone and Shade
   axes. **Family stays exactly as-is** (HSL-based hue grouping); only the retired
   Tone/Shade axes move to OKLCH.
-- **UI: types are a multi-select filter**, not a grouping mode. Filter semantics are
-  **OR** across selected type chips; combined with a Family selection as **AND**.
+- **UI: types are a single-select filter**, not a grouping mode. At most one type is
+  active at a time (like the Family filter); it combines with a Family selection as
+  **AND**. (The data model stays multi-*label* — a color still carries several type
+  tags; only the filter *selection* is single. This superseded an earlier
+  multi-select/OR design.)
 
 ## Design
 
@@ -113,10 +116,10 @@ Touch points:
 - Grouping toggle: drop "By tone" → **"By hue / Ungrouped"** only.
 - Remove the shade sub-filter chip row.
 - Add a **type filter chip row**: all 11 types with per-type counts (`typeCounts`),
-  multi-select. Selecting types filters with **OR** (a color shows if it has any
-  selected type). A Family selection combines as **AND** (that family, matching any
-  selected type). Chips use `COLOR_TYPE_DEFS` colors and the existing `.dc-card`
-  hover affordance, matching the current family/shade chip styling.
+  single-select (at most one active). Selecting a type shows colors carrying that
+  tag; a Family selection combines as **AND** (that family AND that type). Chips use
+  `COLOR_TYPE_DEFS` colors and the existing `.dc-card` hover affordance, matching the
+  Family chip styling.
 
 ### 5. Testing
 
