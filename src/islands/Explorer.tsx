@@ -21,8 +21,23 @@ export function Explorer({ colors, styleBySlug }: Props) {
   const [types, setTypes] = useState<ColorTypeKey[]>([]);
   const [pv, setPv] = useState<{ list: ExplorerColor[]; idx: number } | null>(null);
 
-  const counts = useMemo(() => familyCounts(colors), [colors]);
-  const tCounts = useMemo(() => typeCounts(colors), [colors]);
+  // Facet counts. Each pill shows a contextual count (colors matching the OTHER
+  // facet's current selection) alongside the catalog-wide total. Family pills honor
+  // the active type filter; type pills honor the active family. Counting each facet
+  // against the other — not itself — keeps every pill's number consistent with what
+  // clicking it actually yields.
+  const counts = useMemo(
+    () => familyCounts(colors.filter((c) => types.length === 0 || types.some((t) => c.types.includes(t)))),
+    [colors, types]);
+  const countsAll = useMemo(() => familyCounts(colors), [colors]);
+  const tCounts = useMemo(
+    () => typeCounts(colors.filter((c) => !family || c.family === family)),
+    [colors, family]);
+  const tCountsAll = useMemo(() => typeCounts(colors), [colors]);
+
+  // "n/total" when the contextual count is narrowed; just the total otherwise. The
+  // pill reserves a fixed-width slot for this (.dc-pill-count) so it never resizes.
+  const countLabel = (n: number, total: number) => (n === total ? `${total}` : `${n}/${total}`);
 
   const bands = useMemo(
     () => group === "flat" ? [] : groupIntoBands(colors, { group: "hue", family, types, sort }),
@@ -68,12 +83,14 @@ export function Explorer({ colors, styleBySlug }: Props) {
       <div style="margin-top: 18px;">
         <div style="font: 400 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-bottom: 12px;">BASIC COLORS — CLICK TO NARROW</div>
         <div style="display: flex; gap: 9px; flex-wrap: wrap;">
-          {FAMILY_DEFS.map((f) => {
+          {FAMILY_DEFS.filter((f) => countsAll[f.key] > 0).map((f) => {
             const active = family === f.key;
+            const n = counts[f.key] ?? 0;
+            const dim = n === 0 && !active;
             return (
-              <button key={f.key} onClick={() => toggleFamily(f.key)} style={`cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 8px 14px 8px 10px; font: 500 13px var(--font-ui); border: 1px solid ${active ? "var(--ink)" : "var(--field-border)"}; background: ${active ? "var(--ink)" : "#fff"}; color: ${active ? "#fff" : "var(--ink)"};`}>
+              <button key={f.key} disabled={dim} onClick={() => toggleFamily(f.key)} style={`cursor: ${dim ? "default" : "pointer"}; opacity: ${dim ? "0.4" : "1"}; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 8px 14px 8px 10px; font: 500 13px var(--font-ui); border: 1px solid ${active ? "var(--ink)" : "var(--field-border)"}; background: ${active ? "var(--ink)" : "#fff"}; color: ${active ? "#fff" : "var(--ink)"};`}>
                 <span style={`width: 15px; height: 15px; border-radius: 50%; background-color: ${f.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
-                {f.name}<span style="font: 400 11px var(--font-mono); opacity: 0.6;">{counts[f.key]}</span>
+                {f.name}<span class="dc-pill-count" style="font: 400 11px var(--font-mono); opacity: 0.6;">{countLabel(n, countsAll[f.key])}</span>
               </button>
             );
           })}
@@ -82,12 +99,14 @@ export function Explorer({ colors, styleBySlug }: Props) {
         <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
           <span style="font: 400 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">TYPE</span>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            {COLOR_TYPE_DEFS.filter((t) => tCounts[t.key] > 0).map((t) => {
+            {COLOR_TYPE_DEFS.filter((t) => tCountsAll[t.key] > 0).map((t) => {
               const active = types.includes(t.key);
+              const n = tCounts[t.key] ?? 0;
+              const dim = n === 0 && !active;
               return (
-                <button key={t.key} onClick={() => toggleType(t.key)} style={`cursor: pointer; display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 6px 12px 6px 8px; font: 500 12px var(--font-ui); border: 1px solid ${active ? "var(--ink)" : "var(--field-border)"}; background: ${active ? "var(--ink)" : "#fff"}; color: ${active ? "#fff" : "var(--ink)"};`}>
+                <button key={t.key} disabled={dim} onClick={() => toggleType(t.key)} style={`cursor: ${dim ? "default" : "pointer"}; opacity: ${dim ? "0.4" : "1"}; display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 6px 12px 6px 8px; font: 500 12px var(--font-ui); border: 1px solid ${active ? "var(--ink)" : "var(--field-border)"}; background: ${active ? "var(--ink)" : "#fff"}; color: ${active ? "#fff" : "var(--ink)"};`}>
                   <span style={`width: 13px; height: 13px; border-radius: 50%; background-color: ${t.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
-                  {t.name}<span style="font: 400 10px var(--font-mono); opacity: 0.6;">{tCounts[t.key]}</span>
+                  {t.name}<span class="dc-pill-count" style="font: 400 10px var(--font-mono); opacity: 0.6;">{countLabel(n, tCountsAll[t.key])}</span>
                 </button>
               );
             })}
