@@ -1,11 +1,10 @@
 {
-  "name": "Windows 3.1",
-  "year": 1992,
+  "name": "Windows NT 3.x",
+  "year": 1993,
   "family": "Windows",
-  "tagline": "The desktop that taught the world to point and click — with a scheme for every taste.",
-  "description": "Windows 3.1 (1992) brought a graphical desktop to the mass market and expanded the Control Panel's Color applet with a rich set of named schemes — from the tasteful Designer and Tweed to the infamous Hot Dog Stand. On top of a customizable palette, these schemes let users repaint the entire desktop, setting the visual habits Windows 95 would inherit.",
-  "predecessor": "windows-3-0",
-  "successor": "windows-95",
+  "tagline": "The first Windows NT — a 32-bit workstation dressed in Program Manager teal.",
+  "description": "Windows NT 3.1 through 3.51 (1993–1995) launched Microsoft's NT line: a 32-bit, hardware-portable operating system for workstations and servers, wearing the familiar Program Manager face of Windows 3.1. Across the whole 3.x series the default Windows Default scheme painted the desktop teal — the color the NT and 9x lines would carry for years — atop the same grid of basic swatches and named color schemes.",
+  "successor": "windows-nt-4-0",
   "desktopStyle": "modern",
   "colors": [
     { "hex": "#3f7c7c", "name": "Muted Teal", "index": "—", "note": "Used in the Designer theme." },
@@ -32,7 +31,7 @@
     { "hex": "#804040", "name": "Brick", "index": "17", "note": "Used in the Cinnamon theme." },
     { "hex": "#ffff00", "name": "Yellow", "index": "18", "note": "Used in the Hot Dog Stand theme." },
     { "hex": "#00ff00", "name": "Green", "index": "19" },
-    { "hex": "#008080", "name": "Teal", "index": "20", "note": "Used in the Ocean theme." },
+    { "hex": "#008080", "name": "Teal", "index": "20", "note": "The default background — the Windows Default and Ocean themes.", "default": true },
     { "hex": "#004080", "name": "Navy Blue", "index": "21", "note": "Used in the Arizona and The Blues themes." },
     { "hex": "#8080ff", "name": "Periwinkle", "index": "22" },
     { "hex": "#800040", "name": "Maroon", "index": "23", "note": "Used in the Bordeaux theme." },
@@ -58,7 +57,7 @@
     { "hex": "#808040", "name": "Khaki", "index": "43", "note": "Used in the Wing Tips theme." },
     { "hex": "#808080", "name": "Gray", "index": "44", "note": "Used in the LCD Default Screen Settings theme." },
     { "hex": "#408080", "name": "Dusty Teal", "index": "45" },
-    { "hex": "#c0c0c0", "name": "Silver", "index": "46", "note": "The Windows Default theme. Also used in the Monochrome and Rugby themes.", "default": true },
+    { "hex": "#c0c0c0", "name": "Silver", "index": "46", "note": "Used in the Monochrome and Rugby themes." },
     { "hex": "#828282", "name": "Ash Gray", "index": "47" },
     { "hex": "#ffffff", "name": "White", "index": "48" }
   ]

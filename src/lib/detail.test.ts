@@ -64,6 +64,8 @@ describe("buildOsDetail", () => {
     const teal = view.colors[0]; // teal first shipped by CDE (1993) < Win95 (1995)
     expect(teal.firstUse.slug).toBe("cde");
     expect(teal.firstUse.self).toBe(false);
+    // href points to THIS color within the first-use OS, not that OS's default
+    expect(teal.firstUse.href).toBe("/os/cde/008080");
     const navy = view.colors[1]; // navy only in win95
     expect(navy.firstUse.self).toBe(true);
   });

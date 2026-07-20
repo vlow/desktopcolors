@@ -102,5 +102,3 @@ sudo -u desktopcolors bash deploy/rebuild.sh   # republish now (or wait for the 
   request time.
 - The counter stores only aggregate scores (no IPs). nginx logs are
   IP-anonymized and `/api/event` is not logged at all.
-- Fill in the real Buy-Me-a-Coffee handle in `src/pages/about.astro` before launch
-  (marked with a `TODO(owner)` comment).

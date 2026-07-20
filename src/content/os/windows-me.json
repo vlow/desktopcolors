@@ -1,13 +1,14 @@
 {
-  "name": "Windows 95",
-  "year": 1995,
+  "name": "Windows Me",
+  "year": 2000,
   "family": "Windows",
-  "tagline": "Teal defined the era — the first face millions saw at boot.",
-  "description": "The operating system that put a solid teal desktop in front of millions. From Display Properties you could set the background to any color — the Color dialog offered a grid of 48 basic swatches plus custom colors — but teal was the face of the era.",
-  "predecessor": "windows-3-1",
-  "successor": "windows-98",
+  "tagline": "The last of the 9x line — dressed in Windows Classic blue.",
+  "description": "Windows Me (Millennium Edition, 2000) was the final release built on the 9x kernel, aimed at home users with System Restore and multimedia tools. It wore the same Windows Classic desktop blue as Windows 2000, and kept the familiar grid of basic swatches and named schemes carried through the 9x era.",
+  "predecessor": "windows-98",
+  "successor": "windows-xp",
   "desktopStyle": "modern",
   "colors": [
+    { "hex": "#3a6ea5", "name": "Redmond Blue", "index": "—", "note": "The default background — the Windows Classic and Windows Standard schemes.", "default": true },
     { "hex": "#420000", "name": "Oxblood", "index": "—", "note": "Used in the Brick theme." },
     { "hex": "#a28d68", "name": "Desert Sand", "index": "—", "note": "Used in the Desert theme." },
     { "hex": "#2c4e47", "name": "Marine Green", "index": "—", "note": "Used in the Marine theme." },
@@ -36,7 +37,7 @@
     { "hex": "#804040", "name": "Brick", "index": "17" },
     { "hex": "#ff8040", "name": "Orange", "index": "18" },
     { "hex": "#00ff00", "name": "Green", "index": "19" },
-    { "hex": "#008080", "name": "Teal", "index": "20", "note": "The signature default background of Windows 95 — the Windows Standard theme.", "default": true },
+    { "hex": "#008080", "name": "Teal", "index": "20" },
     { "hex": "#004080", "name": "Navy Blue", "index": "21" },
     { "hex": "#8080ff", "name": "Periwinkle", "index": "22" },
     { "hex": "#800040", "name": "Maroon", "index": "23" },
@@ -65,9 +66,9 @@
     { "hex": "#c0c0c0", "name": "Silver", "index": "46" },
     { "hex": "#400040", "name": "Dark Purple", "index": "47" },
     { "hex": "#ffffff", "name": "White", "index": "48", "note": "Used in the High Contrast White theme." },
-    { "hex": "#c0dfc0", "name": "Money Green", "index": "—" },
-    { "hex": "#a7c8f0", "name": "Sky Blue", "index": "—" },
-    { "hex": "#fff8f0", "name": "Cream", "index": "—" },
-    { "hex": "#a0a0a7", "name": "Medium Gray", "index": "—" }
+    { "hex": "#d4d0c8", "name": "Bone", "index": "—" },
+    { "hex": "#a6caf0", "name": "Sky Blue", "index": "—" },
+    { "hex": "#fffbf0", "name": "Cream", "index": "—" },
+    { "hex": "#a0a0a4", "name": "Medium Gray", "index": "—" }
   ]
 }

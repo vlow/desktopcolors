@@ -1,12 +1,12 @@
 {
-  "name": "BeOS (Demo)",
+  "name": "BeOS",
   "year": 1995,
   "family": "BeOS",
-  "tagline": "The Be Operating System's bright cyan desktop.",
-  "description": "BeOS arrived with a confident bright cyan desktop that matched its multimedia-first ambitions. Sleek and modern for its era, it attracted a devoted following despite never reaching the mainstream.",
+  "tagline": "The multimedia OS with a calm, steady blue desktop.",
+  "description": "BeOS was a multimedia-first operating system built in the mid-1990s around a fast, responsive desktop. Modern and focused for its era, it drew a devoted following despite never reaching the mainstream — and its steady slate-blue desktop became its signature.",
+  "successor": "haiku",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#33aabb", "name": "Cyan", "note": "The Be Operating System's bright cyan desktop.", "default": true },
-    { "hex": "#dedede", "name": "Light Gray" }
+    { "hex": "#336698", "name": "Steel Blue", "note": "The BeOS desktop blue.", "default": true }
   ]
 }
