@@ -1,0 +1,15 @@
+{
+  "name": "Amiga Workbench 2.0",
+  "year": 1990,
+  "family": "Amiga",
+  "tagline": "The gray refresh: Workbench 2.0 traded blue for a cool 3D gray.",
+  "description": "Workbench 2.0 (1990) gave the Amiga desktop a complete visual overhaul, replacing the bold blue of the 1.x era with a restrained gray-and-blue '3D' look. Its new default palette — a neutral gray desktop, crisp black and white, and a soft steel blue for selections — set the tone for Workbench through the 3.x years.",
+  "predecessor": "amiga-workbench",
+  "desktopStyle": "amiga",
+  "colors": [
+    { "hex": "#aaaaaa", "name": "Workbench Gray", "index": "0", "note": "The Workbench 2.0 gray desktop.", "default": true },
+    { "hex": "#000000", "name": "Black", "index": "1", "note": "Text and detail." },
+    { "hex": "#ffffff", "name": "White", "index": "2", "note": "Highlights and text." },
+    { "hex": "#6688bb", "name": "Cornflower Blue", "index": "3", "note": "Selections and title bars." }
+  ]
+}

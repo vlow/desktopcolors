@@ -162,8 +162,7 @@ build. See the full guide, written for humans and LLM agents, in
 ## Deploy
 
 See **[`deploy/SETUP.md`](deploy/SETUP.md)** for the full runbook (Go/Node install, service user, systemd
-units, nginx + Let's Encrypt, first publish, and end-to-end verification). Before launch, set your real
-Buy-Me-a-Coffee handle in `src/pages/about.astro` (marked with a `TODO(owner)` comment).
+units, nginx + Let's Encrypt, first publish, and end-to-end verification).
 
 ## Design & plans
 

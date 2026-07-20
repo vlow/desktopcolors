@@ -1,5 +1,9 @@
 <svg viewBox="0 0 32 32" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-  <rect x="1" y="1" width="30" height="30" rx="7" fill="#fafaf9" stroke="rgba(0,0,0,0.1)"></rect>
-  <text x="12" y="24" text-anchor="middle" font-family="'Space Grotesk', system-ui, sans-serif" font-weight="700" font-size="24" fill="#1c1917">d</text>
-  <circle cx="24" cy="22" r="3" fill="#a8a29e"></circle>
+  <defs><clipPath id="c5a"><rect x="1" y="1" width="30" height="30" rx="7"></rect></clipPath></defs>
+  <g clip-path="url(#c5a)">
+    <rect x="0" y="0" width="32" height="32" fill="#008080"></rect>
+    <rect x="6" y="7" width="7" height="7" rx="1.5" fill="#fafaf9" opacity="0.92"></rect>
+    <rect x="0" y="24" width="32" height="8" fill="#0b3a3a"></rect>
+  </g>
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="none" stroke="rgba(0,0,0,0.12)"></rect>
 </svg>

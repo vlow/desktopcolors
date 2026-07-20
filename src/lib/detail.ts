@@ -59,7 +59,7 @@ export function buildOsDetail(entries: OsEntry[], catalog: Catalog, slug: string
       ral: { code: ral.code, name: ral.name, hex: ral.hex },
       ralDesign: { code: ralDesign.code, name: ralDesign.name, hex: ralDesign.hex },
       similar,
-      firstUse: { ...fu, self: fu.slug === slug, href: `/os/${fu.slug}` },
+      firstUse: { ...fu, self: fu.slug === slug, href: colorPath(fu.slug, c.hex) },
     };
   });
 

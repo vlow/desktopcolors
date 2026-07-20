@@ -1,15 +1,15 @@
 {
-  "name": "Amiga Workbench (Demo)",
+  "name": "Amiga Workbench 1.x",
   "year": 1985,
   "family": "Amiga",
   "tagline": "Four-color glory: the unmistakable Workbench palette.",
-  "description": "The Amiga Workbench desktop shipped with an iconic four-color palette. Its blue-and-orange look is instantly recognizable to a generation of computer users.",
-  "desktopStyle": "modern",
+  "description": "Workbench 1.0 through 1.3 (1985–1988) drove the Amiga's desktop with a famously economical four-color palette: a blue background, a near-black navy for text, white for highlights, and a warm orange accent. That blue-and-orange look is instantly recognizable to a generation of computer users.",
+  "successor": "amiga-workbench-2-0",
+  "desktopStyle": "amiga",
   "colors": [
-    { "hex": "#0055aa", "name": "Workbench Blue", "index": "0", "note": "The iconic default background.", "default": true },
-    { "hex": "#a0a0a0", "name": "Gray", "index": "1", "note": "Workbench 2.0 and later." },
-    { "hex": "#ffffff", "name": "White", "index": "2", "note": "Text and UI." },
-    { "hex": "#000000", "name": "Black", "index": "3", "note": "Detail and outlines." },
-    { "hex": "#ff8800", "name": "Orange", "note": "Signature accent." }
+    { "hex": "#0055aa", "name": "Workbench Blue", "index": "0", "note": "The iconic Workbench 1.x background.", "default": true },
+    { "hex": "#000022", "name": "Midnight", "index": "1", "note": "Text and detail." },
+    { "hex": "#ffffff", "name": "White", "index": "2", "note": "Highlights and text." },
+    { "hex": "#ff8800", "name": "Orange", "index": "3", "note": "Signature accent." }
   ]
 }
