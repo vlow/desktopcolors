@@ -52,7 +52,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
         it.altColors.some((c) => c.name.toLowerCase().includes(q) || c.hex.includes(q)));
     }
     // Default direction per sort: popularity → most first, year → oldest first,
-    // A–Z → ascending. Reverse flips whichever is active.
+    // new → newest first, A–Z → ascending. Reverse flips whichever is active.
     const cmp: Record<SortKey, (a: BrowseItem, b: BrowseItem) => number> = {
       popular: (a, b) => b.score - a.score,
       year: (a, b) => a.year - b.year,
