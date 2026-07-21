@@ -11,6 +11,7 @@
   --panel: #ffffff;
   --accent: oklch(0.55 0.17 255);
   --accent-strong: oklch(0.5 0.17 255);
+  --accent-tint: oklch(0.96 0.03 255);
   --font-ui: "Space Grotesk", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   /* Page-wide horizontal inset. Header, page content, and footer all use it
