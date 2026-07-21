@@ -98,6 +98,9 @@ a { color: inherit; text-decoration: none; }
   .dc-rank-pv { grid-column: 4; grid-row: 1; }
   .dc-rank-pv-label { display: none; }
   .dc-rank-bar { grid-column: 3 / -1; grid-row: 2; }
+  .dc-os-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .dc-os-panel { padding: 14px 14px !important; }
+  .dc-infobox { padding: 14px 14px !important; }
 }
 
 /* Download sheet — a centered modal on desktop becomes a bottom sheet on
