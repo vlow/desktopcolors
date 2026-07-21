@@ -6,7 +6,7 @@ import type { OsDetailView } from "../lib/detail";
 
 const view: OsDetailView = {
   os: {
-    slug: "windows-95", name: "Windows 95", year: 1995, family: "Windows",
+    slug: "windows-95", name: "Windows 95", year: 1995, added: "2000-01-01", family: "Windows",
     tagline: "t", description: "The teal era.", desktopStyle: "win9x",
     defaultHex: "#008080", colorCount: 2, score: 0, scoreLabel: "< 1k",
     predecessor: null, successor: { slug: "windows-98", name: "Windows 98", year: 1998 },
