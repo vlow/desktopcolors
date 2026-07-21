@@ -144,3 +144,38 @@ export function buildOsUniverse(catalog: Catalog): OsUniverse {
   }
   return { fams };
 }
+
+export type OsMode = "any" | "all";
+
+export function osMatch(
+  hex: string,
+  platformsByHex: Record<string, Platform[]>,
+  osSel: Record<string, true>,
+  mode: OsMode,
+): boolean {
+  const keys = Object.keys(osSel).filter((k) => osSel[k]);
+  if (keys.length === 0) return true;
+  const slugs = new Set((platformsByHex[hex.toLowerCase()] ?? []).map((p) => p.slug));
+  return mode === "all" ? keys.every((k) => slugs.has(k)) : keys.some((k) => slugs.has(k));
+}
+
+export function osOptionDisabled(
+  candidateSlug: string,
+  opts: {
+    universe: ExplorerColor[];
+    platformsByHex: Record<string, Platform[]>;
+    osSel: Record<string, true>;
+    mode: OsMode;
+  },
+): boolean {
+  const { universe, platformsByHex, osSel, mode } = opts;
+  const selected = Object.keys(osSel).filter((k) => osSel[k]);
+  if (selected.includes(candidateSlug)) return false; // never disable a selected OS
+  const shipsOn = (hex: string, slug: string): boolean =>
+    (platformsByHex[hex.toLowerCase()] ?? []).some((p) => p.slug === slug);
+  if (mode === "all") {
+    const need = [...selected, candidateSlug];
+    return !universe.some((c) => need.every((s) => shipsOn(c.hex, s)));
+  }
+  return !universe.some((c) => shipsOn(c.hex, candidateSlug));
+}

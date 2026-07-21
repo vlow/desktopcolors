@@ -182,3 +182,56 @@ describe("buildOsUniverse", () => {
     expect(uni.fams.map((f) => f.name)).toContain("Be");
   });
 });
+
+import { osMatch, osOptionDisabled } from "./explorer";
+import type { Platform, ExplorerColor } from "./explorer";
+
+const P = (slug: string, isDefault = false): Platform =>
+  ({ slug, name: slug, year: 2000, family: "F", isDefault });
+
+// teal ships on w95+w98; red ships on w95+beos.
+const pmap: Record<string, Platform[]> = {
+  "#008080": [P("w95", true), P("w98", true)],
+  "#ff0000": [P("w95"), P("beos", true)],
+};
+const C = (hex: string, family: ExplorerColor["family"], types: ExplorerColor["types"]): ExplorerColor =>
+  ({ hex, name: hex, family, types, h: 0, s: 0, l: 0, onColor: "#fff", score: 0, scoreLabel: "0", yearRange: "2000", primarySlug: "w95", href: "/x" });
+const universe: ExplorerColor[] = [C("#008080", "teal", ["cool"]), C("#ff0000", "red", ["warm"])];
+
+describe("osMatch", () => {
+  it("matches all when nothing is selected", () => {
+    expect(osMatch("#008080", pmap, {}, "any")).toBe(true);
+  });
+  it("ANY: color ships on at least one selected OS", () => {
+    expect(osMatch("#ff0000", pmap, { beos: true }, "any")).toBe(true);
+    expect(osMatch("#008080", pmap, { beos: true }, "any")).toBe(false);
+  });
+  it("ALL: color ships on every selected OS", () => {
+    expect(osMatch("#008080", pmap, { w95: true, w98: true }, "all")).toBe(true);
+    expect(osMatch("#ff0000", pmap, { w95: true, w98: true }, "all")).toBe(false);
+  });
+});
+
+describe("osOptionDisabled", () => {
+  const base = { universe, platformsByHex: pmap, osSel: {} as Record<string, true>, mode: "any" as const };
+
+  it("ANY: disabled when no color in the universe ships on it", () => {
+    // restrict universe to reds only → w98 (teal-only) is impossible
+    const redOnly = { ...base, universe: [C("#ff0000", "red", ["warm"])] };
+    expect(osOptionDisabled("w98", redOnly)).toBe(true);
+    expect(osOptionDisabled("beos", redOnly)).toBe(false);
+  });
+
+  it("never disables an already-selected OS", () => {
+    const redOnly = { ...base, universe: [C("#ff0000", "red", ["warm"])], osSel: { w98: true } };
+    expect(osOptionDisabled("w98", redOnly)).toBe(false);
+  });
+
+  it("ALL: disabled when adding it would empty the result", () => {
+    // beos selected in ALL mode; only red ships on beos. Adding w98 (teal-only) empties it.
+    const allBeos = { ...base, mode: "all" as const, osSel: { beos: true } };
+    expect(osOptionDisabled("w98", allBeos)).toBe(true);
+    // w95 also ships red, so beos+w95 still yields red → enabled
+    expect(osOptionDisabled("w95", allBeos)).toBe(false);
+  });
+});
