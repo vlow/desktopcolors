@@ -5,6 +5,7 @@ export interface BrowseItem {
   slug: string;
   name: string;
   year: number;
+  added: string;
   family: string;
   tagline: string;
   defaultHex: string;
@@ -16,12 +17,13 @@ export interface BrowseItem {
   listColors: { hex: string; name: string; default?: boolean }[];
 }
 
-type SortKey = "popular" | "year" | "alpha";
+type SortKey = "popular" | "year" | "alpha" | "new";
 
-// icon = the sort *type* glyph (★ popularity, ◷ chronological, none for A–Z).
+// icon = the sort *type* glyph (★ popularity, ◷ chronological, ✦ recently added, none for A–Z).
 const SORTS: { key: SortKey; label: string; icon: string; full: string }[] = [
   { key: "popular", label: "Popular", icon: "★", full: "Popularity" },
   { key: "year", label: "Year", icon: "◷", full: "Chronological" },
+  { key: "new", label: "New", icon: "✦", full: "Recently added" },
   { key: "alpha", label: "A–Z", icon: "", full: "Alphabetical" },
 ];
 
@@ -54,6 +56,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
     const cmp: Record<SortKey, (a: BrowseItem, b: BrowseItem) => number> = {
       popular: (a, b) => b.score - a.score,
       year: (a, b) => a.year - b.year,
+      new: (a, b) => b.added.localeCompare(a.added),
       alpha: (a, b) => a.name.localeCompare(b.name),
     };
     return [...list].sort((a, b) => (rev ? -cmp[sort](a, b) : cmp[sort](a, b)));
@@ -68,6 +71,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
   const dirWord: Record<SortKey, string> = {
     popular: rev ? "least first" : "most first",
     year: rev ? "newest first" : "oldest first",
+    new: rev ? "oldest first" : "newest first",
     alpha: rev ? "Z → A" : "A → Z",
   };
 

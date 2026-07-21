@@ -7,7 +7,7 @@ const catalog = await loadCatalog();
 // Baked default order = Popular (score desc, stable by input order).
 const ordered = [...catalog.osList].sort((a, b) => b.score - a.score);
 const items: BrowseItem[] = ordered.map((o) => ({
-  slug: o.slug, name: o.name, year: o.year, family: o.family, tagline: o.tagline,
+  slug: o.slug, name: o.name, year: o.year, added: o.added, family: o.family, tagline: o.tagline,
   defaultHex: o.defaultHex, colorCount: o.colorCount, score: o.score, scoreLabel: o.scoreLabel,
   altColors: o.colors.filter((c) => !c.isDefault).map((c) => ({ hex: c.hex, name: c.name })),
   href: `/os/${o.slug}`,
