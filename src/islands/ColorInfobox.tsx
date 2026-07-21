@@ -79,11 +79,11 @@ export function ColorInfobox({ color, platforms, variant, onPreview, onDownload 
         <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 6px;">COLOR VALUES · CLICK TO COPY</div>
         <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 14px 14px;">
           {rows.map((row) => (
-            <span key={row.key} data-testid={`copy-${row.key}`} title={`Copy ${row.label}`} onClick={() => copy(row.key, row.toCopy)} style="display: inline-flex; align-items: center; gap: 9px; border: 1px solid var(--card-border); border-radius: 8px; padding: 7px 11px; cursor: pointer;">
+            <button type="button" key={row.key} data-testid={`copy-${row.key}`} title={`Copy ${row.label}`} onClick={() => copy(row.key, row.toCopy)} style="display: inline-flex; align-items: center; gap: 9px; border: 1px solid var(--card-border); border-radius: 8px; padding: 7px 11px; cursor: pointer; background: none; font: inherit; color: inherit; text-align: left;">
               <span style="font: 400 9px var(--font-mono); letter-spacing: 1px; color: var(--faint);">{row.label}</span>
               <span style="font: 500 13px var(--font-mono); color: var(--ink);">{row.value}</span>
               <span style={`font: 500 10px var(--font-mono); width: 60px; text-align: right; color: ${copied === row.key ? "var(--accent-strong)" : "#cbc7c1"};`}>{copied === row.key ? "Copied ✓" : "Copy"}</span>
-            </span>
+            </button>
           ))}
         </div>
       </div>

@@ -31,6 +31,13 @@ describe("ColorInfobox", () => {
     expect(onDownload).toHaveBeenCalledOnce();
   });
 
+  it("renders copy controls as focusable buttons (keyboard-accessible)", () => {
+    render(<ColorInfobox color={color} platforms={platforms} variant="flat" onPreview={() => {}} onDownload={() => {}} />);
+    for (const key of ["hex", "rgb", "hsl", "cmyk"]) {
+      expect(screen.getByTestId(`copy-${key}`).tagName).toBe("BUTTON");
+    }
+  });
+
   it("omits the color header in the flat variant", () => {
     const { rerender } = render(<ColorInfobox color={color} platforms={platforms} variant="band" onPreview={() => {}} onDownload={() => {}} />);
     expect(screen.queryByText("Teal")).toBeTruthy();

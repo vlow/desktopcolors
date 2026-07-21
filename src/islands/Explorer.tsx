@@ -85,6 +85,11 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
   const toggleFamily = (k: FamilyKey) => setFamily((f) => f === k ? null : k);
   const toggleType = (k: ColorTypeKey) => setType((t) => t === k ? null : k);
   const toggleExp = (hex: string) => setExp((e) => e === hex ? null : hex);
+  // Keyboard activation for the div-based leaderboard rows (Enter/Space), so the
+  // in-place infobox is reachable without a mouse. Space is prevented from scrolling.
+  const onRowKey = (e: KeyboardEvent, hex: string) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleExp(hex); }
+  };
 
   const toggleOsSlug = (slug: string) => setOsSel((s) => {
     const next = { ...s };
@@ -273,7 +278,9 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
             const open = exp === c.hex;
             return (
               <div key={c.hex}>
-                <div data-testid="rank-row" class="dc-rank-row" onClick={() => toggleExp(c.hex)}
+                <div data-testid="rank-row" class="dc-rank-row" role="button" tabIndex={0}
+                  aria-expanded={open} aria-label={`${c.name} ${c.hex} — ${open ? "hide" : "show"} details`}
+                  onClick={() => toggleExp(c.hex)} onKeyDown={(e) => onRowKey(e, c.hex)}
                   style={`cursor: pointer; display: grid; grid-template-columns: 40px 56px 1fr 220px 84px; gap: 16px; align-items: center; padding: 10px; border-radius: ${open ? "12px 12px 0 0" : "12px"}; ${open ? "border: 1px solid var(--field-border); border-bottom: none; border-left: 3px solid var(--accent); padding: 9px 9px 10px 8px;" : ""} background: ${open ? "#fbfaf9" : "transparent"};`}>
                   <span style="font: 600 20px var(--font-mono); color: #cbc7c2; text-align: right;">{c.rank}</span>
                   <span class="dc-rank-swatch" style={`display: block; height: 56px; border-radius: 10px; background-color: ${c.hex}; box-shadow: ${open ? "inset 0 0 0 2px var(--accent)" : "inset 0 0 0 1px rgba(0,0,0,0.1)"};`} />

@@ -136,4 +136,16 @@ describe("Explorer", () => {
     expect((screen.getByRole("button", { name: "Windows 98" }) as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByRole("button", { name: "BeOS" }) as HTMLButtonElement).disabled).toBe(false);
   });
+
+  it("ungrouped rows are keyboard-operable (role=button, tabindex, Enter toggles)", () => {
+    render(<Explorer {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "Ungrouped" }));
+    const row = screen.getAllByTestId("rank-row")[0];
+    expect(row.getAttribute("role")).toBe("button");
+    expect(row.getAttribute("tabindex")).toBe("0");
+    expect(row.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.keyDown(row, { key: "Enter" });
+    expect(screen.getByText("SHIPPED ON THESE PLATFORMS")).toBeTruthy();
+    expect(screen.getAllByTestId("rank-row")[0].getAttribute("aria-expanded")).toBe("true");
+  });
 });
