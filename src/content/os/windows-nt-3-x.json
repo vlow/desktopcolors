@@ -1,6 +1,7 @@
 {
   "name": "Windows NT 3.x",
   "year": 1993,
+  "added": "2026-07-20",
   "family": "Windows",
   "tagline": "The first Windows NT — a 32-bit workstation dressed in Program Manager teal.",
   "description": "Windows NT 3.1 through 3.51 (1993–1995) launched Microsoft's NT line: a 32-bit, hardware-portable operating system for workstations and servers, wearing the familiar Program Manager face of Windows 3.1. Across the whole 3.x series the default Windows Default scheme painted the desktop teal — the color the NT and 9x lines would carry for years — atop the same grid of basic swatches and named color schemes.",

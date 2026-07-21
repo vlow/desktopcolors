@@ -1,6 +1,7 @@
 {
   "name": "ReactOS",
   "year": 1998,
+  "added": "2026-07-20",
   "family": "ReactOS",
   "tagline": "The open-source Windows, rebuilt from nothing — classic desktop, real colors.",
   "description": "ReactOS is a free and open-source operating system that reimplements Windows from the ground up, aiming for binary compatibility with Windows NT applications and drivers. Its desktop can wear several looks — the modern Mizu theme, the flat Lautus and Lunar styles, or the Classic Windows-style Display control panel with its full grid of color schemes. Each style-and-scheme pairing paints the desktop a different background color, on top of the same 48-swatch palette Windows users will recognize.",

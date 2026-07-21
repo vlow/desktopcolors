@@ -18,6 +18,7 @@ const osSchema = z.object({
   name: z.string().min(1),
   slug: z.string().regex(/^[a-z0-9-]+$/).optional(),
   year: z.number().int(),
+  added: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "must be YYYY-MM-DD"),
   family: z.string().min(1),
   tagline: z.string().min(1),
   description: z.string().min(1),

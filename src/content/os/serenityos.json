@@ -1,6 +1,7 @@
 {
   "name": "SerenityOS",
   "year": 2018,
+  "added": "2026-07-20",
   "family": "SerenityOS",
   "tagline": "A love letter to '90s desktops — built from scratch, themed to the teeth.",
   "description": "SerenityOS is a from-scratch, Unix-like operating system for the modern age that lovingly recreates the look and feel of late-1990s desktops. Built by a community of hobbyists, it pairs a classic taskbar-and-window interface with a deep set of built-in themes — from Basalt and Nord to Cupertino and Redmond — each recoloring the desktop over a bright, Tango-inspired system palette.",
