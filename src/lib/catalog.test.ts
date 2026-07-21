@@ -5,12 +5,12 @@ import type { OsInput } from "../content/config";
 import { parseScores } from "./scores";
 
 const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => ({
-  name: "X", year: 2000, family: "Fam", tagline: "t", description: "d",
+  name: "X", year: 2000, added: "2000-01-01", family: "Fam", tagline: "t", description: "d",
   desktopStyle: "generic", ...over,
 });
 
 const entries: OsEntry[] = [
-  { slug: "windows-95", data: os({ name: "Windows 95", year: 1995, successor: "windows-98", colors: [
+  { slug: "windows-95", data: os({ name: "Windows 95", year: 1995, added: "2026-07-17", successor: "windows-98", colors: [
     { hex: "#008080", name: "Teal", index: "3", note: "n", default: true },
     { hex: "#000080", name: "Navy", index: "1", note: "", default: false },
   ] }) },
@@ -48,6 +48,11 @@ describe("buildCatalog", () => {
     const w95 = cat.bySlug.get("windows-95")!;
     expect(w95.successor).toEqual({ slug: "windows-98", name: "Windows 98", year: 1998 });
     expect(w95.predecessor).toBeNull();
+  });
+
+  it("threads the added archive date onto the OsView", () => {
+    expect(cat.bySlug.get("windows-95")!.added).toBe("2026-07-17");
+    expect(cat.bySlug.get("windows-98")!.added).toBe("2000-01-01");
   });
 
   it("exposes merged colors with scores", () => {
