@@ -34,6 +34,7 @@ export interface OsView {
   slug: string;
   name: string;
   year: number;
+  added: string;
   family: string;
   tagline: string;
   description: string;
@@ -96,7 +97,7 @@ export function buildCatalog(entries: OsEntry[], scores: Scores): Catalog {
     const def = defaultColor(data);
     const score = osScore(scores, slug);
     return {
-      slug, name: data.name, year: data.year, family: data.family,
+      slug, name: data.name, year: data.year, added: data.added, family: data.family,
       tagline: data.tagline, description: data.description, desktopStyle: data.desktopStyle,
       colors, defaultHex: def.hex.toLowerCase(), colorCount: colors.length,
       score, scoreLabel: formatScore(score),

@@ -1,6 +1,7 @@
 {
   "name": "Solaris 9",
   "year": 2002,
+  "added": "2026-07-21",
   "family": "Solaris",
   "tagline": "CDE backdrops and the violet field behind an iconic Solaris watermark.",
   "description": "Solaris 9 shipped with CDE as its default desktop environment. CDE treats the workspace surface as a selectable Backdrop rather than a freely chosen background color, and several of its bundled Backdrops are solid fields. This palette records those colors, along with the solid violet beneath the watermark of the default SolarisLogo Backdrop.",

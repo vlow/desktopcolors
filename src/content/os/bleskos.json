@@ -1,6 +1,7 @@
 {
   "name": "BleskOS",
   "year": 2020,
+  "added": "2026-07-20",
   "family": "BleskOS",
   "tagline": "A tiny hobby OS with a boldly green desktop.",
   "description": "BleskOS is a small open-source hobby operating system written from scratch in C for x86 PCs. Minimal and self-contained, it greets you with a plain, boldly green desktop.",

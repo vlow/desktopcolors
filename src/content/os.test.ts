@@ -15,6 +15,7 @@ const osSchema = z.object({
   name: z.string().min(1),
   slug: z.string().regex(/^[a-z0-9-]+$/).optional(),
   year: z.number().int(),
+  added: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   family: z.string().min(1),
   tagline: z.string().min(1),
   description: z.string().min(1),
@@ -50,5 +51,17 @@ describe("os content files", () => {
       if (data.predecessor) expect(slugs, `${slug}.predecessor`).toContain(data.predecessor);
       if (data.successor) expect(slugs, `${slug}.successor`).toContain(data.successor);
     }
+  });
+
+  it("requires added in YYYY-MM-DD form", () => {
+    const base = {
+      name: "X", year: 2000, added: "2000-01-01", family: "F",
+      tagline: "t", description: "d",
+      colors: [{ hex: "#000000", name: "Black" }],
+    };
+    expect(osSchema.safeParse(base).success).toBe(true);
+    expect(osSchema.safeParse({ ...base, added: "2026-7-1" }).success).toBe(false); // wrong format
+    const { added: _omit, ...missing } = base;
+    expect(osSchema.safeParse(missing).success).toBe(false); // missing entirely
   });
 });
