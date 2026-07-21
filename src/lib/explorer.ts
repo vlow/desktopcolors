@@ -98,3 +98,84 @@ export function rankColors(
     pct: maxScore > 0 ? Math.round((c.score / maxScore) * 100) : 0,
   }));
 }
+
+export interface Platform {
+  slug: string;
+  name: string;
+  year: number;
+  family: string;
+  isDefault: boolean;
+}
+
+export interface OsFamily {
+  name: string;
+  oses: { slug: string; name: string; year: number; family: string }[];
+}
+
+export interface OsUniverse {
+  fams: OsFamily[];
+}
+
+export function buildPlatformsByHex(catalog: Catalog): Record<string, Platform[]> {
+  const map: Record<string, Platform[]> = {};
+  for (const o of catalog.osList) {
+    for (const c of o.colors) {
+      const key = c.hex.toLowerCase();
+      (map[key] ??= []).push({
+        slug: o.slug, name: o.name, year: o.year, family: o.family, isDefault: c.isDefault,
+      });
+    }
+  }
+  for (const key in map) {
+    map[key].sort((a, b) => a.year - b.year || a.name.localeCompare(b.name));
+  }
+  return map;
+}
+
+export function buildOsUniverse(catalog: Catalog): OsUniverse {
+  const oses = catalog.osList
+    .map((o) => ({ slug: o.slug, name: o.name, year: o.year, family: o.family }))
+    .sort((a, b) => a.year - b.year || a.name.localeCompare(b.name));
+  const fams: OsFamily[] = [];
+  for (const o of oses) {
+    let f = fams.find((x) => x.name === o.family);
+    if (!f) { f = { name: o.family, oses: [] }; fams.push(f); }
+    f.oses.push(o);
+  }
+  return { fams };
+}
+
+export type OsMode = "any" | "all";
+
+export function osMatch(
+  hex: string,
+  platformsByHex: Record<string, Platform[]>,
+  osSel: Record<string, true>,
+  mode: OsMode,
+): boolean {
+  const keys = Object.keys(osSel).filter((k) => osSel[k]);
+  if (keys.length === 0) return true;
+  const slugs = new Set((platformsByHex[hex.toLowerCase()] ?? []).map((p) => p.slug));
+  return mode === "all" ? keys.every((k) => slugs.has(k)) : keys.some((k) => slugs.has(k));
+}
+
+export function osOptionDisabled(
+  candidateSlug: string,
+  opts: {
+    universe: ExplorerColor[];
+    platformsByHex: Record<string, Platform[]>;
+    osSel: Record<string, true>;
+    mode: OsMode;
+  },
+): boolean {
+  const { universe, platformsByHex, osSel, mode } = opts;
+  const selected = Object.keys(osSel).filter((k) => osSel[k]);
+  if (selected.includes(candidateSlug)) return false; // never disable a selected OS
+  const shipsOn = (hex: string, slug: string): boolean =>
+    (platformsByHex[hex.toLowerCase()] ?? []).some((p) => p.slug === slug);
+  if (mode === "all") {
+    const need = [...selected, candidateSlug];
+    return !universe.some((c) => need.every((s) => shipsOn(c.hex, s)));
+  }
+  return !universe.some((c) => shipsOn(c.hex, candidateSlug));
+}

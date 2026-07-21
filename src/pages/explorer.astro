@@ -2,14 +2,16 @@
 import Base from "../layouts/Base.astro";
 import { Explorer } from "../islands/Explorer";
 import { loadCatalog } from "../lib/loadCatalog";
-import { toExplorerColors } from "../lib/explorer";
+import { toExplorerColors, buildPlatformsByHex, buildOsUniverse } from "../lib/explorer";
 import type { DesktopStyle } from "../lib/desktopStyle";
 
 const catalog = await loadCatalog();
 const colors = toExplorerColors(catalog);
+const platformsByHex = buildPlatformsByHex(catalog);
+const osUniverse = buildOsUniverse(catalog);
 const styleBySlug: Record<string, DesktopStyle> = {};
 for (const o of catalog.osList) styleBySlug[o.slug] = o.desktopStyle;
 ---
 <Base title="Color Explorer — desktopcolors.com" description="Every solid desktop background color, grouped by hue, filterable by color type, and ranked by popularity." active="explorer">
-  <Explorer colors={colors} styleBySlug={styleBySlug} client:load />
+  <Explorer colors={colors} styleBySlug={styleBySlug} platformsByHex={platformsByHex} osUniverse={osUniverse} client:load />
 </Base>

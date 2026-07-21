@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import {
   toExplorerColors, groupIntoBands, rankColors, familyCounts, typeCounts,
-  COLOR_TYPE_DEFS, FAMILY_DEFS,
+  COLOR_TYPE_DEFS, FAMILY_DEFS, buildPlatformsByHex, buildOsUniverse,
 } from "./explorer";
 import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
 import type { OsEntry } from "./derive";
 import type { OsInput } from "../content/config";
-import type { ExplorerColor } from "./explorer";
+import type { ExplorerColor, Platform } from "./explorer";
 
 const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => ({
   name: "X", year: 2000, family: "Fam", tagline: "t", description: "d",
@@ -139,5 +139,98 @@ describe("groupIntoBands with a type filter", () => {
     });
     expect(bands.length).toBe(1);
     expect(bands[0].colors[0].hex).toBe("#008080");
+  });
+});
+
+describe("buildPlatformsByHex", () => {
+  it("groups platforms by lowercased hex, sorted by year then name", () => {
+    const map = buildPlatformsByHex(catalog);
+    expect(map["#008080"].map((p) => p.slug)).toEqual(["a"]);
+    expect(map["#008080"][0]).toMatchObject({ name: "A", year: 1995, isDefault: true });
+    expect(map["#ff0000"][0]).toMatchObject({ slug: "b", isDefault: true });
+  });
+
+  it("lists every platform that shipped a shared hex", () => {
+    const shared: OsEntry[] = [
+      { slug: "old", data: os({ name: "Old", year: 1998, colors: [
+        { hex: "#008080", name: "Teal", index: "—", note: "", default: false }] }) },
+      { slug: "new", data: os({ name: "New", year: 1995, colors: [
+        { hex: "#008080", name: "Teal", index: "—", note: "", default: true }] }) },
+    ];
+    const cat = buildCatalog(shared, parseScores({ colors: {}, os: {} }));
+    const map = buildPlatformsByHex(cat);
+    // sorted by year: 1995 "New" before 1998 "Old"
+    expect(map["#008080"].map((p) => p.slug)).toEqual(["new", "old"]);
+    expect(map["#008080"][0].isDefault).toBe(true);
+  });
+});
+
+describe("buildOsUniverse", () => {
+  it("groups OSes by family, each group sorted by year then name", () => {
+    const multi: OsEntry[] = [
+      { slug: "w98", data: os({ name: "Windows 98", year: 1998, family: "Windows", colors: [
+        { hex: "#008080", name: "Teal", index: "—", note: "", default: true }] }) },
+      { slug: "w95", data: os({ name: "Windows 95", year: 1995, family: "Windows", colors: [
+        { hex: "#000080", name: "Navy", index: "—", note: "", default: true }] }) },
+      { slug: "beos", data: os({ name: "BeOS", year: 1996, family: "Be", colors: [
+        { hex: "#ff0000", name: "Red", index: "—", note: "", default: true }] }) },
+    ];
+    const cat = buildCatalog(multi, parseScores({ colors: {}, os: {} }));
+    const uni = buildOsUniverse(cat);
+    const win = uni.fams.find((f) => f.name === "Windows")!;
+    expect(win.oses.map((o) => o.slug)).toEqual(["w95", "w98"]);
+    expect(uni.fams.map((f) => f.name)).toContain("Be");
+  });
+});
+
+import { osMatch, osOptionDisabled } from "./explorer";
+
+const P = (slug: string, isDefault = false): Platform =>
+  ({ slug, name: slug, year: 2000, family: "F", isDefault });
+
+// teal ships on w95+w98; red ships on w95+beos.
+const pmap: Record<string, Platform[]> = {
+  "#008080": [P("w95", true), P("w98", true)],
+  "#ff0000": [P("w95"), P("beos", true)],
+};
+const C = (hex: string, family: ExplorerColor["family"], types: ExplorerColor["types"]): ExplorerColor =>
+  ({ hex, name: hex, family, types, h: 0, s: 0, l: 0, onColor: "#fff", score: 0, scoreLabel: "0", yearRange: "2000", primarySlug: "w95", href: "/x" });
+const universe: ExplorerColor[] = [C("#008080", "teal", ["cool"]), C("#ff0000", "red", ["warm"])];
+
+describe("osMatch", () => {
+  it("matches all when nothing is selected", () => {
+    expect(osMatch("#008080", pmap, {}, "any")).toBe(true);
+  });
+  it("ANY: color ships on at least one selected OS", () => {
+    expect(osMatch("#ff0000", pmap, { beos: true }, "any")).toBe(true);
+    expect(osMatch("#008080", pmap, { beos: true }, "any")).toBe(false);
+  });
+  it("ALL: color ships on every selected OS", () => {
+    expect(osMatch("#008080", pmap, { w95: true, w98: true }, "all")).toBe(true);
+    expect(osMatch("#ff0000", pmap, { w95: true, w98: true }, "all")).toBe(false);
+  });
+});
+
+describe("osOptionDisabled", () => {
+  const base = { universe, platformsByHex: pmap, osSel: {} as Record<string, true>, mode: "any" as const };
+
+  it("ANY: disabled when no color in the universe ships on it", () => {
+    // restrict universe to reds only → w98 (teal-only) is impossible
+    const redOnly = { ...base, universe: [C("#ff0000", "red", ["warm"])] };
+    expect(osOptionDisabled("w98", redOnly)).toBe(true);
+    expect(osOptionDisabled("beos", redOnly)).toBe(false);
+  });
+
+  it("never disables an already-selected OS", () => {
+    const redOnly = { ...base, universe: [C("#ff0000", "red", ["warm"])], osSel: { w98: true } as Record<string, true> };
+    expect(osOptionDisabled("w98", redOnly)).toBe(false);
+  });
+
+  it("ALL: disabled when adding it would empty the result", () => {
+    // beos selected in ALL mode; only red ships on beos. Adding w98 (teal-only) empties it.
+    const allBeos = { ...base, mode: "all" as const, osSel: { beos: true } as Record<string, true> };
+    expect(osOptionDisabled("w98", allBeos)).toBe(true);
+    // w95 also ships red, so beos+w95 still yields red → enabled
+    expect(osOptionDisabled("w95", allBeos)).toBe(false);
   });
 });
