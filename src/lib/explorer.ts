@@ -98,3 +98,49 @@ export function rankColors(
     pct: maxScore > 0 ? Math.round((c.score / maxScore) * 100) : 0,
   }));
 }
+
+export interface Platform {
+  slug: string;
+  name: string;
+  year: number;
+  family: string;
+  isDefault: boolean;
+}
+
+export interface OsFamily {
+  name: string;
+  oses: { slug: string; name: string; year: number; family: string }[];
+}
+
+export interface OsUniverse {
+  fams: OsFamily[];
+}
+
+export function buildPlatformsByHex(catalog: Catalog): Record<string, Platform[]> {
+  const map: Record<string, Platform[]> = {};
+  for (const o of catalog.osList) {
+    for (const c of o.colors) {
+      const key = c.hex.toLowerCase();
+      (map[key] ??= []).push({
+        slug: o.slug, name: o.name, year: o.year, family: o.family, isDefault: c.isDefault,
+      });
+    }
+  }
+  for (const key in map) {
+    map[key].sort((a, b) => a.year - b.year || a.name.localeCompare(b.name));
+  }
+  return map;
+}
+
+export function buildOsUniverse(catalog: Catalog): OsUniverse {
+  const oses = catalog.osList
+    .map((o) => ({ slug: o.slug, name: o.name, year: o.year, family: o.family }))
+    .sort((a, b) => a.year - b.year || a.name.localeCompare(b.name));
+  const fams: OsFamily[] = [];
+  for (const o of oses) {
+    let f = fams.find((x) => x.name === o.family);
+    if (!f) { f = { name: o.family, oses: [] }; fams.push(f); }
+    f.oses.push(o);
+  }
+  return { fams };
+}

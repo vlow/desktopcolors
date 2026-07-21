@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   toExplorerColors, groupIntoBands, rankColors, familyCounts, typeCounts,
-  COLOR_TYPE_DEFS, FAMILY_DEFS,
+  COLOR_TYPE_DEFS, FAMILY_DEFS, buildPlatformsByHex, buildOsUniverse,
 } from "./explorer";
 import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
@@ -139,5 +139,46 @@ describe("groupIntoBands with a type filter", () => {
     });
     expect(bands.length).toBe(1);
     expect(bands[0].colors[0].hex).toBe("#008080");
+  });
+});
+
+describe("buildPlatformsByHex", () => {
+  it("groups platforms by lowercased hex, sorted by year then name", () => {
+    const map = buildPlatformsByHex(catalog);
+    expect(map["#008080"].map((p) => p.slug)).toEqual(["a"]);
+    expect(map["#008080"][0]).toMatchObject({ name: "A", year: 1995, isDefault: true });
+    expect(map["#ff0000"][0]).toMatchObject({ slug: "b", isDefault: true });
+  });
+
+  it("lists every platform that shipped a shared hex", () => {
+    const shared: OsEntry[] = [
+      { slug: "old", data: os({ name: "Old", year: 1998, colors: [
+        { hex: "#008080", name: "Teal", index: "—", note: "", default: false }] }) },
+      { slug: "new", data: os({ name: "New", year: 1995, colors: [
+        { hex: "#008080", name: "Teal", index: "—", note: "", default: true }] }) },
+    ];
+    const cat = buildCatalog(shared, parseScores({ colors: {}, os: {} }));
+    const map = buildPlatformsByHex(cat);
+    // sorted by year: 1995 "New" before 1998 "Old"
+    expect(map["#008080"].map((p) => p.slug)).toEqual(["new", "old"]);
+    expect(map["#008080"][0].isDefault).toBe(true);
+  });
+});
+
+describe("buildOsUniverse", () => {
+  it("groups OSes by family, each group sorted by year then name", () => {
+    const multi: OsEntry[] = [
+      { slug: "w98", data: os({ name: "Windows 98", year: 1998, family: "Windows", colors: [
+        { hex: "#008080", name: "Teal", index: "—", note: "", default: true }] }) },
+      { slug: "w95", data: os({ name: "Windows 95", year: 1995, family: "Windows", colors: [
+        { hex: "#000080", name: "Navy", index: "—", note: "", default: true }] }) },
+      { slug: "beos", data: os({ name: "BeOS", year: 1996, family: "Be", colors: [
+        { hex: "#ff0000", name: "Red", index: "—", note: "", default: true }] }) },
+    ];
+    const cat = buildCatalog(multi, parseScores({ colors: {}, os: {} }));
+    const uni = buildOsUniverse(cat);
+    const win = uni.fams.find((f) => f.name === "Windows")!;
+    expect(win.oses.map((o) => o.slug)).toEqual(["w95", "w98"]);
+    expect(uni.fams.map((f) => f.name)).toContain("Be");
   });
 });
