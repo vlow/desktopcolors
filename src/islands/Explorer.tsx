@@ -111,7 +111,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
     const dCount = (platformsByHex[c.hex.toLowerCase()] ?? []).filter((p) => p.isDefault).length;
     return (
       <button key={c.hex} data-testid="explorer-swatch" onClick={() => toggleExp(c.hex)}
-        style="width: 116px; cursor: pointer; border: none; background: none; padding: 0; text-align: left; display: block;">
+        style="width: 116px; cursor: pointer; border: none; background: none; padding: 0; text-align: left; display: block; align-self: start;">
         <div class="dc-swatch" style={`position: relative; height: 78px; border-radius: 10px; background-color: ${c.hex}; box-shadow: ${open ? "inset 0 0 0 2px var(--accent), 0 6px 16px rgba(0,0,0,0.16)" : "inset 0 0 0 1px rgba(0,0,0,0.08)"}; transition: box-shadow 0.12s ease;`}>
           <span style={`position: absolute; left: 9px; bottom: 8px; font: 500 11px var(--font-mono); color: ${c.onColor}; opacity: 0.9;`}>{c.hex}</span>
         </div>
