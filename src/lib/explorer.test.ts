@@ -7,7 +7,7 @@ import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
 import type { OsEntry } from "./derive";
 import type { OsInput } from "../content/config";
-import type { ExplorerColor } from "./explorer";
+import type { ExplorerColor, Platform } from "./explorer";
 
 const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => ({
   name: "X", year: 2000, family: "Fam", tagline: "t", description: "d",
@@ -184,7 +184,6 @@ describe("buildOsUniverse", () => {
 });
 
 import { osMatch, osOptionDisabled } from "./explorer";
-import type { Platform, ExplorerColor } from "./explorer";
 
 const P = (slug: string, isDefault = false): Platform =>
   ({ slug, name: slug, year: 2000, family: "F", isDefault });
@@ -223,13 +222,13 @@ describe("osOptionDisabled", () => {
   });
 
   it("never disables an already-selected OS", () => {
-    const redOnly = { ...base, universe: [C("#ff0000", "red", ["warm"])], osSel: { w98: true } };
+    const redOnly = { ...base, universe: [C("#ff0000", "red", ["warm"])], osSel: { w98: true } as Record<string, true> };
     expect(osOptionDisabled("w98", redOnly)).toBe(false);
   });
 
   it("ALL: disabled when adding it would empty the result", () => {
     // beos selected in ALL mode; only red ships on beos. Adding w98 (teal-only) empties it.
-    const allBeos = { ...base, mode: "all" as const, osSel: { beos: true } };
+    const allBeos = { ...base, mode: "all" as const, osSel: { beos: true } as Record<string, true> };
     expect(osOptionDisabled("w98", allBeos)).toBe(true);
     // w95 also ships red, so beos+w95 still yields red → enabled
     expect(osOptionDisabled("w95", allBeos)).toBe(false);
