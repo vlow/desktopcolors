@@ -202,6 +202,14 @@ describe("OsDetail", () => {
     render(<OsDetail view={view} initialHex={null} />);
     expect(screen.getByText("KNOWN USES")).toBeTruthy();
   });
+
+  it("expands a similar color into a ColorInfobox panel with platform chips", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    // Teal is default-selected; it has one similar (#4e9a9a on KDE 1)
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    const chip = screen.getAllByTestId("infobox-platform")[0] as HTMLAnchorElement;
+    expect(chip.getAttribute("href")).toBe("/os/kde-1/4e9a9a");
+  });
 });
 
 describe("centerScrollTop", () => {

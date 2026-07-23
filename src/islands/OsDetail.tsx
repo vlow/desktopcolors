@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import type { OsDetailView, DetailColor } from "../lib/detail";
+import type { OsDetailView, DetailColor, SimilarView } from "../lib/detail";
 import { DesktopPreview } from "./DesktopPreview";
 import { FullscreenPreview } from "./FullscreenPreview";
 import { DownloadSheet } from "./DownloadSheet";
+import { ColorInfobox, type InfoboxColor } from "./ColorInfobox";
 import { track } from "../lib/track";
 import { colorPath } from "../lib/links";
 import { KnownUsesTimeline } from "./KnownUsesTimeline";
@@ -52,6 +53,9 @@ export function OsDetail({ view, initialHex }: Props) {
   const [full, setFull] = useState(false);
   const [copied, setCopied] = useState<CopyKey | null>(null);
   const [codesExpanded, setCodesExpanded] = useState(false);
+  const [simExp, setSimExp] = useState<string | null>(null);
+  const [simPreview, setSimPreview] = useState<SimilarView | null>(null);
+  const [simSheet, setSimSheet] = useState<SimilarView | null>(null);
 
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
 
@@ -72,6 +76,10 @@ export function OsDetail({ view, initialHex }: Props) {
   }, []);
 
   const c: DetailColor = colors[sel] ?? colors[0];
+
+  // Collapse any expanded similar-color panel when the selected color changes —
+  // it refers to a different color's "similar" list once `sel` moves.
+  useEffect(() => { setSimExp(null); }, [sel]);
 
   // Keep the URL in sync with the selected color so it can be copied/shared.
   // Skip the initial mount so the entry URL (a default page or a deep link) is
@@ -211,20 +219,33 @@ export function OsDetail({ view, initialHex }: Props) {
         {c.similar.length === 0 ? (
           <div style="font: 400 13px var(--font-mono); color: var(--faint);">No close matches on other platforms.</div>
         ) : (
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px;">
-            {c.similar.map((s) => (
-              <a key={s.hex + s.primarySlug} href={colorPath(s.primarySlug, s.hex)} style="border: 1px solid var(--card-border); border-radius: 13px; overflow: hidden; background: var(--panel); display: block;">
-                <div style={`position: relative; height: 76px; background-color: ${s.hex};`}>
-                  <span style="position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #1c1917; font: 500 10px var(--font-ui); padding: 3px 8px; border-radius: 999px;">{s.match}% match</span>
+          <>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px;">
+              {c.similar.map((s) => (
+                <a key={s.hex + s.primarySlug} onClick={() => setSimExp((x) => (x === s.hex ? null : s.hex))}
+                  style={`cursor: pointer; border: 1px solid var(--card-border); border-radius: 13px; overflow: hidden; background: var(--panel); display: block; ${simExp === s.hex ? "outline: 2px solid var(--accent);" : ""}`}>
+                  <div style={`position: relative; height: 76px; background-color: ${s.hex};`}>
+                    <span style="position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #1c1917; font: 500 10px var(--font-ui); padding: 3px 8px; border-radius: 999px;">{s.match}% match</span>
+                  </div>
+                  <div style="padding: 11px 13px 13px;">
+                    <div style="font: 500 14px var(--font-ui);">{s.name}</div>
+                    <div style="font: 400 11px var(--font-mono); color: var(--faint);">{s.hex}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {simExp && (() => {
+              const s = c.similar.find((x) => x.hex === simExp);
+              if (!s) return null;
+              const infoColor: InfoboxColor = { hex: s.hex, name: s.name, onColor: s.onColor, h: s.h, s: s.s, l: s.l, primarySlug: s.primarySlug };
+              return (
+                <div style="margin-top: 14px;">
+                  <ColorInfobox variant="flat" color={infoColor} platforms={s.platforms}
+                    onPreview={() => setSimPreview(s)} onDownload={() => setSimSheet(s)} />
                 </div>
-                <div style="padding: 11px 13px 13px;">
-                  <div style="font: 500 14px var(--font-ui);">{s.name}</div>
-                  <div style="font: 400 11px var(--font-mono); color: var(--faint);">{s.hex}</div>
-                  <div style="font: 400 12px var(--font-ui); color: var(--muted); margin-top: 8px;">{s.platforms[0]?.name ?? s.primarySlug} ↗</div>
-                </div>
-              </a>
-            ))}
-          </div>
+              );
+            })()}
+          </>
         )}
       </div>
 
@@ -258,6 +279,15 @@ export function OsDetail({ view, initialHex }: Props) {
           onClose={() => setFull(false)} onPrev={() => step(-1)} onNext={() => step(1)}
         />
       )}
+      {simPreview && (
+        <FullscreenPreview
+          hex={simPreview.hex} onColor={simPreview.onColor} style={simPreview.style as any}
+          label={`${simPreview.name} · ${simPreview.hex}`}
+          pos={1} total={1}
+          onClose={() => setSimPreview(null)} onPrev={() => {}} onNext={() => {}}
+        />
+      )}
+      {simSheet && <DownloadSheet osSlug={simSheet.primarySlug} color={{ hex: simSheet.hex, name: simSheet.name }} onClose={() => setSimSheet(null)} />}
     </div>
   );
 }
