@@ -7,6 +7,11 @@
   "description": "KDE Plasma 6 is the current generation of the KDE community's flagship desktop — a fast, deeply customizable Linux environment built on Qt 6 and Wayland. Its Breeze design language centers on a single bright accent blue, the color that tints highlights, links, and the default desktop across the Plasma 6 series.",
   "desktopStyle": "kde",
   "colors": [
-    { "hex": "#1d99f3", "name": "Breeze Blue", "index": "—", "note": "The Breeze accent blue — KDE Plasma's default desktop and highlight color.", "default": true }
+    {
+      "hex": "#1d99f3",
+      "name": "Breeze Blue",
+      "note": "The Breeze accent blue — KDE Plasma's default desktop and highlight color.",
+      "default": true
+    }
   ]
 }

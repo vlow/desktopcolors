@@ -13,15 +13,15 @@ const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => 
 
 const entries: OsEntry[] = [
   { slug: "windows-95", data: os({ name: "Windows 95", year: 1995, colors: [
-    { hex: "#008080", name: "Teal", index: "3", note: "n", default: true },
-    { hex: "#000080", name: "Navy", index: "1", note: "", default: false },
+    { hex: "#008080", name: "Teal", note: "n", default: true },
+    { hex: "#000080", name: "Navy", note: "", default: false },
   ] }) },
   { slug: "cde", data: os({ name: "CDE", year: 1993, colors: [
-    { hex: "#008080", name: "Teal", index: "—", note: "", default: true },
-    { hex: "#9aabb9", name: "Dusty Blue", index: "—", note: "", default: false },
+    { hex: "#008080", name: "Teal", note: "", default: true },
+    { hex: "#9aabb9", name: "Dusty Blue", note: "", default: false },
   ] }) },
   { slug: "kde-2", data: os({ name: "KDE 2", year: 2000, colors: [
-    { hex: "#008080", name: "Teal", index: "—", note: "", default: true },
+    { hex: "#008080", name: "Teal", note: "", default: true },
   ] }) },
 ];
 

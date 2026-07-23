@@ -11,7 +11,6 @@ import type { DesktopStyle } from "./desktopStyle";
 export interface ColorView {
   hex: string;
   name: string;
-  index: string;
   note: string;
   isDefault: boolean;
   rgb: string;
@@ -62,14 +61,14 @@ export interface Catalog {
   colors: MergedColorView[];
 }
 
-function toColorView(hex: string, name: string, index: string, note: string, isDefault: boolean, scores: Scores): ColorView {
+function toColorView(hex: string, name: string, note: string, isDefault: boolean, scores: Scores): ColorView {
   const key = hex.toLowerCase();
   const [r, g, b] = hexToRgb(key);
   const [h, s, l] = hexToHsl(key);
   const [c, m, y, kk] = hexToCmyk(key);
   const score = colorScore(scores, key);
   return {
-    hex: key, name, index, note, isDefault,
+    hex: key, name, note, isDefault,
     rgb: `${r}, ${g}, ${b}`,
     hsl: `${h}° ${s}% ${l}%`,
     cmyk: `${c}% ${m}% ${y}% ${kk}%`,
@@ -93,7 +92,7 @@ export function buildCatalog(entries: OsEntry[], scores: Scores): Catalog {
 
   const osList: OsView[] = entries.map(({ slug, data }) => {
     const colors = data.colors.map((c) =>
-      toColorView(c.hex, c.name, c.index, c.note, c.default, scores));
+      toColorView(c.hex, c.name, c.note, c.default, scores));
     const def = defaultColor(data);
     const score = osScore(scores, slug);
     return {

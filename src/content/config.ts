@@ -8,7 +8,6 @@ const desktopStyle = z.enum(DESKTOP_STYLES);
 const osColor = z.object({
   hex,
   name: z.string().min(1),
-  index: z.string().default("—"),
   note: z.string().default(""),
   default: z.boolean().default(false),
 });

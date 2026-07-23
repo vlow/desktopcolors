@@ -9,66 +9,265 @@
   "successor": "windows-98",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#420000", "name": "Oxblood", "index": "—", "note": "Used in the Brick theme." },
-    { "hex": "#a28d68", "name": "Desert Sand", "index": "—", "note": "Used in the Desert theme." },
-    { "hex": "#2c4e47", "name": "Marine Green", "index": "—", "note": "Used in the Marine theme." },
-    { "hex": "#402840", "name": "Plum", "index": "—", "note": "Used in the Plum theme." },
-    { "hex": "#420042", "name": "Byzantium", "index": "—", "note": "Used in the Pumpkin theme." },
-    { "hex": "#000042", "name": "Ink Blue", "index": "—", "note": "Used in the Red, White, and Blue theme." },
-    { "hex": "#414141", "name": "Slate Gray", "index": "—", "note": "Used in the Slate theme." },
-    { "hex": "#213f21", "name": "Spruce", "index": "—", "note": "Used in the Spruce theme." },
-    { "hex": "#00401d", "name": "Bottle Green", "index": "—", "note": "Used in the Wheat theme." },
-    { "hex": "#ff8080", "name": "Light Red", "index": "1" },
-    { "hex": "#ffff80", "name": "Light Yellow", "index": "2" },
-    { "hex": "#80ff80", "name": "Light Green", "index": "3" },
-    { "hex": "#00ff80", "name": "Spring Green", "index": "4" },
-    { "hex": "#80ffff", "name": "Light Cyan", "index": "5" },
-    { "hex": "#0080ff", "name": "Azure", "index": "6" },
-    { "hex": "#ff80c0", "name": "Pink", "index": "7" },
-    { "hex": "#ff80ff", "name": "Light Magenta", "index": "8" },
-    { "hex": "#ff0000", "name": "Red", "index": "9" },
-    { "hex": "#ffff00", "name": "Yellow", "index": "10" },
-    { "hex": "#80ff00", "name": "Chartreuse", "index": "11" },
-    { "hex": "#00ff40", "name": "Emerald", "index": "12" },
-    { "hex": "#00ffff", "name": "Cyan", "index": "13" },
-    { "hex": "#0080c0", "name": "Cerulean", "index": "14" },
-    { "hex": "#8080c0", "name": "Slate Blue", "index": "15" },
-    { "hex": "#ff00ff", "name": "Magenta", "index": "16" },
-    { "hex": "#804040", "name": "Brick", "index": "17" },
-    { "hex": "#ff8040", "name": "Orange", "index": "18" },
-    { "hex": "#00ff00", "name": "Green", "index": "19" },
-    { "hex": "#008080", "name": "Teal", "index": "20", "note": "The signature default background of Windows 95 — the Windows Standard theme.", "default": true },
-    { "hex": "#004080", "name": "Navy Blue", "index": "21" },
-    { "hex": "#8080ff", "name": "Periwinkle", "index": "22" },
-    { "hex": "#800040", "name": "Maroon", "index": "23" },
-    { "hex": "#ff0080", "name": "Rose", "index": "24" },
-    { "hex": "#800000", "name": "Dark Red", "index": "25" },
-    { "hex": "#ff8000", "name": "Amber", "index": "26" },
-    { "hex": "#008000", "name": "Dark Green", "index": "27" },
-    { "hex": "#008040", "name": "Sea Green", "index": "28" },
-    { "hex": "#0000ff", "name": "Blue", "index": "29" },
-    { "hex": "#0000a0", "name": "Cobalt", "index": "30" },
-    { "hex": "#800080", "name": "Purple", "index": "31" },
-    { "hex": "#8000ff", "name": "Violet", "index": "32" },
-    { "hex": "#400000", "name": "Deep Maroon", "index": "33" },
-    { "hex": "#804000", "name": "Brown", "index": "34" },
-    { "hex": "#004000", "name": "Forest Green", "index": "35" },
-    { "hex": "#004040", "name": "Deep Teal", "index": "36", "note": "Used in the Teal theme." },
-    { "hex": "#000080", "name": "Navy", "index": "37" },
-    { "hex": "#000040", "name": "Midnight Blue", "index": "38" },
-    { "hex": "#400040", "name": "Dark Purple", "index": "39", "note": "Used in the Eggplant theme." },
-    { "hex": "#400080", "name": "Indigo", "index": "40" },
-    { "hex": "#000000", "name": "Black", "index": "41", "note": "Used in the High Contrast Black, Lilac, Maple, Rainy Day, and Storm themes." },
-    { "hex": "#808000", "name": "Olive", "index": "42" },
-    { "hex": "#808040", "name": "Khaki", "index": "43" },
-    { "hex": "#808080", "name": "Gray", "index": "44", "note": "Used in the Rose theme." },
-    { "hex": "#408080", "name": "Dusty Teal", "index": "45" },
-    { "hex": "#c0c0c0", "name": "Silver", "index": "46" },
-    { "hex": "#400040", "name": "Dark Purple", "index": "47" },
-    { "hex": "#ffffff", "name": "White", "index": "48", "note": "Used in the High Contrast White theme." },
-    { "hex": "#c0dfc0", "name": "Money Green", "index": "—" },
-    { "hex": "#a7c8f0", "name": "Sky Blue", "index": "—" },
-    { "hex": "#fff8f0", "name": "Cream", "index": "—" },
-    { "hex": "#a0a0a7", "name": "Medium Gray", "index": "—" }
+    {
+      "hex": "#420000",
+      "name": "Oxblood",
+      "note": "Used in the Brick theme."
+    },
+    {
+      "hex": "#a28d68",
+      "name": "Desert Sand",
+      "note": "Used in the Desert theme."
+    },
+    {
+      "hex": "#2c4e47",
+      "name": "Marine Green",
+      "note": "Used in the Marine theme."
+    },
+    {
+      "hex": "#402840",
+      "name": "Plum",
+      "note": "Used in the Plum theme."
+    },
+    {
+      "hex": "#420042",
+      "name": "Byzantium",
+      "note": "Used in the Pumpkin theme."
+    },
+    {
+      "hex": "#000042",
+      "name": "Ink Blue",
+      "note": "Used in the Red, White, and Blue theme."
+    },
+    {
+      "hex": "#414141",
+      "name": "Slate Gray",
+      "note": "Used in the Slate theme."
+    },
+    {
+      "hex": "#213f21",
+      "name": "Spruce",
+      "note": "Used in the Spruce theme."
+    },
+    {
+      "hex": "#00401d",
+      "name": "Bottle Green",
+      "note": "Used in the Wheat theme."
+    },
+    {
+      "hex": "#ff8080",
+      "name": "Light Red"
+    },
+    {
+      "hex": "#ffff80",
+      "name": "Light Yellow"
+    },
+    {
+      "hex": "#80ff80",
+      "name": "Light Green"
+    },
+    {
+      "hex": "#00ff80",
+      "name": "Spring Green"
+    },
+    {
+      "hex": "#80ffff",
+      "name": "Light Cyan"
+    },
+    {
+      "hex": "#0080ff",
+      "name": "Azure"
+    },
+    {
+      "hex": "#ff80c0",
+      "name": "Pink"
+    },
+    {
+      "hex": "#ff80ff",
+      "name": "Light Magenta"
+    },
+    {
+      "hex": "#ff0000",
+      "name": "Red"
+    },
+    {
+      "hex": "#ffff00",
+      "name": "Yellow"
+    },
+    {
+      "hex": "#80ff00",
+      "name": "Chartreuse"
+    },
+    {
+      "hex": "#00ff40",
+      "name": "Emerald"
+    },
+    {
+      "hex": "#00ffff",
+      "name": "Cyan"
+    },
+    {
+      "hex": "#0080c0",
+      "name": "Cerulean"
+    },
+    {
+      "hex": "#8080c0",
+      "name": "Slate Blue"
+    },
+    {
+      "hex": "#ff00ff",
+      "name": "Magenta"
+    },
+    {
+      "hex": "#804040",
+      "name": "Brick"
+    },
+    {
+      "hex": "#ff8040",
+      "name": "Orange"
+    },
+    {
+      "hex": "#00ff00",
+      "name": "Green"
+    },
+    {
+      "hex": "#008080",
+      "name": "Teal",
+      "note": "The signature default background of Windows 95 — the Windows Standard theme.",
+      "default": true
+    },
+    {
+      "hex": "#004080",
+      "name": "Navy Blue"
+    },
+    {
+      "hex": "#8080ff",
+      "name": "Periwinkle"
+    },
+    {
+      "hex": "#800040",
+      "name": "Maroon"
+    },
+    {
+      "hex": "#ff0080",
+      "name": "Rose"
+    },
+    {
+      "hex": "#800000",
+      "name": "Dark Red"
+    },
+    {
+      "hex": "#ff8000",
+      "name": "Amber"
+    },
+    {
+      "hex": "#008000",
+      "name": "Dark Green"
+    },
+    {
+      "hex": "#008040",
+      "name": "Sea Green"
+    },
+    {
+      "hex": "#0000ff",
+      "name": "Blue"
+    },
+    {
+      "hex": "#0000a0",
+      "name": "Cobalt"
+    },
+    {
+      "hex": "#800080",
+      "name": "Purple"
+    },
+    {
+      "hex": "#8000ff",
+      "name": "Violet"
+    },
+    {
+      "hex": "#400000",
+      "name": "Deep Maroon"
+    },
+    {
+      "hex": "#804000",
+      "name": "Brown"
+    },
+    {
+      "hex": "#004000",
+      "name": "Forest Green"
+    },
+    {
+      "hex": "#004040",
+      "name": "Deep Teal",
+      "note": "Used in the Teal theme."
+    },
+    {
+      "hex": "#000080",
+      "name": "Navy"
+    },
+    {
+      "hex": "#000040",
+      "name": "Midnight Blue"
+    },
+    {
+      "hex": "#400040",
+      "name": "Dark Purple",
+      "note": "Used in the Eggplant theme."
+    },
+    {
+      "hex": "#400080",
+      "name": "Indigo"
+    },
+    {
+      "hex": "#000000",
+      "name": "Black",
+      "note": "Used in the High Contrast Black, Lilac, Maple, Rainy Day, and Storm themes."
+    },
+    {
+      "hex": "#808000",
+      "name": "Olive"
+    },
+    {
+      "hex": "#808040",
+      "name": "Khaki"
+    },
+    {
+      "hex": "#808080",
+      "name": "Gray",
+      "note": "Used in the Rose theme."
+    },
+    {
+      "hex": "#408080",
+      "name": "Dusty Teal"
+    },
+    {
+      "hex": "#c0c0c0",
+      "name": "Silver"
+    },
+    {
+      "hex": "#400040",
+      "name": "Dark Purple"
+    },
+    {
+      "hex": "#ffffff",
+      "name": "White",
+      "note": "Used in the High Contrast White theme."
+    },
+    {
+      "hex": "#c0dfc0",
+      "name": "Money Green"
+    },
+    {
+      "hex": "#a7c8f0",
+      "name": "Sky Blue"
+    },
+    {
+      "hex": "#fff8f0",
+      "name": "Cream"
+    },
+    {
+      "hex": "#a0a0a7",
+      "name": "Medium Gray"
+    }
   ]
 }

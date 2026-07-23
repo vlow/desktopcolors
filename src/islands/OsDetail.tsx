@@ -135,7 +135,7 @@ export function OsDetail({ view, initialHex }: Props) {
                 <div style={`width: 32px; height: 32px; border-radius: 7px; background-color: ${col.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
                 <div style="flex: 1;">
                   <div style="font: 500 13px var(--font-ui);">{col.name}</div>
-                  <div style="font: 400 11px var(--font-mono); color: var(--faint);">{col.hex} · idx {col.index}</div>
+                  <div style="font: 400 11px var(--font-mono); color: var(--faint);">{col.hex}</div>
                 </div>
                 {col.isDefault && <span title="Default" style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent);" />}
               </div>
@@ -160,7 +160,6 @@ export function OsDetail({ view, initialHex }: Props) {
         <div class="dc-detail-meta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
             <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">DETAILS</div>
-            <div style="display: flex; justify-content: space-between; padding: 7px 14px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">Palette index</span><span style="font: 500 13px var(--font-mono);">{c.index}</span></div>
             <div style="display: flex; justify-content: space-between; padding: 7px 14px 11px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">First known use</span>{c.firstUse.self ? <span style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year}</span> : <a href={c.firstUse.href} style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year} ↗</a>}</div>
           </div>
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">

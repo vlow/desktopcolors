@@ -7,51 +7,191 @@
   "description": "Xfce began in 1996 and grew into a lightweight, modular desktop environment for Unix-like systems, balancing a traditional desktop layout with speed and modest resource use. Its desktop color palette spans clear blues, greens, yellows, oranges, reds, purples, and browns before stepping through a full range of neutral tones, with medium gray as the default.",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#808080", "name": "Gray", "index": "1", "note": "The default desktop background.", "default": true },
-    { "hex": "#99c1f1", "name": "Powder Blue", "index": "2" },
-    { "hex": "#62a0ea", "name": "Clear Sky Blue", "index": "3" },
-    { "hex": "#3584e4", "name": "Azure Blue", "index": "4" },
-    { "hex": "#1c71d8", "name": "Royal Blue", "index": "5" },
-    { "hex": "#1a5fb4", "name": "Cobalt Blue", "index": "6" },
-    { "hex": "#8ff0a4", "name": "Mint Green", "index": "7" },
-    { "hex": "#57e389", "name": "Meadow Green", "index": "8" },
-    { "hex": "#33d17a", "name": "Emerald Green", "index": "9" },
-    { "hex": "#2ec27e", "name": "Jade", "index": "10" },
-    { "hex": "#26a269", "name": "Verdant Green", "index": "11" },
-    { "hex": "#f9f06b", "name": "Primrose", "index": "12" },
-    { "hex": "#f8e45c", "name": "Lemon Yellow", "index": "13" },
-    { "hex": "#f6d32d", "name": "Sunflower", "index": "14" },
-    { "hex": "#f5c211", "name": "Golden Yellow", "index": "15" },
-    { "hex": "#e5a50a", "name": "Amber Gold", "index": "16" },
-    { "hex": "#ffbe6f", "name": "Apricot", "index": "17" },
-    { "hex": "#ffa348", "name": "Mandarin Orange", "index": "18" },
-    { "hex": "#ff7800", "name": "Vivid Orange", "index": "19" },
-    { "hex": "#e66100", "name": "Copper Orange", "index": "20" },
-    { "hex": "#c64600", "name": "Rust Orange", "index": "21" },
-    { "hex": "#f66151", "name": "Coral Red", "index": "22" },
-    { "hex": "#ed333b", "name": "Poppy Red", "index": "23" },
-    { "hex": "#e01b24", "name": "Vermilion", "index": "24" },
-    { "hex": "#c01c28", "name": "Carmine Red", "index": "25" },
-    { "hex": "#a51d2d", "name": "Burgundy", "index": "26" },
-    { "hex": "#dc8add", "name": "Lilac Bloom", "index": "27" },
-    { "hex": "#c061cb", "name": "Mulberry Purple", "index": "28" },
-    { "hex": "#9141ac", "name": "Royal Purple", "index": "29" },
-    { "hex": "#813d9c", "name": "Deep Purple", "index": "30" },
-    { "hex": "#613583", "name": "Grape Purple", "index": "31" },
-    { "hex": "#cdab8f", "name": "Sandstone", "index": "32" },
-    { "hex": "#b5835a", "name": "Caramel", "index": "33" },
-    { "hex": "#986a44", "name": "Chestnut", "index": "34" },
-    { "hex": "#865e3c", "name": "Cocoa", "index": "35" },
-    { "hex": "#63452c", "name": "Espresso", "index": "36" },
-    { "hex": "#ffffff", "name": "White", "index": "37" },
-    { "hex": "#f6f5f4", "name": "Porcelain", "index": "38" },
-    { "hex": "#deddda", "name": "Pearl Gray", "index": "39" },
-    { "hex": "#c0bfbc", "name": "Silver Gray", "index": "40" },
-    { "hex": "#9a9996", "name": "Warm Ash", "index": "41" },
-    { "hex": "#77767b", "name": "Pewter Gray", "index": "42" },
-    { "hex": "#5e5c64", "name": "Charcoal Gray", "index": "43" },
-    { "hex": "#3d3846", "name": "Graphite Violet", "index": "44" },
-    { "hex": "#241f31", "name": "Ink Black", "index": "45" },
-    { "hex": "#000000", "name": "Black", "index": "46" }
+    {
+      "hex": "#808080",
+      "name": "Gray",
+      "note": "The default desktop background.",
+      "default": true
+    },
+    {
+      "hex": "#99c1f1",
+      "name": "Powder Blue"
+    },
+    {
+      "hex": "#62a0ea",
+      "name": "Clear Sky Blue"
+    },
+    {
+      "hex": "#3584e4",
+      "name": "Azure Blue"
+    },
+    {
+      "hex": "#1c71d8",
+      "name": "Royal Blue"
+    },
+    {
+      "hex": "#1a5fb4",
+      "name": "Cobalt Blue"
+    },
+    {
+      "hex": "#8ff0a4",
+      "name": "Mint Green"
+    },
+    {
+      "hex": "#57e389",
+      "name": "Meadow Green"
+    },
+    {
+      "hex": "#33d17a",
+      "name": "Emerald Green"
+    },
+    {
+      "hex": "#2ec27e",
+      "name": "Jade"
+    },
+    {
+      "hex": "#26a269",
+      "name": "Verdant Green"
+    },
+    {
+      "hex": "#f9f06b",
+      "name": "Primrose"
+    },
+    {
+      "hex": "#f8e45c",
+      "name": "Lemon Yellow"
+    },
+    {
+      "hex": "#f6d32d",
+      "name": "Sunflower"
+    },
+    {
+      "hex": "#f5c211",
+      "name": "Golden Yellow"
+    },
+    {
+      "hex": "#e5a50a",
+      "name": "Amber Gold"
+    },
+    {
+      "hex": "#ffbe6f",
+      "name": "Apricot"
+    },
+    {
+      "hex": "#ffa348",
+      "name": "Mandarin Orange"
+    },
+    {
+      "hex": "#ff7800",
+      "name": "Vivid Orange"
+    },
+    {
+      "hex": "#e66100",
+      "name": "Copper Orange"
+    },
+    {
+      "hex": "#c64600",
+      "name": "Rust Orange"
+    },
+    {
+      "hex": "#f66151",
+      "name": "Coral Red"
+    },
+    {
+      "hex": "#ed333b",
+      "name": "Poppy Red"
+    },
+    {
+      "hex": "#e01b24",
+      "name": "Vermilion"
+    },
+    {
+      "hex": "#c01c28",
+      "name": "Carmine Red"
+    },
+    {
+      "hex": "#a51d2d",
+      "name": "Burgundy"
+    },
+    {
+      "hex": "#dc8add",
+      "name": "Lilac Bloom"
+    },
+    {
+      "hex": "#c061cb",
+      "name": "Mulberry Purple"
+    },
+    {
+      "hex": "#9141ac",
+      "name": "Royal Purple"
+    },
+    {
+      "hex": "#813d9c",
+      "name": "Deep Purple"
+    },
+    {
+      "hex": "#613583",
+      "name": "Grape Purple"
+    },
+    {
+      "hex": "#cdab8f",
+      "name": "Sandstone"
+    },
+    {
+      "hex": "#b5835a",
+      "name": "Caramel"
+    },
+    {
+      "hex": "#986a44",
+      "name": "Chestnut"
+    },
+    {
+      "hex": "#865e3c",
+      "name": "Cocoa"
+    },
+    {
+      "hex": "#63452c",
+      "name": "Espresso"
+    },
+    {
+      "hex": "#ffffff",
+      "name": "White"
+    },
+    {
+      "hex": "#f6f5f4",
+      "name": "Porcelain"
+    },
+    {
+      "hex": "#deddda",
+      "name": "Pearl Gray"
+    },
+    {
+      "hex": "#c0bfbc",
+      "name": "Silver Gray"
+    },
+    {
+      "hex": "#9a9996",
+      "name": "Warm Ash"
+    },
+    {
+      "hex": "#77767b",
+      "name": "Pewter Gray"
+    },
+    {
+      "hex": "#5e5c64",
+      "name": "Charcoal Gray"
+    },
+    {
+      "hex": "#3d3846",
+      "name": "Graphite Violet"
+    },
+    {
+      "hex": "#241f31",
+      "name": "Ink Black"
+    },
+    {
+      "hex": "#000000",
+      "name": "Black"
+    }
   ]
 }

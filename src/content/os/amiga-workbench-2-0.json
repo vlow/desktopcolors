@@ -8,9 +8,26 @@
   "predecessor": "amiga-workbench",
   "desktopStyle": "amiga",
   "colors": [
-    { "hex": "#aaaaaa", "name": "Workbench Gray", "index": "0", "note": "The Workbench 2.0 gray desktop.", "default": true },
-    { "hex": "#000000", "name": "Black", "index": "1", "note": "Text and detail." },
-    { "hex": "#ffffff", "name": "White", "index": "2", "note": "Highlights and text." },
-    { "hex": "#6688bb", "name": "Cornflower Blue", "index": "3", "note": "Selections and title bars." }
+    {
+      "hex": "#aaaaaa",
+      "name": "Workbench Gray",
+      "note": "The Workbench 2.0 gray desktop.",
+      "default": true
+    },
+    {
+      "hex": "#000000",
+      "name": "Black",
+      "note": "Text and detail."
+    },
+    {
+      "hex": "#ffffff",
+      "name": "White",
+      "note": "Highlights and text."
+    },
+    {
+      "hex": "#6688bb",
+      "name": "Cornflower Blue",
+      "note": "Selections and title bars."
+    }
   ]
 }

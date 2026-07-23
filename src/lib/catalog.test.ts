@@ -11,11 +11,11 @@ const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => 
 
 const entries: OsEntry[] = [
   { slug: "windows-95", data: os({ name: "Windows 95", year: 1995, added: "2026-07-17", successor: "windows-98", colors: [
-    { hex: "#008080", name: "Teal", index: "3", note: "n", default: true },
-    { hex: "#000080", name: "Navy", index: "1", note: "", default: false },
+    { hex: "#008080", name: "Teal", note: "n", default: true },
+    { hex: "#000080", name: "Navy", note: "", default: false },
   ] }) },
   { slug: "windows-98", data: os({ name: "Windows 98", year: 1998, predecessor: "windows-95", colors: [
-    { hex: "#008080", name: "Teal", index: "3", note: "", default: true },
+    { hex: "#008080", name: "Teal", note: "", default: true },
   ] }) },
 ];
 
@@ -64,7 +64,7 @@ describe("buildCatalog", () => {
 
   it("throws on an unresolved reference", () => {
     const bad: OsEntry[] = [{ slug: "a", data: os({ successor: "nope", colors: [
-      { hex: "#111111", name: "A", index: "—", note: "", default: true },
+      { hex: "#111111", name: "A", note: "", default: true },
     ] }) }];
     expect(() => buildCatalog(bad, scores)).toThrow(/nope/);
   });

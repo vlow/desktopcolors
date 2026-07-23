@@ -8,9 +8,25 @@
   "predecessor": "windows-me",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#004e98", "name": "XP Blue", "note": "The solid blue that sat quietly behind Bliss.", "default": true },
-    { "hex": "#ece9d8", "name": "Silver", "note": "Luna neutral" },
-    { "hex": "#7ba05b", "name": "Olive Green", "note": "Homestead" },
-    { "hex": "#9b2915", "name": "Brick" }
+    {
+      "hex": "#004e98",
+      "name": "XP Blue",
+      "note": "The solid blue that sat quietly behind Bliss.",
+      "default": true
+    },
+    {
+      "hex": "#ece9d8",
+      "name": "Silver",
+      "note": "Luna neutral"
+    },
+    {
+      "hex": "#7ba05b",
+      "name": "Olive Green",
+      "note": "Homestead"
+    },
+    {
+      "hex": "#9b2915",
+      "name": "Brick"
+    }
   ]
 }
