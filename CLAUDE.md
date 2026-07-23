@@ -13,7 +13,9 @@ entry point for understanding the codebase:
 - [`docs/architecture-edge.md`](docs/architecture-edge.md) — the `counter` Go
   service (the only piece that runs at request time).
 - [`docs/adding-a-preview-style.md`](docs/adding-a-preview-style.md) — how the
-  per-OS desktop previews are built and extended.
+  per-OS desktop previews work and how to add chrome. Previews are a Zod-validated,
+  data-driven **chrome spec** per OS family (`src/lib/chromeSpec.ts`); this is the guide
+  to follow (for humans and LLM agents) when adding or changing chrome.
 
 ## Styling conventions
 

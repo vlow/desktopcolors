@@ -63,7 +63,7 @@ type OsInput = {
   name: string; slug?: string; year: number; family: string;
   tagline: string; description: string;
   predecessor?: string; successor?: string;
-  desktopStyle: "modern" | "win9x" | "macos8" | "kde" | "cde" | "amiga" | "generic"; // default "modern"
+  desktopStyle: "modern" | "win9x" | "win31" | "platinum" | "beos" | "amiga" | "kde" | "cde" | "gem" | "generic"; // default "modern"
   colors: { hex: string; name: string; index: string; note: string; default: boolean }[]; // ≥1, ≤1 default
 };
 ```

@@ -145,19 +145,20 @@ CI (`.github/workflows/ci.yml`) runs all of the above on every push/PR.
    ```
    (`slug` defaults to the filename; `predecessor`/`successor` are optional slug refs; `desktopStyle` is
    optional and defaults to `modern` — the platform-neutral default preview — or one of
-   `win9x | macos8 | kde | cde | amiga | generic`, see [Adding a preview style](#adding-a-preview-style).)
+   `win9x | win31 | platinum | beos | amiga | kde | cde | gem | generic`, see [Adding a preview style](#adding-a-preview-style).)
 2. `npm run build`. The Zod schema validates the file (a bad hex, missing field, >1 default, or dangling
    predecessor/successor **fails the build**), and the new platform automatically flows into Browse, the
    Explorer, similarity matches, and era sections — no other edits needed.
 
 ## Adding a preview style
 
-`desktopStyle` picks the schematic desktop chrome (icons, taskbar, menu bar, …) drawn behind a color on the
-detail and fullscreen previews. To point a platform at an existing style, just set `"desktopStyle"` in its
-JSON. To add a **new** style, add its name to `DESKTOP_STYLES` (`src/lib/desktopStyle.ts`) and an entry to
-the type-checked `STYLE_CHROME` registry (`src/islands/DesktopPreview.tsx`) — a missing entry fails the
-build. See the full guide, written for humans and LLM agents, in
-**[`docs/adding-a-preview-style.md`](docs/adding-a-preview-style.md)**.
+`desktopStyle` picks the schematic desktop chrome (icons, taskbar, menu bar, dock, front panel, …) drawn
+behind a color on the detail and fullscreen previews. Each style is a Zod-validated **chrome spec** — an
+ordered list of primitives — in [`src/lib/chromeSpec.ts`](src/lib/chromeSpec.ts). To point a platform at an
+existing style, just set `"desktopStyle"` in its JSON. To add a **new** style, add its name to
+`DESKTOP_STYLES` (`src/lib/desktopStyle.ts`) and a validated entry to `CHROME_SPECS`
+(`src/lib/chromeSpec.ts`) — a missing entry fails the build. See the full guide, written for humans and LLM
+agents, in **[`docs/adding-a-preview-style.md`](docs/adding-a-preview-style.md)**.
 
 ## Deploy
 
