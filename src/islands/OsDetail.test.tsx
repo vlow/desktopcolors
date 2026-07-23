@@ -9,6 +9,7 @@ const view: OsDetailView = {
     slug: "windows-95", name: "Windows 95", year: 1995, added: "2000-01-01", family: "Windows",
     tagline: "t", description: "The teal era.", desktopStyle: "win9x",
     defaultHex: "#008080", colorCount: 2, score: 0, scoreLabel: "< 1k",
+    type: "Proprietary", wikipedia: "https://en.wikipedia.org/wiki/Windows_95",
     predecessor: null, successor: { slug: "windows-98", name: "Windows 98", year: 1998 },
     colors: [],
   },
@@ -127,10 +128,12 @@ describe("OsDetail", () => {
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith("#008080");
   });
 
-  it("shows CMYK and both RAL matches, with the classic row renamed", () => {
+  it("shows CMYK directly and both RAL matches behind the extended formats toggle", () => {
     render(<OsDetail view={view} initialHex={null} />);
     expect(screen.getByText("CMYK")).toBeTruthy();
     expect(screen.getByText("100% 0% 0% 50%")).toBeTruthy();
+    expect(screen.queryByText("Closest RAL Classic")).toBeNull();
+    fireEvent.click(screen.getByText(/View all .* formats/));
     expect(screen.getByText("Closest RAL Classic")).toBeTruthy();
     expect(screen.getByText("Closest RAL Design+")).toBeTruthy();
     expect(screen.getByText(/RAL 190 40 20 · Deep Sea/)).toBeTruthy();
@@ -154,7 +157,9 @@ describe("OsDetail", () => {
     expect(screen.getByText(/Similar colors elsewhere/)).toBeTruthy();
     const era = screen.getByText(/Colors of the same era/);
     expect(era).toBeTruthy();
-    expect(screen.getByText("CDE")).toBeTruthy();
+    // "CDE" also appears in the KnownUsesTimeline's "First in <CDE>, 1993" text,
+    // so assert presence rather than uniqueness.
+    expect(screen.getAllByText("CDE").length).toBeGreaterThan(0);
   });
 
   it("labels the preview header with a name and the selected hex", () => {
@@ -177,6 +182,25 @@ describe("OsDetail", () => {
   it("labels the Same era section with what it lists", () => {
     render(<OsDetail view={view} initialHex={null} />);
     expect(screen.getByText("platforms released around 1995 · popular defaults")).toBeTruthy();
+  });
+
+  it("renders the type in the meta line and the References links", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.getByText(/Proprietary/)).toBeTruthy();
+    const wiki = screen.getByText(/Wikipedia/).closest("a") as HTMLAnchorElement;
+    expect(wiki.getAttribute("href")).toContain("wikipedia.org");
+  });
+
+  it("toggles extended color formats", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.queryByText("CIELAB")).toBeNull();
+    fireEvent.click(screen.getByText(/View all .* formats/));
+    expect(screen.getByText("CIELAB")).toBeTruthy();
+  });
+
+  it("shows the known-uses timeline", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.getByText("KNOWN USES")).toBeTruthy();
   });
 });
 

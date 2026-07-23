@@ -5,10 +5,14 @@ import { FullscreenPreview } from "./FullscreenPreview";
 import { DownloadSheet } from "./DownloadSheet";
 import { track } from "../lib/track";
 import { colorPath } from "../lib/links";
+import { KnownUsesTimeline } from "./KnownUsesTimeline";
 
 interface Props { view: OsDetailView; initialHex?: string | null }
 
-type CopyKey = "hex" | "rgb" | "hsl" | "cmyk" | "ral" | "ralDesign";
+type CopyKey = string;
+
+const REF_LINK = "display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--ink); font: 500 12px var(--font-ui); border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel); padding: 8px 12px;";
+const STEP_CARD = "display: flex; align-items: center; gap: 12px; text-decoration: none; border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel); padding: 11px 15px;";
 
 // scrollTop that centers an item (at `itemOffset` within the container's content
 // box, `itemHeight` tall) inside a scroll container, clamped to its scrollable
@@ -47,6 +51,7 @@ export function OsDetail({ view, initialHex }: Props) {
   const [sheet, setSheet] = useState(false);
   const [full, setFull] = useState(false);
   const [copied, setCopied] = useState<CopyKey | null>(null);
+  const [codesExpanded, setCodesExpanded] = useState(false);
 
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
 
@@ -102,14 +107,39 @@ export function OsDetail({ view, initialHex }: Props) {
 
   return (
     <div class="dc-detail dc-page-x" style="padding-block: 18px 56px;">
-      <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
-      <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-top: 14px;">{os.family} · {os.year}</div>
+      <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 18px;">
+        <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
+        {(os.project || os.wikipedia) && (
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;">
+            <span style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">REFERENCES</span>
+            {os.project && <a href={os.project.url} target="_blank" rel="noopener" style={REF_LINK}>⧉ {os.project.name} <span style="opacity: 0.5;">↗</span></a>}
+            {os.wikipedia && <a href={os.wikipedia} target="_blank" rel="noopener" style={REF_LINK}><span style="font: 700 13px var(--font-ui);">W</span> Wikipedia <span style="opacity: 0.5;">↗</span></a>}
+          </div>
+        )}
+      </div>
+      <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-top: 14px;">{os.family} · {os.year}{os.type && <> <span style="color: var(--faint);">·</span> <span style="color: var(--muted);">{os.type}</span></>}</div>
       <h1 style="font: 700 36px var(--font-ui); letter-spacing: -0.8px; margin: 6px 0 8px;">{os.name}</h1>
       <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 680px; margin: 0 0 16px;">{os.description}</p>
 
-      <div style="display: flex; gap: 8px; margin-bottom: 22px;">
-        {os.predecessor && <a href={`/os/${os.predecessor.slug}`} style="border: 1px solid var(--card-border); border-radius: 9px; background: var(--panel); padding: 8px 13px; font: 500 13px var(--font-ui);">← {os.predecessor.name}</a>}
-        {os.successor && <a href={`/os/${os.successor.slug}`} style="border: 1px solid var(--card-border); border-radius: 9px; background: var(--panel); padding: 8px 13px; font: 500 13px var(--font-ui);">{os.successor.name} →</a>}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 560px; margin-bottom: 22px;">
+        {os.predecessor && (
+          <a href={`/os/${os.predecessor.slug}`} style={STEP_CARD}>
+            <span style="font-size: 18px; color: var(--faint);">←</span>
+            <span style="min-width: 0;">
+              <span style="display: block; font: 500 11px var(--font-ui); color: var(--faint);">Earlier</span>
+              <span style="display: block; font: 500 16px var(--font-ui); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{os.predecessor.name}</span>
+            </span>
+          </a>
+        )}
+        {os.successor && (
+          <a href={`/os/${os.successor.slug}`} style={`${STEP_CARD} justify-content: flex-end; text-align: right;`}>
+            <span style="min-width: 0;">
+              <span style="display: block; font: 500 11px var(--font-ui); color: var(--faint);">Later</span>
+              <span style="display: block; font: 500 16px var(--font-ui); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{os.successor.name}</span>
+            </span>
+            <span style="font-size: 18px; color: var(--faint);">→</span>
+          </a>
+        )}
       </div>
 
       <div class="dc-detail-hero" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: stretch; min-height: 372px;">
@@ -157,15 +187,18 @@ export function OsDetail({ view, initialHex }: Props) {
           <button class="dc-detail-dl" onClick={() => setSheet(true)} style="border: none; cursor: pointer; background: var(--ink); color: #fff; font: 500 13px var(--font-ui); padding: 11px 17px; border-radius: 10px;">↓ Download</button>
         </div>
 
-        <div class="dc-detail-meta" style="display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 16px;">
+        <div class="dc-detail-meta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
+          <KnownUsesTimeline hex={c.hex} uses={c.uses} currentSlug={os.slug} />
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
             <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">COLOR VALUES · CLICK TO COPY</div>
             {copyRow("hex", "HEX", c.hex, c.hex)}
             {copyRow("rgb", "RGB", c.rgb, `rgb(${c.rgb})`)}
             {copyRow("hsl", "HSL", c.hsl, c.hsl)}
             {copyRow("cmyk", "CMYK", c.cmyk, `cmyk(${c.cmyk.replace(/ /g, ", ")})`)}
-            {copyRow("ral", "Closest RAL Classic", `${c.ral.code} · ${c.ral.name}`, `${c.ral.code} · ${c.ral.name}`, c.ral.hex)}
-            {copyRow("ralDesign", "Closest RAL Design+", `${c.ralDesign.code} · ${c.ralDesign.name}`, `${c.ralDesign.code} · ${c.ralDesign.name}`, c.ralDesign.hex)}
+            {codesExpanded && c.extraFormats.map((r) => copyRow(r.key, r.label, r.value, r.copy, r.swatch))}
+            <a onClick={() => setCodesExpanded((v) => !v)} style="display: block; border-top: 1px solid var(--hairline); padding: 9px 14px; font: 500 11px var(--font-mono); color: var(--accent-strong); cursor: pointer;">
+              {codesExpanded ? "Show fewer formats" : `View all ${4 + c.extraFormats.length} formats →`}
+            </a>
           </div>
         </div>
       </div>
@@ -209,7 +242,7 @@ export function OsDetail({ view, initialHex }: Props) {
               </div>
               <div style="padding: 11px 13px 13px;">
                 <div style="font: 500 14px var(--font-ui);"><span>{e.name}</span> ↗</div>
-                <div style="font: 400 11px var(--font-mono); color: var(--faint);">{e.year} · {e.family}</div>
+                <div style="font: 400 11px var(--font-mono); color: var(--faint);">{e.metaLine}</div>
               </div>
             </a>
           ))}
