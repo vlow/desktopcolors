@@ -4,7 +4,7 @@
   "added": "2026-07-17",
   "family": "Mac OS",
   "tagline": "Platinum-era desktop patterns in soft, muted accents.",
-  "description": "Mac OS 8 (1997) introduced the Platinum appearance and an Appearance control panel where the desktop could be set to a solid-color pattern. Beyond the default soft lavender-blue, the built-in solid patterns spanned muted greens, browns, and roses — quiet, desaturated tones that sat comfortably behind Platinum's calm gray chrome.",
+  "description": "Mac OS 8 (1997) introduced the Platinum appearance along with the Desktop Pictures control panel, which for the first time let a full photograph — not just a tiled pattern — fill the desktop. There was still no picker for a plain background color, so solid backgrounds shipped as pictures: a set of iconic solid-color wallpapers, including the default soft lavender-blue. These are their colors — quiet, desaturated greens, browns, and roses that sat comfortably behind Platinum's calm gray chrome.",
   "desktopStyle": "platinum",
   "colors": [
     {
