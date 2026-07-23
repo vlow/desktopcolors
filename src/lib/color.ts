@@ -87,9 +87,8 @@ function srgbToLinear(c: number): number {
   return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
 }
 
-// Björn Ottosson's sRGB -> OKLab transform.
-export function hexToOklab(hex: string): [number, number, number] {
-  const [r8, g8, b8] = hexToRgb(hex);
+// Björn Ottosson's linear-sRGB -> OKLab transform.
+export function rgbToOklab(r8: number, g8: number, b8: number): [number, number, number] {
   const r = srgbToLinear(r8), g = srgbToLinear(g8), b = srgbToLinear(b8);
   const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
   const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
@@ -100,6 +99,33 @@ export function hexToOklab(hex: string): [number, number, number] {
     1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
     0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
   ];
+}
+
+export function hexToOklab(hex: string): [number, number, number] {
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToOklab(r, g, b);
+}
+
+// sRGB (0–255) -> CIELAB (D65). L 0–100, a/b unbounded.
+export function rgbToLab(r8: number, g8: number, b8: number): [number, number, number] {
+  const r = srgbToLinear(r8), g = srgbToLinear(g8), b = srgbToLinear(b8);
+  // linear sRGB -> XYZ (D65)
+  let x = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b;
+  let y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b;
+  let z = 0.0193339 * r + 0.1191920 * g + 0.9503041 * b;
+  // normalize by D65 white point
+  x /= 0.95047; y /= 1.0; z /= 1.08883;
+  const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const fx = f(x), fy = f(y), fz = f(z);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+}
+
+// CIELAB -> CIELCh. C = hypot(a,b); H in degrees [0,360).
+export function labToLch(L: number, a: number, b: number): [number, number, number] {
+  const C = Math.sqrt(a * a + b * b);
+  let H = (Math.atan2(b, a) * 180) / Math.PI;
+  if (H < 0) H += 360;
+  return [L, C, H];
 }
 
 export function oklabDistance(a: [number, number, number], b: [number, number, number]): number {
