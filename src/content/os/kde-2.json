@@ -8,8 +8,25 @@
   "predecessor": "kde-1",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#5a7ea5", "name": "Blue", "note": "The Konqueror era — deeper, more confident blues.", "default": true },
-    { "hex": "#47617e", "name": "Slate" },
-    { "hex": "#4e9a9a", "name": "Teal" }
-  ]
+    {
+      "hex": "#5a7ea5",
+      "name": "Blue",
+      "note": "The Konqueror era — deeper, more confident blues.",
+      "default": true
+    },
+    {
+      "hex": "#47617e",
+      "name": "Slate"
+    },
+    {
+      "hex": "#4e9a9a",
+      "name": "Teal"
+    }
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "KDE",
+    "url": "https://kde.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/KDE"
 }

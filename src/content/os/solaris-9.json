@@ -7,12 +7,41 @@
   "description": "Solaris 9 shipped with CDE as its default desktop environment. CDE treats the workspace surface as a selectable Backdrop rather than a freely chosen background color, and several of its bundled Backdrops are solid fields. This palette records those colors, along with the solid violet beneath the watermark of the default SolarisLogo Backdrop.",
   "desktopStyle": "cde",
   "colors": [
-    { "hex": "#2f2f4a", "name": "Midnight Violet", "index": "—", "note": "The solid color used by the CDE Backdrop named “Background”." },
-    { "hex": "#63639c", "name": "Amethyst", "index": "—", "note": "The solid color used by the CDE Backdrop named “Foreground”." },
-    { "hex": "#adadad", "name": "Dove Gray", "index": "—", "note": "The solid color used by the CDE Backdrop named “Gray”." },
-    { "hex": "#737373", "name": "Granite Gray", "index": "—", "note": "The darker solid gray used by the CDE Backdrop named “GrayDk”." },
-    { "hex": "#dedede", "name": "Frost Gray", "index": "—", "note": "The lighter solid gray used by the CDE Backdrop named “GrayLt”." },
-    { "hex": "#000000", "name": "Black", "index": "—", "note": "Associated with CDE’s “NoBackdrop” option, which leaves the Backdrop transparent and exposes the root window beneath it." },
-    { "hex": "#574c8f", "name": "Iris", "index": "—", "note": "The solid violet field behind the watermark in the iconic default “SolarisLogo” Backdrop; the watermark is omitted here.", "default": true }
+    {
+      "hex": "#2f2f4a",
+      "name": "Midnight Violet",
+      "note": "The solid color used by the CDE Backdrop named “Background”."
+    },
+    {
+      "hex": "#63639c",
+      "name": "Amethyst",
+      "note": "The solid color used by the CDE Backdrop named “Foreground”."
+    },
+    {
+      "hex": "#adadad",
+      "name": "Dove Gray",
+      "note": "The solid color used by the CDE Backdrop named “Gray”."
+    },
+    {
+      "hex": "#737373",
+      "name": "Granite Gray",
+      "note": "The darker solid gray used by the CDE Backdrop named “GrayDk”."
+    },
+    {
+      "hex": "#dedede",
+      "name": "Frost Gray",
+      "note": "The lighter solid gray used by the CDE Backdrop named “GrayLt”."
+    },
+    {
+      "hex": "#000000",
+      "name": "Black",
+      "note": "Associated with CDE’s “NoBackdrop” option, which leaves the Backdrop transparent and exposes the root window beneath it."
+    },
+    {
+      "hex": "#574c8f",
+      "name": "Iris",
+      "note": "The solid violet field behind the watermark in the iconic default “SolarisLogo” Backdrop; the watermark is omitted here.",
+      "default": true
+    }
   ]
 }

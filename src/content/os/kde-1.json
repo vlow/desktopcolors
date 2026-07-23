@@ -8,8 +8,25 @@
   "successor": "kde-2",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#4e9a9a", "name": "Teal", "note": "Linux's first cohesive desktop, in cool understated tones.", "default": true },
-    { "hex": "#4e6f8e", "name": "Blue" },
-    { "hex": "#4e9a6f", "name": "Green" }
-  ]
+    {
+      "hex": "#4e9a9a",
+      "name": "Teal",
+      "note": "Linux's first cohesive desktop, in cool understated tones.",
+      "default": true
+    },
+    {
+      "hex": "#4e6f8e",
+      "name": "Blue"
+    },
+    {
+      "hex": "#4e9a6f",
+      "name": "Green"
+    }
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "KDE",
+    "url": "https://kde.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/KDE"
 }

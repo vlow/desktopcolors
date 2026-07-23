@@ -9,14 +9,48 @@ const view: OsDetailView = {
     slug: "windows-95", name: "Windows 95", year: 1995, added: "2000-01-01", family: "Windows",
     tagline: "t", description: "The teal era.", desktopStyle: "win9x",
     defaultHex: "#008080", colorCount: 2, score: 0, scoreLabel: "< 1k",
+    type: "Proprietary", wikipedia: "https://en.wikipedia.org/wiki/Windows_95",
     predecessor: null, successor: { slug: "windows-98", name: "Windows 98", year: 1998 },
     colors: [],
   },
   colors: [
-    { hex: "#008080", name: "Teal", index: "3", note: "default", isDefault: true, rgb: "0, 128, 128", hsl: "180° 100% 25%", cmyk: "100% 0% 0% 50%", onColor: "#ffffff", family: "teal", types: ["cool"], score: 0, scoreLabel: "< 1k", ral: { code: "RAL 5021", name: "Water Blue", hex: "#07737a" }, ralDesign: { code: "RAL 190 40 20", name: "Deep Sea", hex: "#0d7c7d" }, similar: [{ hex: "#4e9a9a", name: "Teal", osSlug: "kde-1", osName: "KDE 1", match: 88, onColor: "#ffffff", href: "/os/kde-1/4e9a9a" }], firstUse: { slug: "cde", name: "CDE", year: 1993, self: false, href: "/os/cde" } },
-    { hex: "#000080", name: "Navy", index: "1", note: "cool", isDefault: false, rgb: "0, 0, 128", hsl: "240° 100% 25%", cmyk: "100% 100% 0% 50%", onColor: "#ffffff", family: "blue", types: ["dark", "vivid", "cool"], score: 0, scoreLabel: "< 1k", ral: { code: "RAL 5002", name: "Ultramarine", hex: "#20214f" }, ralDesign: { code: "RAL 280 20 30", name: "Ink Blue", hex: "#1e2159" }, similar: [], firstUse: { slug: "windows-95", name: "Windows 95", year: 1995, self: true, href: "/os/windows-95" } },
+    {
+      hex: "#008080", name: "Teal", note: "default", isDefault: true, rgb: "0, 128, 128", hsl: "180° 100% 25%", cmyk: "100% 0% 0% 50%", onColor: "#ffffff", family: "teal", types: ["cool"], score: 0, scoreLabel: "< 1k",
+      ral: { code: "RAL 5021", name: "Water Blue", hex: "#07737a" }, ralDesign: { code: "RAL 190 40 20", name: "Deep Sea", hex: "#0d7c7d" },
+      extraFormats: [
+        { key: "lab", label: "CIELAB", value: "45.2, -20.1, -5.3", copy: "lab(45.2% -20.1 -5.3)" },
+        { key: "lch", label: "LCH", value: "45.2, 20.8, 194.8", copy: "lch(45.2% 20.8 194.8)" },
+        { key: "oklab", label: "OKLab", value: "0.500, -0.080, -0.020", copy: "oklab(0.500 -0.080 -0.020)" },
+        { key: "oklch", label: "OKLCH", value: "0.500, 0.082, 194.0", copy: "oklch(0.500 0.082 194.0)" },
+        { key: "ral", label: "Closest RAL Classic", value: "RAL 5021 · Water Blue", copy: "RAL 5021 · Water Blue", swatch: "#07737a" },
+        { key: "ralDesign", label: "Closest RAL Design+", value: "RAL 190 40 20 · Deep Sea", copy: "RAL 190 40 20 · Deep Sea", swatch: "#0d7c7d" },
+      ],
+      similar: [{
+        hex: "#4e9a9a", name: "Teal", match: 88, onColor: "#ffffff", h: 178, s: 33, l: 44,
+        primarySlug: "kde-1", style: "generic",
+        platforms: [{ slug: "kde-1", name: "KDE 1", year: 1998, family: "KDE", isDefault: true }],
+      }],
+      uses: [
+        { slug: "cde", name: "CDE", year: 1993, family: "Desktop Env.", isDefault: false },
+        { slug: "windows-95", name: "Windows 95", year: 1995, family: "Windows", isDefault: true },
+      ],
+    },
+    {
+      hex: "#000080", name: "Navy", note: "cool", isDefault: false, rgb: "0, 0, 128", hsl: "240° 100% 25%", cmyk: "100% 100% 0% 50%", onColor: "#ffffff", family: "blue", types: ["dark", "vivid", "cool"], score: 0, scoreLabel: "< 1k",
+      ral: { code: "RAL 5002", name: "Ultramarine", hex: "#20214f" }, ralDesign: { code: "RAL 280 20 30", name: "Ink Blue", hex: "#1e2159" },
+      extraFormats: [
+        { key: "lab", label: "CIELAB", value: "12.5, 30.1, -60.2", copy: "lab(12.5% 30.1 -60.2)" },
+        { key: "lch", label: "LCH", value: "12.5, 67.3, 296.5", copy: "lch(12.5% 67.3 296.5)" },
+        { key: "oklab", label: "OKLab", value: "0.230, 0.020, -0.130", copy: "oklab(0.230 0.020 -0.130)" },
+        { key: "oklch", label: "OKLCH", value: "0.230, 0.131, 278.0", copy: "oklch(0.230 0.131 278.0)" },
+        { key: "ral", label: "Closest RAL Classic", value: "RAL 5002 · Ultramarine", copy: "RAL 5002 · Ultramarine", swatch: "#20214f" },
+        { key: "ralDesign", label: "Closest RAL Design+", value: "RAL 280 20 30 · Ink Blue", copy: "RAL 280 20 30 · Ink Blue", swatch: "#1e2159" },
+      ],
+      similar: [],
+      uses: [{ slug: "windows-95", name: "Windows 95", year: 1995, family: "Windows", isDefault: false }],
+    },
   ],
-  eraPeers: [{ slug: "cde", name: "CDE", family: "Desktop Env.", year: 1993, hex: "#9aabb9", colorName: "Dusty Blue", rel: "2 yr earlier", onColor: "#1c1917", href: "/os/cde" }],
+  eraPeers: [{ slug: "cde", name: "CDE", family: "Desktop Env.", year: 1993, hex: "#9aabb9", colorName: "Dusty Blue", rel: "2 yr earlier", onColor: "#1c1917", href: "/os/cde", metaLine: "1993 · Desktop Env." }],
 };
 
 beforeEach(() => {
@@ -94,10 +128,12 @@ describe("OsDetail", () => {
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith("#008080");
   });
 
-  it("shows CMYK and both RAL matches, with the classic row renamed", () => {
+  it("shows CMYK directly and both RAL matches behind the extended formats toggle", () => {
     render(<OsDetail view={view} initialHex={null} />);
     expect(screen.getByText("CMYK")).toBeTruthy();
     expect(screen.getByText("100% 0% 0% 50%")).toBeTruthy();
+    expect(screen.queryByText("Closest RAL Classic")).toBeNull();
+    fireEvent.click(screen.getByText(/View all .* formats/));
     expect(screen.getByText("Closest RAL Classic")).toBeTruthy();
     expect(screen.getByText("Closest RAL Design+")).toBeTruthy();
     expect(screen.getByText(/RAL 190 40 20 · Deep Sea/)).toBeTruthy();
@@ -121,7 +157,9 @@ describe("OsDetail", () => {
     expect(screen.getByText(/Similar colors elsewhere/)).toBeTruthy();
     const era = screen.getByText(/Colors of the same era/);
     expect(era).toBeTruthy();
-    expect(screen.getByText("CDE")).toBeTruthy();
+    // "CDE" also appears in the KnownUsesTimeline's "First in <CDE>, 1993" text,
+    // so assert presence rather than uniqueness.
+    expect(screen.getAllByText("CDE").length).toBeGreaterThan(0);
   });
 
   it("labels the preview header with a name and the selected hex", () => {
@@ -144,6 +182,49 @@ describe("OsDetail", () => {
   it("labels the Same era section with what it lists", () => {
     render(<OsDetail view={view} initialHex={null} />);
     expect(screen.getByText("platforms released around 1995 · popular defaults")).toBeTruthy();
+  });
+
+  it("renders the type in the meta line and the References links", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.getByText(/Proprietary/)).toBeTruthy();
+    const wiki = screen.getByText(/Wikipedia/).closest("a") as HTMLAnchorElement;
+    expect(wiki.getAttribute("href")).toContain("wikipedia.org");
+  });
+
+  it("toggles extended color formats", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.queryByText("CIELAB")).toBeNull();
+    fireEvent.click(screen.getByText(/View all .* formats/));
+    expect(screen.getByText("CIELAB")).toBeTruthy();
+  });
+
+  it("shows the known-uses timeline", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    expect(screen.getByText("KNOWN USES")).toBeTruthy();
+  });
+
+  it("expands a similar color into a ColorInfobox panel with platform chips", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    // Teal is default-selected; it has one similar (#4e9a9a on KDE 1)
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    const chip = screen.getAllByTestId("infobox-platform")[0] as HTMLAnchorElement;
+    expect(chip.getAttribute("href")).toBe("/os/kde-1/4e9a9a");
+  });
+
+  it("collapses the similar-color panel on a repeat click of the same card", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    expect(screen.getAllByTestId("infobox-platform")[0]).toBeTruthy();
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    expect(screen.queryByTestId("infobox-platform")).toBeNull();
+  });
+
+  it("resets the expanded similar-color panel when the selected color changes", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    expect(screen.getAllByTestId("infobox-platform")[0]).toBeTruthy();
+    fireEvent.click(screen.getByText("Navy"));
+    expect(screen.queryByTestId("infobox-platform")).toBeNull();
   });
 });
 

@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import type { OsDetailView, DetailColor } from "../lib/detail";
+import type { OsDetailView, DetailColor, SimilarView } from "../lib/detail";
 import { DesktopPreview } from "./DesktopPreview";
 import { FullscreenPreview } from "./FullscreenPreview";
 import { DownloadSheet } from "./DownloadSheet";
+import { ColorInfobox, type InfoboxColor } from "./ColorInfobox";
 import { track } from "../lib/track";
 import { colorPath } from "../lib/links";
+import { KnownUsesTimeline } from "./KnownUsesTimeline";
 
 interface Props { view: OsDetailView; initialHex?: string | null }
 
-type CopyKey = "hex" | "rgb" | "hsl" | "cmyk" | "ral" | "ralDesign";
+type CopyKey = string;
+
+const REF_LINK = "display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--ink); font: 500 12px var(--font-ui); border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel); padding: 8px 12px;";
+const STEP_CARD = "display: flex; align-items: center; gap: 12px; text-decoration: none; border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel); padding: 11px 15px;";
 
 // scrollTop that centers an item (at `itemOffset` within the container's content
 // box, `itemHeight` tall) inside a scroll container, clamped to its scrollable
@@ -47,6 +52,10 @@ export function OsDetail({ view, initialHex }: Props) {
   const [sheet, setSheet] = useState(false);
   const [full, setFull] = useState(false);
   const [copied, setCopied] = useState<CopyKey | null>(null);
+  const [codesExpanded, setCodesExpanded] = useState(false);
+  const [simExp, setSimExp] = useState<string | null>(null);
+  const [simPreview, setSimPreview] = useState<SimilarView | null>(null);
+  const [simSheet, setSimSheet] = useState<SimilarView | null>(null);
 
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
 
@@ -67,6 +76,10 @@ export function OsDetail({ view, initialHex }: Props) {
   }, []);
 
   const c: DetailColor = colors[sel] ?? colors[0];
+
+  // Collapse any expanded similar-color panel when the selected color changes —
+  // it refers to a different color's "similar" list once `sel` moves.
+  useEffect(() => { setSimExp(null); }, [sel]);
 
   // Keep the URL in sync with the selected color so it can be copied/shared.
   // Skip the initial mount so the entry URL (a default page or a deep link) is
@@ -102,14 +115,40 @@ export function OsDetail({ view, initialHex }: Props) {
 
   return (
     <div class="dc-detail dc-page-x" style="padding-block: 18px 56px;">
-      <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
-      <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-top: 14px;">{os.family} · {os.year}</div>
+      <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 18px;">
+        <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
+        {(os.project || os.wikipedia) && (
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;">
+            <span style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">REFERENCES</span>
+            {os.project && <a href={os.project.url} target="_blank" rel="noopener" style={REF_LINK}>⧉ {os.project.name} <span style="opacity: 0.5;">↗</span></a>}
+            {os.wikipedia && <a href={os.wikipedia} target="_blank" rel="noopener" style={REF_LINK}><span style="font: 700 13px var(--font-ui);">W</span> Wikipedia <span style="opacity: 0.5;">↗</span></a>}
+          </div>
+        )}
+      </div>
+      <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-top: 14px;">{os.family} · {os.year}{os.type && <> <span style="color: var(--faint);">·</span> <span style="color: var(--muted);">{os.type}</span></>}</div>
       <h1 style="font: 700 36px var(--font-ui); letter-spacing: -0.8px; margin: 6px 0 8px;">{os.name}</h1>
       <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 680px; margin: 0 0 16px;">{os.description}</p>
 
-      <div style="display: flex; gap: 8px; margin-bottom: 22px;">
-        {os.predecessor && <a href={`/os/${os.predecessor.slug}`} style="border: 1px solid var(--card-border); border-radius: 9px; background: var(--panel); padding: 8px 13px; font: 500 13px var(--font-ui);">← {os.predecessor.name}</a>}
-        {os.successor && <a href={`/os/${os.successor.slug}`} style="border: 1px solid var(--card-border); border-radius: 9px; background: var(--panel); padding: 8px 13px; font: 500 13px var(--font-ui);">{os.successor.name} →</a>}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 560px; margin-bottom: 22px;">
+        {os.predecessor && (
+          <a href={`/os/${os.predecessor.slug}`} style={STEP_CARD}>
+            <span style="font-size: 18px; color: var(--faint);">←</span>
+            <span style="min-width: 0;">
+              <span style="display: block; font: 500 11px var(--font-ui); color: var(--faint);">Earlier</span>
+              <span style="display: block; font: 500 16px var(--font-ui); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{os.predecessor.name}</span>
+            </span>
+          </a>
+        )}
+        {os.successor && (
+          <a href={`/os/${os.successor.slug}`}
+            style={`${STEP_CARD} justify-content: flex-end; text-align: right;${os.predecessor ? "" : " grid-column: 2; justify-self: end;"}`}>
+            <span style="min-width: 0;">
+              <span style="display: block; font: 500 11px var(--font-ui); color: var(--faint);">Later</span>
+              <span style="display: block; font: 500 16px var(--font-ui); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{os.successor.name}</span>
+            </span>
+            <span style="font-size: 18px; color: var(--faint);">→</span>
+          </a>
+        )}
       </div>
 
       <div class="dc-detail-hero" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: stretch; min-height: 372px;">
@@ -131,11 +170,11 @@ export function OsDetail({ view, initialHex }: Props) {
           </div>
           <div ref={listRef} style="flex: 1; overflow-y: auto; padding: 8px; max-height: 320px;">
             {colors.map((col, i) => (
-              <div key={col.hex} onClick={() => setSel(i)} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "oklch(0.96 0.03 255)" : "transparent"};`}>
+              <div key={col.hex} onClick={() => setSel(i)} data-testid={`color-row-${col.hex.slice(1)}`} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "oklch(0.96 0.03 255)" : "transparent"};`}>
                 <div style={`width: 32px; height: 32px; border-radius: 7px; background-color: ${col.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
                 <div style="flex: 1;">
                   <div style="font: 500 13px var(--font-ui);">{col.name}</div>
-                  <div style="font: 400 11px var(--font-mono); color: var(--faint);">{col.hex} · idx {col.index}</div>
+                  <div style="font: 400 11px var(--font-mono); color: var(--faint);">{col.hex}</div>
                 </div>
                 {col.isDefault && <span title="Default" style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent);" />}
               </div>
@@ -158,19 +197,17 @@ export function OsDetail({ view, initialHex }: Props) {
         </div>
 
         <div class="dc-detail-meta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
-          <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
-            <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">DETAILS</div>
-            <div style="display: flex; justify-content: space-between; padding: 7px 14px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">Palette index</span><span style="font: 500 13px var(--font-mono);">{c.index}</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 7px 14px 11px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">First known use</span>{c.firstUse.self ? <span style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year}</span> : <a href={c.firstUse.href} style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year} ↗</a>}</div>
-          </div>
+          <KnownUsesTimeline hex={c.hex} uses={c.uses} currentSlug={os.slug} />
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
             <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">COLOR VALUES · CLICK TO COPY</div>
             {copyRow("hex", "HEX", c.hex, c.hex)}
             {copyRow("rgb", "RGB", c.rgb, `rgb(${c.rgb})`)}
             {copyRow("hsl", "HSL", c.hsl, c.hsl)}
             {copyRow("cmyk", "CMYK", c.cmyk, `cmyk(${c.cmyk.replace(/ /g, ", ")})`)}
-            {copyRow("ral", "Closest RAL Classic", `${c.ral.code} · ${c.ral.name}`, `${c.ral.code} · ${c.ral.name}`, c.ral.hex)}
-            {copyRow("ralDesign", "Closest RAL Design+", `${c.ralDesign.code} · ${c.ralDesign.name}`, `${c.ralDesign.code} · ${c.ralDesign.name}`, c.ralDesign.hex)}
+            {codesExpanded && c.extraFormats.map((r) => copyRow(r.key, r.label, r.value, r.copy, r.swatch))}
+            <a onClick={() => setCodesExpanded((v) => !v)} style="display: block; border-top: 1px solid var(--hairline); padding: 9px 14px; font: 500 11px var(--font-mono); color: var(--accent-strong); cursor: pointer;">
+              {codesExpanded ? "Show fewer formats" : `View all ${4 + c.extraFormats.length} formats →`}
+            </a>
           </div>
         </div>
       </div>
@@ -183,20 +220,33 @@ export function OsDetail({ view, initialHex }: Props) {
         {c.similar.length === 0 ? (
           <div style="font: 400 13px var(--font-mono); color: var(--faint);">No close matches on other platforms.</div>
         ) : (
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px;">
-            {c.similar.map((s) => (
-              <a key={s.hex + s.osSlug} href={s.href} style="border: 1px solid var(--card-border); border-radius: 13px; overflow: hidden; background: var(--panel); display: block;">
-                <div style={`position: relative; height: 76px; background-color: ${s.hex};`}>
-                  <span style="position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #1c1917; font: 500 10px var(--font-ui); padding: 3px 8px; border-radius: 999px;">{s.match}% match</span>
+          <>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px;">
+              {c.similar.map((s) => (
+                <a key={s.hex + s.primarySlug} onClick={() => setSimExp((x) => (x === s.hex ? null : s.hex))}
+                  style={`cursor: pointer; border: 1px solid var(--card-border); border-radius: 13px; overflow: hidden; background: var(--panel); display: block; ${simExp === s.hex ? "outline: 2px solid var(--accent);" : ""}`}>
+                  <div style={`position: relative; height: 76px; background-color: ${s.hex};`}>
+                    <span style="position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #1c1917; font: 500 10px var(--font-ui); padding: 3px 8px; border-radius: 999px;">{s.match}% match</span>
+                  </div>
+                  <div style="padding: 11px 13px 13px;">
+                    <div style="font: 500 14px var(--font-ui);">{s.name}</div>
+                    <div style="font: 400 11px var(--font-mono); color: var(--faint);">{s.hex}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            {simExp && (() => {
+              const s = c.similar.find((x) => x.hex === simExp);
+              if (!s) return null;
+              const infoColor: InfoboxColor = { hex: s.hex, name: s.name, onColor: s.onColor, h: s.h, s: s.s, l: s.l, primarySlug: s.primarySlug };
+              return (
+                <div style="margin-top: 14px;">
+                  <ColorInfobox variant="flat" color={infoColor} platforms={s.platforms}
+                    onPreview={() => setSimPreview(s)} onDownload={() => setSimSheet(s)} />
                 </div>
-                <div style="padding: 11px 13px 13px;">
-                  <div style="font: 500 14px var(--font-ui);">{s.name}</div>
-                  <div style="font: 400 11px var(--font-mono); color: var(--faint);">{s.hex}</div>
-                  <div style="font: 400 12px var(--font-ui); color: var(--muted); margin-top: 8px;">{s.osName} ↗</div>
-                </div>
-              </a>
-            ))}
-          </div>
+              );
+            })()}
+          </>
         )}
       </div>
 
@@ -214,7 +264,7 @@ export function OsDetail({ view, initialHex }: Props) {
               </div>
               <div style="padding: 11px 13px 13px;">
                 <div style="font: 500 14px var(--font-ui);"><span>{e.name}</span> ↗</div>
-                <div style="font: 400 11px var(--font-mono); color: var(--faint);">{e.year} · {e.family}</div>
+                <div style="font: 400 11px var(--font-mono); color: var(--faint);">{e.metaLine}</div>
               </div>
             </a>
           ))}
@@ -230,6 +280,15 @@ export function OsDetail({ view, initialHex }: Props) {
           onClose={() => setFull(false)} onPrev={() => step(-1)} onNext={() => step(1)}
         />
       )}
+      {simPreview && (
+        <FullscreenPreview
+          hex={simPreview.hex} onColor={simPreview.onColor} style={simPreview.style}
+          label={`${simPreview.name} · ${simPreview.hex}`}
+          pos={1} total={1}
+          onClose={() => setSimPreview(null)} onPrev={() => {}} onNext={() => {}}
+        />
+      )}
+      {simSheet && <DownloadSheet osSlug={simSheet.primarySlug} color={{ hex: simSheet.hex, name: simSheet.name }} onClose={() => setSimSheet(null)} />}
     </div>
   );
 }

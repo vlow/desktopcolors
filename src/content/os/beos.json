@@ -8,6 +8,13 @@
   "successor": "haiku",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#336698", "name": "Steel Blue", "note": "The BeOS desktop blue.", "default": true }
-  ]
+    {
+      "hex": "#336698",
+      "name": "Steel Blue",
+      "note": "The BeOS desktop blue.",
+      "default": true
+    }
+  ],
+  "type": "Proprietary",
+  "wikipedia": "https://en.wikipedia.org/wiki/BeOS"
 }

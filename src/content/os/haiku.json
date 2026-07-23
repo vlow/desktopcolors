@@ -8,6 +8,17 @@
   "predecessor": "beos",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#336698", "name": "Steel Blue", "note": "The Haiku desktop blue.", "default": true }
-  ]
+    {
+      "hex": "#336698",
+      "name": "Steel Blue",
+      "note": "The Haiku desktop blue.",
+      "default": true
+    }
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "Haiku",
+    "url": "https://www.haiku-os.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/Haiku_(operating_system)"
 }

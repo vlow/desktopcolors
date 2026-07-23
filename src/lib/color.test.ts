@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   hexToRgb, rgbToHsl, hexToHsl, onColor, relativeLuminance, rgbDistance,
   hexToOklab, oklabDistance, hueFamily, closestRal, closestRalDesign,
-  rgbToCmyk, hexToCmyk, formatScore, hexToOklch, colorTypes,
+  rgbToCmyk, hexToCmyk, formatScore, hexToOklch, colorTypes, rgbToLab, labToLch, rgbToOklab,
 } from "./color";
 
 describe("hexToRgb", () => {
@@ -212,5 +212,34 @@ describe("colorTypes", () => {
       "#0000ff", "#556b2f", "#a67b5b", "#c9b6e8", "#008080"]) {
       expect(colorTypes(hex).length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("rgbToLab", () => {
+  it("maps white and black", () => {
+    const [Lw] = rgbToLab(255, 255, 255);
+    const [Lb] = rgbToLab(0, 0, 0);
+    expect(Math.round(Lw)).toBe(100);
+    expect(Math.round(Lb)).toBe(0);
+  });
+  it("teal is greenish-blue (a<0, b<0)", () => {
+    const [, a, b] = rgbToLab(0, 128, 128);
+    expect(a).toBeLessThan(0);
+    expect(b).toBeLessThan(0);
+  });
+});
+
+describe("labToLch", () => {
+  it("chroma is hypot(a,b), hue in [0,360)", () => {
+    const [, C, H] = labToLch(50, 3, -4);
+    expect(C).toBeCloseTo(5, 5);
+    expect(H).toBeGreaterThanOrEqual(0);
+    expect(H).toBeLessThan(360);
+  });
+});
+
+describe("rgbToOklab", () => {
+  it("matches hexToOklab for the same color", () => {
+    expect(rgbToOklab(0, 128, 128)).toEqual(hexToOklab("#008080"));
   });
 });

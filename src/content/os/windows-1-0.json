@@ -8,9 +8,28 @@
   "successor": "windows-2-0",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#57ff81", "name": "Dithered Green (Averaged)", "index": "—", "note": "The Windows 1.0 desktop. There was no single green for it in the hardware palette, so the desktop was dithered — 8×8 blocks of green (#57ff57) with a 4×4 patch of cyan (#57ffff) inside each, 25% cyan by area. This is the conventional pixel average of that pattern; averaging in linear light instead gives the gamma-corrected #57ff9a.", "default": true },
-    { "hex": "#57ff9a", "name": "Dithered Green (Gamma-Corrected)", "index": "—", "note": "The same dithered desktop, but averaged in linear light and gamma-corrected — a slightly mintier green. The simpler pixel average is #57ff81." },
-    { "hex": "#57ff57", "name": "Phosphor Green", "index": "—", "note": "One of the two colors the Windows 1.0 desktop was dithered from — the green that fills each 8×8 block." },
-    { "hex": "#57ffff", "name": "Aqua", "index": "—", "note": "One of the two colors the Windows 1.0 desktop was dithered from — the cyan filling a 4×4 patch inside each 8×8 green block (25% by area)." }
-  ]
+    {
+      "hex": "#57ff81",
+      "name": "Dithered Green (Averaged)",
+      "note": "The Windows 1.0 desktop. There was no single green for it in the hardware palette, so the desktop was dithered — 8×8 blocks of green (#57ff57) with a 4×4 patch of cyan (#57ffff) inside each, 25% cyan by area. This is the conventional pixel average of that pattern; averaging in linear light instead gives the gamma-corrected #57ff9a.",
+      "default": true
+    },
+    {
+      "hex": "#57ff9a",
+      "name": "Dithered Green (Gamma-Corrected)",
+      "note": "The same dithered desktop, but averaged in linear light and gamma-corrected — a slightly mintier green. The simpler pixel average is #57ff81."
+    },
+    {
+      "hex": "#57ff57",
+      "name": "Phosphor Green",
+      "note": "One of the two colors the Windows 1.0 desktop was dithered from — the green that fills each 8×8 block."
+    },
+    {
+      "hex": "#57ffff",
+      "name": "Aqua",
+      "note": "One of the two colors the Windows 1.0 desktop was dithered from — the cyan filling a 4×4 patch inside each 8×8 green block (25% by area)."
+    }
+  ],
+  "type": "Proprietary",
+  "wikipedia": "https://en.wikipedia.org/wiki/Windows_1.0"
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  defaultColor, mergeColorsByHex, similarColors, eraPeers, firstKnownUse,
+  defaultColor, mergeColorsByHex, similarColors, eraPeers,
   type OsEntry,
 } from "./derive";
 import type { OsInput } from "../content/config";
@@ -12,15 +12,15 @@ const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => 
 
 const entries: OsEntry[] = [
   { slug: "win-95", data: os({ name: "Windows 95", year: 1995, colors: [
-    { hex: "#008080", name: "Teal", index: "3", note: "", default: true },
-    { hex: "#000080", name: "Navy", index: "1", note: "", default: false },
+    { hex: "#008080", name: "Teal", note: "", default: true },
+    { hex: "#000080", name: "Navy", note: "", default: false },
   ] }) },
   { slug: "cde", data: os({ name: "CDE", year: 1993, colors: [
-    { hex: "#9aabb9", name: "Dusty Blue", index: "—", note: "", default: true },
-    { hex: "#008080", name: "Teal", index: "—", note: "", default: false },
+    { hex: "#9aabb9", name: "Dusty Blue", note: "", default: true },
+    { hex: "#008080", name: "Teal", note: "", default: false },
   ] }) },
   { slug: "kde-2", data: os({ name: "KDE 2", year: 2000, colors: [
-    { hex: "#5a7ea5", name: "Blue", index: "—", note: "", default: true },
+    { hex: "#5a7ea5", name: "Blue", note: "", default: true },
   ] }) },
 ];
 
@@ -29,7 +29,7 @@ describe("defaultColor", () => {
     expect(defaultColor(entries[0].data).name).toBe("Teal");
   });
   it("falls back to the first color", () => {
-    const d = os({ colors: [{ hex: "#111111", name: "A", index: "—", note: "", default: false }] });
+    const d = os({ colors: [{ hex: "#111111", name: "A", note: "", default: false }] });
     expect(defaultColor(d).name).toBe("A");
   });
 });
@@ -66,11 +66,5 @@ describe("eraPeers", () => {
     const peers = eraPeers(entries[0], entries, 3);
     const cde = peers.find((p) => p.slug === "cde")!;
     expect(cde.rel).toBe("2 yr earlier");
-  });
-});
-
-describe("firstKnownUse", () => {
-  it("finds the earliest platform shipping the hex", () => {
-    expect(firstKnownUse("#008080", entries).slug).toBe("cde"); // 1993 < 1995
   });
 });

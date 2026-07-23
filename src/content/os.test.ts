@@ -7,7 +7,6 @@ const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const osColor = z.object({
   hex,
   name: z.string().min(1),
-  index: z.string().optional(),
   note: z.string().optional(),
   default: z.boolean().optional(),
 });

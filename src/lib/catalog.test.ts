@@ -11,11 +11,11 @@ const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => 
 
 const entries: OsEntry[] = [
   { slug: "windows-95", data: os({ name: "Windows 95", year: 1995, added: "2026-07-17", successor: "windows-98", colors: [
-    { hex: "#008080", name: "Teal", index: "3", note: "n", default: true },
-    { hex: "#000080", name: "Navy", index: "1", note: "", default: false },
+    { hex: "#008080", name: "Teal", note: "n", default: true },
+    { hex: "#000080", name: "Navy", note: "", default: false },
   ] }) },
   { slug: "windows-98", data: os({ name: "Windows 98", year: 1998, predecessor: "windows-95", colors: [
-    { hex: "#008080", name: "Teal", index: "3", note: "", default: true },
+    { hex: "#008080", name: "Teal", note: "", default: true },
   ] }) },
 ];
 
@@ -64,9 +64,23 @@ describe("buildCatalog", () => {
 
   it("throws on an unresolved reference", () => {
     const bad: OsEntry[] = [{ slug: "a", data: os({ successor: "nope", colors: [
-      { hex: "#111111", name: "A", index: "—", note: "", default: true },
+      { hex: "#111111", name: "A", note: "", default: true },
     ] }) }];
     expect(() => buildCatalog(bad, scores)).toThrow(/nope/);
+  });
+});
+
+describe("buildCatalog metadata fields", () => {
+  it("threads type/project/wikipedia onto the OsView", () => {
+    const cat = buildCatalog([
+      { slug: "haiku", data: os({ name: "Haiku", year: 2009, colors: [
+        { hex: "#336698", name: "Steel Blue", note: "", default: true },
+      ], type: "Open Source", project: { name: "Haiku", url: "https://www.haiku-os.org" }, wikipedia: "https://en.wikipedia.org/wiki/Haiku_(operating_system)" }) },
+    ], { colors: {}, os: {} });
+    const v = cat.bySlug.get("haiku")!;
+    expect(v.type).toBe("Open Source");
+    expect(v.project).toEqual({ name: "Haiku", url: "https://www.haiku-os.org" });
+    expect(v.wikipedia).toContain("wikipedia.org");
   });
 });
 

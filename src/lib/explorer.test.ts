@@ -16,11 +16,11 @@ const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => 
 
 const entries: OsEntry[] = [
   { slug: "a", data: os({ name: "A", year: 1995, colors: [
-    { hex: "#008080", name: "Teal", index: "—", note: "", default: true },
-    { hex: "#000080", name: "Navy", index: "—", note: "", default: false },
+    { hex: "#008080", name: "Teal", note: "", default: true },
+    { hex: "#000080", name: "Navy", note: "", default: false },
   ] }) },
   { slug: "b", data: os({ name: "B", year: 2000, colors: [
-    { hex: "#ff0000", name: "Red", index: "—", note: "", default: true },
+    { hex: "#ff0000", name: "Red", note: "", default: true },
   ] }) },
 ];
 const catalog = buildCatalog(entries, parseScores({ colors: { "#008080": 5000, "#ff0000": 1000 }, os: {} }));
@@ -153,9 +153,9 @@ describe("buildPlatformsByHex", () => {
   it("lists every platform that shipped a shared hex", () => {
     const shared: OsEntry[] = [
       { slug: "old", data: os({ name: "Old", year: 1998, colors: [
-        { hex: "#008080", name: "Teal", index: "—", note: "", default: false }] }) },
+        { hex: "#008080", name: "Teal", note: "", default: false }] }) },
       { slug: "new", data: os({ name: "New", year: 1995, colors: [
-        { hex: "#008080", name: "Teal", index: "—", note: "", default: true }] }) },
+        { hex: "#008080", name: "Teal", note: "", default: true }] }) },
     ];
     const cat = buildCatalog(shared, parseScores({ colors: {}, os: {} }));
     const map = buildPlatformsByHex(cat);
@@ -169,11 +169,11 @@ describe("buildOsUniverse", () => {
   it("groups OSes by family, each group sorted by year then name", () => {
     const multi: OsEntry[] = [
       { slug: "w98", data: os({ name: "Windows 98", year: 1998, family: "Windows", colors: [
-        { hex: "#008080", name: "Teal", index: "—", note: "", default: true }] }) },
+        { hex: "#008080", name: "Teal", note: "", default: true }] }) },
       { slug: "w95", data: os({ name: "Windows 95", year: 1995, family: "Windows", colors: [
-        { hex: "#000080", name: "Navy", index: "—", note: "", default: true }] }) },
+        { hex: "#000080", name: "Navy", note: "", default: true }] }) },
       { slug: "beos", data: os({ name: "BeOS", year: 1996, family: "Be", colors: [
-        { hex: "#ff0000", name: "Red", index: "—", note: "", default: true }] }) },
+        { hex: "#ff0000", name: "Red", note: "", default: true }] }) },
     ];
     const cat = buildCatalog(multi, parseScores({ colors: {}, os: {} }));
     const uni = buildOsUniverse(cat);

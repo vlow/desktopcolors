@@ -10,7 +10,8 @@ export default defineConfig({
     command: "npm run build && npm run preview -- --port 4321 --host 127.0.0.1",
     url: "http://127.0.0.1:4321",
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    // A cold `npm run build` takes ~130s for 704 pages; give it real headroom.
+    timeout: 300_000,
   },
   projects: [{ name: "chromium", use: { browserName: "chromium" } }],
 });

@@ -9,6 +9,13 @@
   "successor": "windows-3-0",
   "desktopStyle": "modern",
   "colors": [
-    { "hex": "#57ffff", "name": "Aqua", "index": "—", "note": "The Windows 2.0 desktop. This is the cyan that Windows 1.0 used as one of its two dither colors — Windows 2.0 dropped the dithering and painted the desktop with it directly.", "default": true }
-  ]
+    {
+      "hex": "#57ffff",
+      "name": "Aqua",
+      "note": "The Windows 2.0 desktop. This is the cyan that Windows 1.0 used as one of its two dither colors — Windows 2.0 dropped the dithering and painted the desktop with it directly.",
+      "default": true
+    }
+  ],
+  "type": "Proprietary",
+  "wikipedia": "https://en.wikipedia.org/wiki/Windows_2.0"
 }
