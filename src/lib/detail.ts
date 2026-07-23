@@ -2,6 +2,7 @@ import { closestRal, closestRalDesign, onColor, hexToHsl, hexToRgb, rgbToLab, la
 import { similarColors, eraPeers, type OsEntry, type SimilarColor, type EraPeer } from "./derive";
 import { buildPlatformsByHex, type Platform } from "./explorer";
 import type { Catalog, OsView, ColorView } from "./catalog";
+import type { DesktopStyle } from "./desktopStyle";
 
 export interface RalMatch { code: string; name: string; hex: string }
 export interface CopyRow { key: string; label: string; value: string; copy: string; swatch?: string }
@@ -9,7 +10,7 @@ export interface CopyRow { key: string; label: string; value: string; copy: stri
 export interface SimilarView {
   hex: string; name: string; match: number;
   onColor: string; h: number; s: number; l: number;
-  primarySlug: string; style: string; platforms: Platform[];
+  primarySlug: string; style: DesktopStyle; platforms: Platform[];
 }
 
 export interface DetailColor extends ColorView {
@@ -65,7 +66,7 @@ export function buildOsDetail(entries: OsEntry[], catalog: Catalog, slug: string
   if (!os || !entry) throw new Error(`Unknown OS slug "${slug}"`);
 
   const platformsByHex = buildPlatformsByHex(catalog);
-  const styleBySlug: Record<string, string> = {};
+  const styleBySlug: Record<string, DesktopStyle> = {};
   for (const o of catalog.osList) styleBySlug[o.slug] = o.desktopStyle;
 
   const colors: DetailColor[] = os.colors.map((c: ColorView) => {

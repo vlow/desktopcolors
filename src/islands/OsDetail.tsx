@@ -282,7 +282,7 @@ export function OsDetail({ view, initialHex }: Props) {
       )}
       {simPreview && (
         <FullscreenPreview
-          hex={simPreview.hex} onColor={simPreview.onColor} style={simPreview.style as any}
+          hex={simPreview.hex} onColor={simPreview.onColor} style={simPreview.style}
           label={`${simPreview.name} · ${simPreview.hex}`}
           pos={1} total={1}
           onClose={() => setSimPreview(null)} onPrev={() => {}} onNext={() => {}}
