@@ -54,7 +54,7 @@ export function OsDetail({ view, initialHex }: Props) {
   const [copied, setCopied] = useState<CopyKey | null>(null);
   const [codesExpanded, setCodesExpanded] = useState(false);
   const [simExp, setSimExp] = useState<string | null>(null);
-  const [simPreview, setSimPreview] = useState<SimilarView | null>(null);
+  const [simFull, setSimFull] = useState(false);
   const [simSheet, setSimSheet] = useState<SimilarView | null>(null);
 
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
@@ -100,6 +100,17 @@ export function OsDetail({ view, initialHex }: Props) {
   };
 
   const step = (d: number) => setSel((s) => (s + d + colors.length) % colors.length);
+
+  // Step through the current color's "similar" list inside the fullscreen
+  // preview. `simExp` is the single source of truth for the current similar
+  // color, so advancing it also makes the expanded panel below follow along.
+  const stepSim = (d: number) => {
+    const n = c.similar.length;
+    if (n === 0) return;
+    const i = c.similar.findIndex((x) => x.hex === simExp);
+    const next = ((i < 0 ? 0 : i) + d + n) % n;
+    setSimExp(c.similar[next].hex);
+  };
 
   const copyRow = (key: CopyKey, label: string, value: string, toCopy: string, swatch?: string) => (
     <div data-testid={`copy-${key}`} onClick={() => copy(key, toCopy)} title={`Copy ${label}`}
@@ -242,7 +253,7 @@ export function OsDetail({ view, initialHex }: Props) {
               return (
                 <div style="margin-top: 14px;">
                   <ColorInfobox variant="flat" color={infoColor} platforms={s.platforms}
-                    onPreview={() => setSimPreview(s)} onDownload={() => setSimSheet(s)} />
+                    onPreview={() => setSimFull(true)} onDownload={() => setSimSheet(s)} />
                 </div>
               );
             })()}
@@ -280,14 +291,19 @@ export function OsDetail({ view, initialHex }: Props) {
           onClose={() => setFull(false)} onPrev={() => step(-1)} onNext={() => step(1)}
         />
       )}
-      {simPreview && (
-        <FullscreenPreview
-          hex={simPreview.hex} onColor={simPreview.onColor} style={simPreview.style}
-          label={`${simPreview.name} · ${simPreview.hex}`}
-          pos={1} total={1}
-          onClose={() => setSimPreview(null)} onPrev={() => {}} onNext={() => {}}
-        />
-      )}
+      {simFull && (() => {
+        const idx = c.similar.findIndex((x) => x.hex === simExp);
+        const cur = idx >= 0 ? c.similar[idx] : null;
+        if (!cur) return null;
+        return (
+          <FullscreenPreview
+            hex={cur.hex} onColor={cur.onColor} style={cur.style}
+            label={`${cur.name} · ${cur.hex}`}
+            pos={idx + 1} total={c.similar.length}
+            onClose={() => setSimFull(false)} onPrev={() => stepSim(-1)} onNext={() => stepSim(1)}
+          />
+        );
+      })()}
       {simSheet && <DownloadSheet osSlug={simSheet.primarySlug} color={{ hex: simSheet.hex, name: simSheet.name }} onClose={() => setSimSheet(null)} />}
     </div>
   );
