@@ -70,6 +70,20 @@ describe("buildCatalog", () => {
   });
 });
 
+describe("buildCatalog metadata fields", () => {
+  it("threads type/project/wikipedia onto the OsView", () => {
+    const cat = buildCatalog([
+      { slug: "haiku", data: os({ name: "Haiku", year: 2009, colors: [
+        { hex: "#336698", name: "Steel Blue", note: "", default: true },
+      ], type: "Open Source", project: { name: "Haiku", url: "https://www.haiku-os.org" }, wikipedia: "https://en.wikipedia.org/wiki/Haiku_(operating_system)" }) },
+    ], { colors: {}, os: {} });
+    const v = cat.bySlug.get("haiku")!;
+    expect(v.type).toBe("Open Source");
+    expect(v.project).toEqual({ name: "Haiku", url: "https://www.haiku-os.org" });
+    expect(v.wikipedia).toContain("wikipedia.org");
+  });
+});
+
 describe("buildCatalog color types", () => {
   it("assigns a non-empty multi-label types array, tagging teal as cool", () => {
     const cat = buildCatalog(entries, parseScores({ colors: {}, os: {} }));

@@ -22,5 +22,11 @@
       "hex": "#4e9a9a",
       "name": "Teal"
     }
-  ]
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "KDE",
+    "url": "https://kde.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/KDE"
 }

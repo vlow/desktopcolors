@@ -287,5 +287,11 @@
       "hex": "#a0a0a7",
       "name": "Medium Gray"
     }
-  ]
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "ReactOS",
+    "url": "https://reactos.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/ReactOS"
 }

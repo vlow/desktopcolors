@@ -238,5 +238,7 @@
       "hex": "#ffffff",
       "name": "White"
     }
-  ]
+  ],
+  "type": "Proprietary",
+  "wikipedia": "https://en.wikipedia.org/wiki/Windows_NT_3.1"
 }

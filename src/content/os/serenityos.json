@@ -237,5 +237,11 @@
       "hex": "#f3f3f3",
       "name": "White Smoke"
     }
-  ]
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "SerenityOS",
+    "url": "https://serenityos.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/SerenityOS"
 }

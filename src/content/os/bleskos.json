@@ -13,5 +13,10 @@
       "note": "The default BleskOS desktop.",
       "default": true
     }
-  ]
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "BleskOS",
+    "url": "https://github.com/VendelinSlezak/BleskOS"
+  }
 }

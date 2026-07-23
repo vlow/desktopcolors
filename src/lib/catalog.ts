@@ -38,6 +38,9 @@ export interface OsView {
   tagline: string;
   description: string;
   desktopStyle: DesktopStyle;
+  type?: string;
+  project?: { name: string; url: string };
+  wikipedia?: string;
   colors: ColorView[];
   defaultHex: string;
   colorCount: number;
@@ -98,6 +101,7 @@ export function buildCatalog(entries: OsEntry[], scores: Scores): Catalog {
     return {
       slug, name: data.name, year: data.year, added: data.added, family: data.family,
       tagline: data.tagline, description: data.description, desktopStyle: data.desktopStyle,
+      type: data.type, project: data.project, wikipedia: data.wikipedia,
       colors, defaultHex: def.hex.toLowerCase(), colorCount: colors.length,
       score, scoreLabel: formatScore(score),
       predecessor: refOf(data.predecessor, "predecessor", slug),

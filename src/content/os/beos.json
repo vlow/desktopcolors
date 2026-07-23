@@ -14,5 +14,7 @@
       "note": "The BeOS desktop blue.",
       "default": true
     }
-  ]
+  ],
+  "type": "Proprietary",
+  "wikipedia": "https://en.wikipedia.org/wiki/BeOS"
 }

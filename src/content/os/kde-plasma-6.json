@@ -13,5 +13,11 @@
       "note": "The Breeze accent blue — KDE Plasma's default desktop and highlight color.",
       "default": true
     }
-  ]
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "KDE",
+    "url": "https://kde.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/KDE_Plasma_6"
 }

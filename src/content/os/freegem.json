@@ -28,5 +28,7 @@
       "name": "Blue",
       "note": "One of the two colors the FreeGEM desktop is dithered from — the blue filling the other half of the checkerboard."
     }
-  ]
+  ],
+  "type": "Open Source",
+  "wikipedia": "https://en.wikipedia.org/wiki/GEM_(desktop_environment)"
 }

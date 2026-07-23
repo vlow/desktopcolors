@@ -24,6 +24,9 @@ const osSchema = z.object({
   predecessor: z.string().optional(),
   successor: z.string().optional(),
   desktopStyle: desktopStyle.default("modern"),
+  type: z.string().min(1).optional(),
+  project: z.object({ name: z.string().min(1), url: z.string().url() }).optional(),
+  wikipedia: z.string().url().optional(),
   colors: z.array(osColor).min(1)
     .refine((cs) => cs.filter((c) => c.default).length <= 1, {
       message: "at most one color may be marked default",

@@ -14,5 +14,11 @@
       "note": "The Haiku desktop blue.",
       "default": true
     }
-  ]
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "Haiku",
+    "url": "https://www.haiku-os.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/Haiku_(operating_system)"
 }

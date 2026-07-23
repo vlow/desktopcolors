@@ -25,5 +25,11 @@
       "hex": "#4e6e8e",
       "name": "Steel"
     }
-  ]
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "CDE",
+    "url": "https://sourceforge.net/projects/cdesktopenv/"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/Common_Desktop_Environment"
 }

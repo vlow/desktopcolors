@@ -29,5 +29,7 @@
       "name": "Aqua",
       "note": "One of the two colors the Windows 1.0 desktop was dithered from — the cyan filling a 4×4 patch inside each 8×8 green block (25% by area)."
     }
-  ]
+  ],
+  "type": "Proprietary",
+  "wikipedia": "https://en.wikipedia.org/wiki/Windows_1.0"
 }
