@@ -150,6 +150,9 @@ CI (`.github/workflows/ci.yml`) runs all of the above on every push/PR.
    predecessor/successor **fails the build**), and the new platform automatically flows into Browse, the
    Explorer, similarity matches, and era sections — no other edits needed.
 
+See the full guide, written for humans and LLM agents — including field conventions and the **dithered
+colors** workflow — in **[`docs/adding-os-data.md`](docs/adding-os-data.md)**.
+
 ## Adding a preview style
 
 `desktopStyle` picks the schematic desktop chrome (icons, taskbar, menu bar, dock, front panel, …) drawn

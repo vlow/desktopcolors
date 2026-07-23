@@ -12,6 +12,10 @@ entry point for understanding the codebase:
   static site + Preact islands (pages, content, build).
 - [`docs/architecture-edge.md`](docs/architecture-edge.md) — the `counter` Go
   service (the only piece that runs at request time).
+- [`docs/adding-os-data.md`](docs/adding-os-data.md) — how to add or edit an OS entry
+  and its colors (`src/content/os/*.json`, validated by `src/content/config.ts`). Follow
+  this guide (for humans and LLM agents) when adding OS data or colors — including the
+  **dithered colors** workflow (blended + partial entries, and when to collapse them).
 - [`docs/adding-a-preview-style.md`](docs/adding-a-preview-style.md) — how the
   per-OS desktop previews work and how to add chrome. Previews are a Zod-validated,
   data-driven **chrome spec** per OS family (`src/lib/chromeSpec.ts`); this is the guide
