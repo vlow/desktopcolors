@@ -95,8 +95,9 @@ function usesOfHex(hex: string, entries: OsEntry[]): HexUse[] // sorted year, th
 ```
 
 Reuses the grouping idea from `mergeColorsByHex` but carries per-platform
-`isDefault`. `firstKnownUse` becomes derivable as `usesOfHex(hex)[0]`; keep or
-remove it depending on remaining callers (it is only used by `detail.ts`).
+`isDefault`. **Remove `firstKnownUse` (and its `FirstUse` type if unused
+elsewhere)** — its sole caller is `detail.ts`, and "first use" is now just
+`usesOfHex(hex)[0]`. Leaving it behind would be dead code / immediate tech debt.
 
 **Similar excludes identical.** Keep `similarColors` general; apply the filter in
 `detail.ts` when building the `SimilarView` list — drop entries whose hex equals
