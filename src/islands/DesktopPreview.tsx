@@ -198,6 +198,39 @@ const BeosWindow = ({ left, top, w, body, onColor }: { left: number; top: number
   );
 };
 
+// Mac OS 8 "Platinum" window: a close box at the left, horizontal pinstripe
+// "racing stripes" that break around a centered title block, and a zoom +
+// collapse box pair at the right — the signature decorations that distinguish
+// Platinum from the generic SharedWindow.
+const PlatinumBox = ({ S }: { S: Surfaces }) => (
+  <span style={{ position: "relative", width: cu(2.8), height: cu(2.8), borderRadius: cu(0.5), background: S.win, boxShadow: `inset 0 0 0 ${cu(0.35)} ${S.border}` }} />
+);
+
+const PlatinumWindow = ({ left, top, w, body, onColor }: { left: number; top: number; w: number; body: WindowBody; onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  // The pinstripes are drawn as two layers — left of the centered title and right
+  // of it — so the lines genuinely break around the title (clean window fill in
+  // the gap) rather than being masked by an overlay. Each layer is inset from the
+  // controls so stripes never touch the close/zoom/collapse boxes. `gap` = half
+  // the clear space kept on either side of the title block.
+  const stripes = `repeating-linear-gradient(to bottom, ${S.border} 0, ${S.border} ${cu(0.3)}, transparent ${cu(0.3)}, transparent ${cu(0.8)})`;
+  const gap = cu(8); // distance from centre to where the stripes resume
+  return (
+    <div data-testid="chrome-platinumwindow" style={{ position: "absolute", left: cu(left), top: cu(top), width: cu(w), background: S.win, borderRadius: `${cu(1.2)} ${cu(1.2)} ${cu(0.5)} ${cu(0.5)}`, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}, 0 ${cu(2.4)} ${cu(6)} rgba(0,0,0,0.18)`, overflow: "hidden" }}>
+      <div style={{ position: "relative", height: cu(5.5), display: "flex", alignItems: "center", justifyContent: "space-between", padding: `0 ${cu(1.8)}`, boxShadow: `inset 0 calc(${cu(0.3)} * -1) 0 ${S.border}` }}>
+        <div style={{ position: "absolute", left: cu(5.2), right: `calc(50% + ${gap})`, top: cu(1), bottom: cu(1), backgroundImage: stripes }} />
+        <div style={{ position: "absolute", left: `calc(50% + ${gap})`, right: cu(9), top: cu(1), bottom: cu(1), backgroundImage: stripes }} />
+        <PlatinumBox S={S} />
+        <div style={{ display: "flex", gap: cu(1) }}>
+          <PlatinumBox S={S} /><PlatinumBox S={S} />
+        </div>
+        <span style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: cu(12), height: cu(1.6), borderRadius: cu(0.8), background: S.soft }} />
+      </div>
+      <div style={{ padding: cu(2.2) }}><WindowBodyView body={body} onColor={onColor} /></div>
+    </div>
+  );
+};
+
 const Taskbar = ({ onColor }: { onColor: string }) => {
   const S = chromeSurfaces(onColor);
   return (
@@ -283,6 +316,7 @@ function renderPart(part: ChromePart, onColor: string, key: number): ComponentCh
     case "deskIcons": return <DeskIcons key={key} side={part.side} anchor={part.anchor} icons={part.icons} onColor={onColor} />;
     case "window": return <SharedWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "beosWindow": return <BeosWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
+    case "platinumWindow": return <PlatinumWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "taskbar": return <Taskbar key={key} onColor={onColor} />;
     case "menuBar": return <MenuBar key={key} onColor={onColor} />;
     case "topBar": return <TopBar key={key} onColor={onColor} />;

@@ -36,7 +36,7 @@ describe("DesktopPreview", () => {
     expect(chromeFor("modern")).toEqual(["chrome-desk-icons", "chrome-windows", "chrome-dock"]);
     expect(chromeFor("win9x")).toEqual(["chrome-deskicons", "chrome-window", "chrome-deskicons", "chrome-taskbar"]);
     expect(chromeFor("win31")).toEqual(["chrome-window"]);
-    expect(chromeFor("platinum")).toEqual(["chrome-menubar", "chrome-deskicons", "chrome-window"]);
+    expect(chromeFor("platinum")).toEqual(["chrome-menubar", "chrome-deskicons", "chrome-platinumwindow"]);
     expect(chromeFor("beos")).toEqual(["chrome-beostab", "chrome-deskicons", "chrome-beoswindow"]);
     expect(chromeFor("amiga")).toEqual(["chrome-topbar", "chrome-deskicons", "chrome-window"]);
     expect(chromeFor("kde")).toEqual(["chrome-window", "chrome-dock"]);

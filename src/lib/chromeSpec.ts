@@ -22,6 +22,7 @@ export const ChromePart = z.discriminatedUnion("part", [
   }),
   z.object({ part: z.literal("window"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("beosWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
+  z.object({ part: z.literal("platinumWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("taskbar") }),
   z.object({ part: z.literal("menuBar") }),
   z.object({ part: z.literal("topBar") }),
@@ -51,7 +52,7 @@ export const CHROME_SPECS: Record<DesktopStyle, ChromeSpec | null> = {
   platinum: [
     { part: "menuBar" },
     { part: "deskIcons", side: "right", icons: [{ kind: "drive", label: "Macintosh HD" }, { kind: "trash", label: "Trash" }] },
-    { part: "window", left: 20, top: 12, w: 52, body: { kind: "gridIcons", icons: ["drive", "folder", "folder", "disk", "folder", "trash"], cols: 3 } },
+    { part: "platinumWindow", left: 20, top: 12, w: 52, body: { kind: "gridIcons", icons: ["drive", "folder", "folder", "disk", "folder", "trash"], cols: 3 } },
   ],
   beos: [
     { part: "beosTab" },

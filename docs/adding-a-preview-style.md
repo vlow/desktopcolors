@@ -49,6 +49,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `deskIcons` | `side: "left"\|"right"`, `anchor?: "top"\|"bottom"`, `icons: {kind,label}[]` | a column of line-art desktop icons with labels |
 | `window` | `left`, `top`, `w` (scale units), `body` | a translucent window (title bar + dots + body) |
 | `beosWindow` | `left`, `top`, `w`, `body` | a BeOS-style tabbed window |
+| `platinumWindow` | `left`, `top`, `w`, `body` | a Mac OS 8 Platinum window (close box + pinstripe title + centered title + zoom/collapse boxes) |
 | `taskbar` | — | Win9x bottom taskbar |
 | `menuBar` | — | Mac Platinum / GEM top menu bar |
 | `topBar` | — | Amiga Workbench top bar |
@@ -70,7 +71,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `modern` | corner icons + two windows + segmented dock with clock | platform-neutral **default** |
 | `win9x` | icons + window + Recycle Bin + taskbar | Windows 95/98/Me/NT 4.0/2000/XP, ReactOS, SerenityOS |
 | `win31` | Program Manager window (two group panes) | Windows 1.0/2.0/3.0/3.1, NT 3.x |
-| `platinum` | menu bar + icons + window | Mac OS 8 |
+| `platinum` | menu bar + icons + Platinum window | Mac OS 8 |
 | `beos` | deskbar tab + icons + tabbed window | BeOS, Haiku |
 | `amiga` | top bar + icons + window | Amiga Workbench |
 | `kde` | window + bottom dock | KDE 1/2, Plasma 6 |
