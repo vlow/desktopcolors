@@ -170,7 +170,7 @@ export function OsDetail({ view, initialHex }: Props) {
           </div>
           <div ref={listRef} style="flex: 1; overflow-y: auto; padding: 8px; max-height: 320px;">
             {colors.map((col, i) => (
-              <div key={col.hex} onClick={() => setSel(i)} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "oklch(0.96 0.03 255)" : "transparent"};`}>
+              <div key={col.hex} onClick={() => setSel(i)} data-testid={`color-row-${col.hex.slice(1)}`} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "oklch(0.96 0.03 255)" : "transparent"};`}>
                 <div style={`width: 32px; height: 32px; border-radius: 7px; background-color: ${col.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
                 <div style="flex: 1;">
                   <div style="font: 500 13px var(--font-ui);">{col.name}</div>

@@ -33,10 +33,15 @@ function sawEvent(bodies: string[], expected: Record<string, string>): boolean {
 test("home lists platforms and search filters", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("The desktop color archive")).toBeVisible();
-  await expect(page.getByText("Windows 95")).toBeVisible();
+  // exact: true — the browse card title is its own text node equal to exactly
+  // "Windows 95"; a non-exact match also hits Windows NT 4.0's tagline
+  // ("...the Windows 95 shell...").
+  await expect(page.getByText("Windows 95", { exact: true })).toBeVisible();
   await page.getByPlaceholder(/Search platforms/).fill("amiga");
-  await expect(page.getByText("Amiga Workbench")).toBeVisible();
-  await expect(page.getByText("Windows 95")).toHaveCount(0);
+  // The "amiga" filter legitimately shows both Amiga Workbench cards (1.x and
+  // 2.0), so assert the specific card title rather than the ambiguous substring.
+  await expect(page.getByText("Amiga Workbench 1.x", { exact: true })).toBeVisible();
+  await expect(page.getByText("Windows 95", { exact: true })).toHaveCount(0);
 });
 
 test("opening an OS page fires an osview beacon", async ({ page }) => {
@@ -67,8 +72,8 @@ test("a per-color page selects that color from the first paint, not the default"
   await expect(highlighted).toContainText("Navy");
 
   // Selecting a different color updates the URL so it can be copied/shared.
-  // Target the list row by its unique "<hex> · idx <n>" label (Teal = #008080).
-  await page.getByText("#008080 · idx 3").click();
+  // Target the list row by its stable per-color test id (Teal = #008080).
+  await page.getByTestId("color-row-008080").click();
   await expect(page).toHaveURL(/\/os\/windows-95\/008080$/);
 });
 
