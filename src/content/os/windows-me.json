@@ -7,7 +7,7 @@
   "description": "Windows Me (Millennium Edition, 2000) was the final release built on the 9x kernel, aimed at home users with System Restore and multimedia tools. It wore the same Windows Classic desktop blue as Windows 2000, and kept the familiar grid of basic swatches and named schemes carried through the 9x era.",
   "predecessor": "windows-98",
   "successor": "windows-xp",
-  "desktopStyle": "modern",
+  "desktopStyle": "win9x",
   "colors": [
     {
       "hex": "#3a6ea5",

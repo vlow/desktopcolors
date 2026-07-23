@@ -6,7 +6,7 @@
   "tagline": "The first Windows — a desktop dithered from two colors to fake a third.",
   "description": "Windows 1.0 (1985) was Microsoft's first graphical shell, running tiled windows over MS-DOS. Limited to a fixed hardware palette, it couldn't display its signature desktop green directly — so it dithered it, tiling 8×8 blocks of bright green with 4×4 patches of cyan to blend a softer shade the hardware couldn't name. Depending on how you average that pattern, the result lands near #57ff81 (a simple pixel average) or #57ff9a (averaged in linear light, gamma-corrected).",
   "successor": "windows-2-0",
-  "desktopStyle": "modern",
+  "desktopStyle": "win31",
   "colors": [
     {
       "hex": "#57ff81",

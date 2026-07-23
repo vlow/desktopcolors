@@ -7,7 +7,7 @@
   "description": "The operating system that put a solid teal desktop in front of millions. From Display Properties you could set the background to any color — the Color dialog offered a grid of 48 basic swatches plus custom colors — but teal was the face of the era.",
   "predecessor": "windows-3-1",
   "successor": "windows-98",
-  "desktopStyle": "modern",
+  "desktopStyle": "win9x",
   "colors": [
     {
       "hex": "#420000",

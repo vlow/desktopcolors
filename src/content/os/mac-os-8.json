@@ -5,7 +5,7 @@
   "family": "Mac OS",
   "tagline": "Platinum-era Mac OS in soft lavender.",
   "description": "Mac OS 8 refined the Platinum appearance that defined the mid-90s Macintosh. Its soft lavender and cool gray tones gave the desktop a calm, distinctive character before the candy colors of Aqua arrived.",
-  "desktopStyle": "modern",
+  "desktopStyle": "platinum",
   "colors": [
     {
       "hex": "#9999cc",

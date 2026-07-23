@@ -7,7 +7,7 @@
   "description": "Windows 3.1 (1992) brought a graphical desktop to the mass market and expanded the Control Panel's Color applet with a rich set of named schemes — from the tasteful Designer and Tweed to the infamous Hot Dog Stand. On top of a customizable palette, these schemes let users repaint the entire desktop, setting the visual habits Windows 95 would inherit.",
   "predecessor": "windows-3-0",
   "successor": "windows-95",
-  "desktopStyle": "modern",
+  "desktopStyle": "win31",
   "colors": [
     {
       "hex": "#3f7c7c",

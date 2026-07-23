@@ -7,7 +7,7 @@
   "description": "Windows 98 refined the 95 formula, folding the web into the shell with Active Desktop while keeping the familiar look. Its Display Properties carried over the same grid of basic swatches and named schemes — teal still the Windows Standard default — with the classic reserved system colors tuned to their canonical values.",
   "predecessor": "windows-95",
   "successor": "windows-me",
-  "desktopStyle": "modern",
+  "desktopStyle": "win9x",
   "colors": [
     {
       "hex": "#420000",

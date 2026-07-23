@@ -7,7 +7,7 @@
   "description": "Windows 2.0 (1987) added overlapping windows and a more capable interface — and quietly retired its predecessor's dithered desktop. Where Windows 1.0 blended green and cyan into a shimmering shade the hardware couldn't name, 2.0 simply took the cyan (#57ffff) and painted the desktop with it directly.",
   "predecessor": "windows-1-0",
   "successor": "windows-3-0",
-  "desktopStyle": "modern",
+  "desktopStyle": "win31",
   "colors": [
     {
       "hex": "#57ffff",

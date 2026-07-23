@@ -5,7 +5,7 @@
   "family": "Desktop Env.",
   "tagline": "The Common Desktop Environment — Unix's dusty-blue standard.",
   "description": "The Common Desktop Environment unified the Unix workstation world with a single, recognizable look. Its muted dusty-blue palette became the face of Sun, HP, and IBM workstations throughout the 1990s.",
-  "desktopStyle": "modern",
+  "desktopStyle": "cde",
   "colors": [
     {
       "hex": "#9aabb9",

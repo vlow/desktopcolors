@@ -6,7 +6,7 @@
   "tagline": "The multimedia OS with a calm, steady blue desktop.",
   "description": "BeOS was a multimedia-first operating system built in the mid-1990s around a fast, responsive desktop. Modern and focused for its era, it drew a devoted following despite never reaching the mainstream — and its steady slate-blue desktop became its signature.",
   "successor": "haiku",
-  "desktopStyle": "modern",
+  "desktopStyle": "beos",
   "colors": [
     {
       "hex": "#336698",

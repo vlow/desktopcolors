@@ -6,7 +6,7 @@
   "tagline": "Linux's first cohesive desktop, in cool understated tones.",
   "description": "KDE 1 gave Linux users a unified graphical environment for the first time. Its calm teal and blue palette struck a professional tone that helped legitimize the Linux desktop in the eyes of newcomers.",
   "successor": "kde-2",
-  "desktopStyle": "modern",
+  "desktopStyle": "kde",
   "colors": [
     {
       "hex": "#4e9a9a",
