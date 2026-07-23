@@ -2,7 +2,6 @@ import { closestRal, closestRalDesign, onColor, hexToHsl, hexToRgb, rgbToLab, la
 import { similarColors, eraPeers, type OsEntry, type SimilarColor, type EraPeer } from "./derive";
 import { buildPlatformsByHex, type Platform } from "./explorer";
 import type { Catalog, OsView, ColorView } from "./catalog";
-import { colorPath } from "./links";
 
 export interface RalMatch { code: string; name: string; hex: string }
 export interface CopyRow { key: string; label: string; value: string; copy: string; swatch?: string }
