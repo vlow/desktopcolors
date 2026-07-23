@@ -109,18 +109,3 @@ export function eraPeers(entry: OsEntry, entries: OsEntry[], windowYears: number
     })
     .sort((a, b) => a.year - b.year);
 }
-
-export interface FirstUse {
-  slug: string;
-  name: string;
-  year: number;
-}
-
-export function firstKnownUse(hex: string, entries: OsEntry[]): FirstUse {
-  const key = hex.toLowerCase();
-  const uses = entries
-    .filter((e) => e.data.colors.some((c) => c.hex.toLowerCase() === key))
-    .sort((a, b) => a.data.year - b.data.year || a.slug.localeCompare(b.slug));
-  const first = uses[0];
-  return { slug: first.slug, name: first.data.name, year: first.data.year };
-}

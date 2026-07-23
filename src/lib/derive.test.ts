@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  defaultColor, mergeColorsByHex, similarColors, eraPeers, firstKnownUse,
+  defaultColor, mergeColorsByHex, similarColors, eraPeers,
   type OsEntry,
 } from "./derive";
 import type { OsInput } from "../content/config";
@@ -66,11 +66,5 @@ describe("eraPeers", () => {
     const peers = eraPeers(entries[0], entries, 3);
     const cde = peers.find((p) => p.slug === "cde")!;
     expect(cde.rel).toBe("2 yr earlier");
-  });
-});
-
-describe("firstKnownUse", () => {
-  it("finds the earliest platform shipping the hex", () => {
-    expect(firstKnownUse("#008080", entries).slug).toBe("cde"); // 1993 < 1995
   });
 });

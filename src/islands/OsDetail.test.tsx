@@ -13,10 +13,43 @@ const view: OsDetailView = {
     colors: [],
   },
   colors: [
-    { hex: "#008080", name: "Teal", note: "default", isDefault: true, rgb: "0, 128, 128", hsl: "180° 100% 25%", cmyk: "100% 0% 0% 50%", onColor: "#ffffff", family: "teal", types: ["cool"], score: 0, scoreLabel: "< 1k", ral: { code: "RAL 5021", name: "Water Blue", hex: "#07737a" }, ralDesign: { code: "RAL 190 40 20", name: "Deep Sea", hex: "#0d7c7d" }, similar: [{ hex: "#4e9a9a", name: "Teal", osSlug: "kde-1", osName: "KDE 1", match: 88, onColor: "#ffffff", href: "/os/kde-1/4e9a9a" }], firstUse: { slug: "cde", name: "CDE", year: 1993, self: false, href: "/os/cde" } },
-    { hex: "#000080", name: "Navy", note: "cool", isDefault: false, rgb: "0, 0, 128", hsl: "240° 100% 25%", cmyk: "100% 100% 0% 50%", onColor: "#ffffff", family: "blue", types: ["dark", "vivid", "cool"], score: 0, scoreLabel: "< 1k", ral: { code: "RAL 5002", name: "Ultramarine", hex: "#20214f" }, ralDesign: { code: "RAL 280 20 30", name: "Ink Blue", hex: "#1e2159" }, similar: [], firstUse: { slug: "windows-95", name: "Windows 95", year: 1995, self: true, href: "/os/windows-95" } },
+    {
+      hex: "#008080", name: "Teal", note: "default", isDefault: true, rgb: "0, 128, 128", hsl: "180° 100% 25%", cmyk: "100% 0% 0% 50%", onColor: "#ffffff", family: "teal", types: ["cool"], score: 0, scoreLabel: "< 1k",
+      ral: { code: "RAL 5021", name: "Water Blue", hex: "#07737a" }, ralDesign: { code: "RAL 190 40 20", name: "Deep Sea", hex: "#0d7c7d" },
+      extraFormats: [
+        { key: "lab", label: "CIELAB", value: "45.2, -20.1, -5.3", copy: "lab(45.2% -20.1 -5.3)" },
+        { key: "lch", label: "LCH", value: "45.2, 20.8, 194.8", copy: "lch(45.2% 20.8 194.8)" },
+        { key: "oklab", label: "OKLab", value: "0.500, -0.080, -0.020", copy: "oklab(0.500 -0.080 -0.020)" },
+        { key: "oklch", label: "OKLCH", value: "0.500, 0.082, 194.0", copy: "oklch(0.500 0.082 194.0)" },
+        { key: "ral", label: "Closest RAL Classic", value: "RAL 5021 · Water Blue", copy: "RAL 5021 · Water Blue", swatch: "#07737a" },
+        { key: "ralDesign", label: "Closest RAL Design+", value: "RAL 190 40 20 · Deep Sea", copy: "RAL 190 40 20 · Deep Sea", swatch: "#0d7c7d" },
+      ],
+      similar: [{
+        hex: "#4e9a9a", name: "Teal", match: 88, onColor: "#ffffff", h: 178, s: 33, l: 44,
+        primarySlug: "kde-1", style: "generic",
+        platforms: [{ slug: "kde-1", name: "KDE 1", year: 1998, family: "KDE", isDefault: true }],
+      }],
+      uses: [
+        { slug: "cde", name: "CDE", year: 1993, family: "Desktop Env.", isDefault: false },
+        { slug: "windows-95", name: "Windows 95", year: 1995, family: "Windows", isDefault: true },
+      ],
+    },
+    {
+      hex: "#000080", name: "Navy", note: "cool", isDefault: false, rgb: "0, 0, 128", hsl: "240° 100% 25%", cmyk: "100% 100% 0% 50%", onColor: "#ffffff", family: "blue", types: ["dark", "vivid", "cool"], score: 0, scoreLabel: "< 1k",
+      ral: { code: "RAL 5002", name: "Ultramarine", hex: "#20214f" }, ralDesign: { code: "RAL 280 20 30", name: "Ink Blue", hex: "#1e2159" },
+      extraFormats: [
+        { key: "lab", label: "CIELAB", value: "12.5, 30.1, -60.2", copy: "lab(12.5% 30.1 -60.2)" },
+        { key: "lch", label: "LCH", value: "12.5, 67.3, 296.5", copy: "lch(12.5% 67.3 296.5)" },
+        { key: "oklab", label: "OKLab", value: "0.230, 0.020, -0.130", copy: "oklab(0.230 0.020 -0.130)" },
+        { key: "oklch", label: "OKLCH", value: "0.230, 0.131, 278.0", copy: "oklch(0.230 0.131 278.0)" },
+        { key: "ral", label: "Closest RAL Classic", value: "RAL 5002 · Ultramarine", copy: "RAL 5002 · Ultramarine", swatch: "#20214f" },
+        { key: "ralDesign", label: "Closest RAL Design+", value: "RAL 280 20 30 · Ink Blue", copy: "RAL 280 20 30 · Ink Blue", swatch: "#1e2159" },
+      ],
+      similar: [],
+      uses: [{ slug: "windows-95", name: "Windows 95", year: 1995, family: "Windows", isDefault: false }],
+    },
   ],
-  eraPeers: [{ slug: "cde", name: "CDE", family: "Desktop Env.", year: 1993, hex: "#9aabb9", colorName: "Dusty Blue", rel: "2 yr earlier", onColor: "#1c1917", href: "/os/cde" }],
+  eraPeers: [{ slug: "cde", name: "CDE", family: "Desktop Env.", year: 1993, hex: "#9aabb9", colorName: "Dusty Blue", rel: "2 yr earlier", onColor: "#1c1917", href: "/os/cde", metaLine: "1993 · Desktop Env." }],
 };
 
 beforeEach(() => {

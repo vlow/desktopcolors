@@ -157,11 +157,7 @@ export function OsDetail({ view, initialHex }: Props) {
           <button class="dc-detail-dl" onClick={() => setSheet(true)} style="border: none; cursor: pointer; background: var(--ink); color: #fff; font: 500 13px var(--font-ui); padding: 11px 17px; border-radius: 10px;">↓ Download</button>
         </div>
 
-        <div class="dc-detail-meta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
-          <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
-            <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">DETAILS</div>
-            <div style="display: flex; justify-content: space-between; padding: 7px 14px 11px;"><span style="font: 400 11px var(--font-mono); color: var(--faint);">First known use</span>{c.firstUse.self ? <span style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year}</span> : <a href={c.firstUse.href} style="font: 500 13px var(--font-mono); color: var(--accent-strong);">{c.firstUse.name} · {c.firstUse.year} ↗</a>}</div>
-          </div>
+        <div class="dc-detail-meta" style="display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 16px;">
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
             <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">COLOR VALUES · CLICK TO COPY</div>
             {copyRow("hex", "HEX", c.hex, c.hex)}
@@ -184,14 +180,14 @@ export function OsDetail({ view, initialHex }: Props) {
         ) : (
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px;">
             {c.similar.map((s) => (
-              <a key={s.hex + s.osSlug} href={s.href} style="border: 1px solid var(--card-border); border-radius: 13px; overflow: hidden; background: var(--panel); display: block;">
+              <a key={s.hex + s.primarySlug} href={colorPath(s.primarySlug, s.hex)} style="border: 1px solid var(--card-border); border-radius: 13px; overflow: hidden; background: var(--panel); display: block;">
                 <div style={`position: relative; height: 76px; background-color: ${s.hex};`}>
                   <span style="position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #1c1917; font: 500 10px var(--font-ui); padding: 3px 8px; border-radius: 999px;">{s.match}% match</span>
                 </div>
                 <div style="padding: 11px 13px 13px;">
                   <div style="font: 500 14px var(--font-ui);">{s.name}</div>
                   <div style="font: 400 11px var(--font-mono); color: var(--faint);">{s.hex}</div>
-                  <div style="font: 400 12px var(--font-ui); color: var(--muted); margin-top: 8px;">{s.osName} ↗</div>
+                  <div style="font: 400 12px var(--font-ui); color: var(--muted); margin-top: 8px;">{s.platforms[0]?.name ?? s.primarySlug} ↗</div>
                 </div>
               </a>
             ))}
