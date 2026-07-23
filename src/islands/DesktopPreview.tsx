@@ -1,69 +1,17 @@
-import type { FunctionComponent } from "preact";
+import type { ComponentChildren } from "preact";
 import type { DesktopStyle } from "../lib/desktopStyle";
+import { CHROME_SPECS, type ChromePart, type WindowBody } from "../lib/chromeSpec";
 
 interface Props { hex: string; onColor: string; style: DesktopStyle }
 
-// A chrome part is drawn over the solid-color wallpaper. It receives `onColor`
-// (the readable foreground for text placed directly on the wallpaper); parts that
-// only draw on their own translucent surface accept it and ignore it.
-// To add a preview style, see `docs/adding-a-preview-style.md`.
-type ChromePart = FunctionComponent<{ onColor: string }>;
-
-function Icon({ label, onColor }: { label: string; onColor: string }) {
-  return (
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 84px;">
-      <div style="width: 52px; height: 44px; background: rgba(255,255,255,0.82); border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.28);" />
-      <span style={`font: 400 12px var(--font-ui); color: ${onColor};`}>{label}</span>
-    </div>
-  );
-}
-
-// Desktop icons stacked top-left. Labels sit on the wallpaper, so they use onColor.
-const Icons: ChromePart = ({ onColor }) => (
-  <div data-testid="chrome-icons" style="position: absolute; left: 4%; top: 5%; display: flex; flex-direction: column; gap: 20px;">
-    <Icon label="My Computer" onColor={onColor} />
-    <Icon label="Network" onColor={onColor} />
-  </div>
-);
-
-// Windows 9x bottom taskbar with a Start button.
-const Taskbar: ChromePart = () => (
-  <div data-testid="chrome-taskbar" style="position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background: rgba(0,0,0,0.16); display: flex; align-items: center; padding: 0 14px;">
-    <span style="background: rgba(255,255,255,0.9); color: #1c1917; font: 500 13px var(--font-ui); padding: 6px 16px; border-radius: 6px;">Start</span>
-  </div>
-);
-
-// Mac OS 8 top menu bar.
-const MenuBar: ChromePart = () => (
-  <div data-testid="chrome-menubar" style="position: absolute; left: 0; right: 0; top: 0; height: 26px; background: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 16px; padding: 0 14px; font: 500 12px var(--font-ui); color: #1c1917;">
-    <span></span><span>File</span><span>Edit</span><span>View</span>
-  </div>
-);
-
-// KDE / CDE bottom panel with launcher swatches.
-const Panel: ChromePart = () => (
-  <div data-testid="chrome-panel" style="position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background: rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; padding: 0 12px;">
-    <span style="width: 22px; height: 22px; border-radius: 5px; background: rgba(255,255,255,0.8);" />
-    <span style="width: 22px; height: 22px; border-radius: 5px; background: rgba(255,255,255,0.55);" />
-  </div>
-);
-
-// Amiga Workbench top title bar.
-const TitleBar: ChromePart = () => (
-  <div data-testid="chrome-titlebar" style="position: absolute; left: 0; right: 0; top: 0; height: 22px; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font: 500 11px var(--font-ui); color: #1c1917;">
-    <span>Workbench</span><span>Amiga</span>
-  </div>
-);
-
-// --- "modern": the platform-neutral default preview (ported from the source
-// design's "Desktop Preview"). A cohesive scene — corner icons, two overlapping
-// windows, and a segmented dock with a clock — sized with a capped scale unit (see
-// `U` below) so it scales with the preview box but stops growing when enlarged.
-// Surface tints are derived from `onColor` (the app's contrast pick), so it reads on
-// any wallpaper.
+/* ────────────────────────────────────────────────────────────────────────
+   MODERN scene — the platform-neutral default. Preserved verbatim (only the
+   component identifiers are prefixed `Modern*` to avoid clashing with the
+   family primitives below). Its surfaces()/U/u are private to this block.
+   ──────────────────────────────────────────────────────────────────────── */
 
 function surfaces(onColor: string) {
-  const light = onColor === "#1c1917"; // dark ink ⇒ light wallpaper
+  const light = onColor === "#1c1917";
   return {
     ink: onColor,
     panel: light ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.14)",
@@ -71,18 +19,10 @@ function surfaces(onColor: string) {
     border: light ? "rgba(0,0,0,0.24)" : "rgba(255,255,255,0.34)",
   };
 }
-
-// Scale unit for the modern scene. It tracks the preview width (`1cqw`) so the scene
-// stays responsive in the small inline preview, but is capped so that when the preview
-// is enlarged (the fullscreen viewer on a big screen) the chrome stops growing and the
-// wallpaper simply reveals more open desktop — a larger desktop, not a linear zoom.
-// The cap sits above the inline preview's ~6px/cqw, so the inline preview is unchanged;
-// chrome stays full-bleed (dock pinned to the bottom, icons to the top).
 const U = "min(1cqw, 11px)";
 const u = (n: number) => `calc(var(--u) * ${n})`;
 
-// Line-art desktop icons in the top-left corner. Labels sit on the wallpaper (onColor).
-const DeskIcons: ChromePart = ({ onColor }) => {
+const ModernDeskIcons = ({ onColor }: { onColor: string }) => {
   const icons = [
     { label: "Files", d: "M3 6.5 h6 l2 2 h10 v10 h-18 z" },
     { label: "Trash", d: "M5 7 h14 M8 7 v-2 h8 v2 M6.5 7 l1 13 h9 l1 -13" },
@@ -99,8 +39,7 @@ const DeskIcons: ChromePart = ({ onColor }) => {
   );
 };
 
-// Two overlapping windows (Files behind, Documents in front).
-const WindowStack: ChromePart = ({ onColor }) => {
+const ModernWindowStack = ({ onColor }: { onColor: string }) => {
   const { win, border, ink } = surfaces(onColor);
   return (
     <div data-testid="chrome-windows" style={`--u: ${U};`}>
@@ -119,8 +58,7 @@ const WindowStack: ChromePart = ({ onColor }) => {
   );
 };
 
-// Rounded segmented dock with launcher squares and a clock.
-const Dock: ChromePart = ({ onColor }) => {
+const ModernDock = ({ onColor }: { onColor: string }) => {
   const { panel, border, ink } = surfaces(onColor);
   return (
     <div data-testid="chrome-dock" style={`--u: ${U}; position: absolute; left: ${u(4)}; right: ${u(4)}; bottom: ${u(4)}; height: ${u(6)}; border-radius: ${u(3)}; background: ${panel}; display: flex; align-items: center; gap: ${u(2.4)}; padding: 0 ${u(3)};`}>
@@ -134,24 +72,231 @@ const Dock: ChromePart = ({ onColor }) => {
   );
 };
 
-// Which chrome parts each style draws. The `Record<DesktopStyle, …>` type is
-// exhaustive: adding a value to DESKTOP_STYLES fails to compile until it is
-// given an entry here — so a style can never silently render a blank preview.
-export const STYLE_CHROME: Record<DesktopStyle, ChromePart[]> = {
-  modern: [DeskIcons, WindowStack, Dock],
-  win9x: [Icons, Taskbar],
-  generic: [Icons],
-  macos8: [MenuBar],
-  kde: [Panel],
-  cde: [Panel],
-  amiga: [TitleBar],
+const ModernScene = ({ onColor }: { onColor: string }) => (
+  <>
+    <ModernDeskIcons onColor={onColor} />
+    <ModernWindowStack onColor={onColor} />
+    <ModernDock onColor={onColor} />
+  </>
+);
+
+/* ────────────────────────────────────────────────────────────────────────
+   FAMILY chrome — translucent, wallpaper-adaptive primitives (design 4a).
+   Surfaces + scale unit are separate from modern's so modern stays identical.
+   ──────────────────────────────────────────────────────────────────────── */
+
+function chromeSurfaces(onColor: string) {
+  const light = onColor === "#1c1917";
+  return {
+    ink: onColor,
+    panel: light ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.14)",
+    win: light ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.20)",
+    border: light ? "rgba(0,0,0,0.22)" : "rgba(255,255,255,0.34)",
+    soft: light ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.26)",
+  };
+}
+type Surfaces = ReturnType<typeof chromeSurfaces>;
+const cu = (n: number) => `calc(min(1cqw, 9px) * ${n})`;
+
+const ICON_PATHS: Record<string, string[]> = {
+  computer: ["M3 5.5 h18 v10 h-18 z", "M9 19.5 h6", "M12 15.5 v4"],
+  folder: ["M3 7 h6 l2 2 h10 v9 h-18 z"],
+  trash: ["M5 7 h14", "M8 7 v-2 h8 v2", "M7 7 l1 12 h8 l1 -12"],
+  drive: ["M4 6 h16 v12 h-16 z", "M7 10 h4", "M7 14 h10"],
+  disk: ["M5 4 h11 l4 4 v12 h-19 v-16 z", "M8 4 v5 h6 v-5", "M8 13 h8 v7 h-8 z"],
 };
 
+const LineIcon = ({ kind, onColor, size = 6 }: { kind: string; onColor: string; size?: number }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke={onColor} stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style={{ width: cu(size), height: cu(size), opacity: 0.9 }}>
+    {(ICON_PATHS[kind] ?? ICON_PATHS.folder).map((d, i) => <path key={i} d={d} />)}
+  </svg>
+);
+
+const Dots = ({ S, n }: { S: Surfaces; n: number }) => (
+  <div style={{ display: "flex", gap: cu(1) }}>
+    {Array.from({ length: n }).map((_, i) => <span key={i} style={{ width: cu(1.8), height: cu(1.8), borderRadius: "50%", boxShadow: `inset 0 0 0 ${cu(0.35)} ${S.border}` }} />)}
+  </div>
+);
+
+const Pane = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div style={{ background: S.panel, borderRadius: cu(1.4), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}` }}>
+      <div style={{ height: cu(4), boxShadow: `inset 0 calc(${cu(0.3)} * -1) 0 ${S.border}`, display: "flex", alignItems: "center", padding: `0 ${cu(1.4)}` }}>
+        <span style={{ width: cu(8), height: cu(1.3), borderRadius: cu(0.8), background: S.soft }} />
+      </div>
+      <div style={{ padding: cu(1.4), display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: cu(1.6), justifyItems: "center" }}>
+        {["folder", "folder", "folder", "disk", "drive", "folder"].map((k, i) => <LineIcon key={i} kind={k} onColor={onColor} size={4} />)}
+      </div>
+    </div>
+  );
+};
+
+const WindowBodyView = ({ body, onColor }: { body: WindowBody; onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  if (body.kind === "gridIcons") {
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${body.cols}, 1fr)`, gap: cu(1.6), justifyItems: "center" }}>
+        {body.icons.map((k, i) => <LineIcon key={i} kind={k} onColor={onColor} size={4} />)}
+      </div>
+    );
+  }
+  if (body.kind === "rows") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: cu(1.4) }}>
+        {body.widths.map((w, i) => <span key={i} style={{ height: cu(1.4), width: `${w}%`, borderRadius: cu(0.8), background: S.border }} />)}
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: cu(2) }}>
+      <Pane onColor={onColor} /><Pane onColor={onColor} />
+    </div>
+  );
+};
+
+const DeskIcons = ({ side, anchor = "top", icons, onColor }: { side: "left" | "right"; anchor?: "top" | "bottom"; icons: { kind: string; label: string }[]; onColor: string }) => {
+  const pos = side === "right" ? { right: cu(4.5) } : { left: cu(4) };
+  const vert = anchor === "bottom" ? { bottom: cu(11) } : { top: cu(6) };
+  return (
+    <div data-testid="chrome-deskicons" style={{ position: "absolute", ...vert, ...pos, display: "flex", flexDirection: "column", gap: cu(3.2), alignItems: "center" }}>
+      {icons.map((ic, i) => (
+        <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: cu(0.9), width: cu(13) }}>
+          <LineIcon kind={ic.kind} onColor={onColor} size={6} />
+          <span style={{ font: `500 ${cu(2.4)} var(--font-ui)`, color: onColor, opacity: 0.85, textAlign: "center", lineHeight: 1.15 }}>{ic.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const SharedWindow = ({ left, top, w, body, onColor }: { left: number; top: number; w: number; body: WindowBody; onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-window" style={{ position: "absolute", left: cu(left), top: cu(top), width: cu(w), background: S.win, borderRadius: cu(1.8), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}, 0 ${cu(2.4)} ${cu(6)} rgba(0,0,0,0.18)`, overflow: "hidden" }}>
+      <div style={{ height: cu(5.5), display: "flex", alignItems: "center", gap: cu(1.2), padding: `0 ${cu(2)}`, boxShadow: `inset 0 calc(${cu(0.3)} * -1) 0 ${S.border}` }}>
+        <span style={{ width: cu(12), height: cu(1.5), borderRadius: cu(0.8), background: S.soft }} />
+        <span style={{ flex: 1 }} />
+        <Dots S={S} n={3} />
+      </div>
+      <div style={{ padding: cu(2.2) }}><WindowBodyView body={body} onColor={onColor} /></div>
+    </div>
+  );
+};
+
+const BeosWindow = ({ left, top, w, body, onColor }: { left: number; top: number; w: number; body: WindowBody; onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-beoswindow" style={{ position: "absolute", left: cu(left), top: cu(top), width: cu(w) }}>
+      <div style={{ width: cu(22), height: cu(4.4), borderRadius: `${cu(1.6)} ${cu(1.6)} 0 0`, background: S.win, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}`, display: "flex", alignItems: "center", gap: cu(1.2), padding: `0 ${cu(1.8)}` }}>
+        <span style={{ width: cu(9), height: cu(1.5), borderRadius: cu(0.8), background: S.soft }} />
+      </div>
+      <div style={{ background: S.win, borderRadius: `0 ${cu(1.6)} ${cu(1.6)} ${cu(1.6)}`, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}, 0 ${cu(2.4)} ${cu(6)} rgba(0,0,0,0.18)`, padding: cu(2.2) }}>
+        <WindowBodyView body={body} onColor={onColor} />
+      </div>
+    </div>
+  );
+};
+
+const Taskbar = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-taskbar" style={{ position: "absolute", left: cu(3), right: cu(3), bottom: cu(3), height: cu(6.4), borderRadius: cu(2), background: S.panel, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}`, display: "flex", alignItems: "center", gap: cu(1.6), padding: `0 ${cu(2)}` }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: cu(0.6), width: cu(3.2), height: cu(3.2) }}>
+        {[0, 1, 2, 3].map((i) => <span key={i} style={{ borderRadius: cu(0.4), background: S.ink, opacity: 0.85 }} />)}
+      </div>
+      <span style={{ width: cu(0.4), height: cu(4), background: S.border }} />
+      <span style={{ width: cu(9), height: cu(3), borderRadius: cu(1.4), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}` }} />
+      <span style={{ flex: 1 }} />
+      <span style={{ width: cu(9), height: cu(3), borderRadius: cu(1.4), background: S.win }} />
+    </div>
+  );
+};
+
+const MenuBar = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-menubar" style={{ position: "absolute", left: 0, right: 0, top: 0, height: cu(5.4), background: S.panel, boxShadow: `inset 0 calc(${cu(0.3)} * -1) 0 ${S.border}`, display: "flex", alignItems: "center", gap: cu(2.4), padding: `0 ${cu(2.4)}` }}>
+      <span style={{ width: cu(2.6), height: cu(2.6), borderRadius: "50%", background: S.soft }} />
+      {[0, 1, 2].map((i) => <span key={i} style={{ width: cu(5), height: cu(1.4), borderRadius: cu(0.8), background: S.soft }} />)}
+      <span style={{ marginLeft: "auto", width: cu(7), height: cu(2), borderRadius: cu(1), background: S.soft }} />
+    </div>
+  );
+};
+
+const TopBar = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-topbar" style={{ position: "absolute", left: 0, right: 0, top: 0, height: cu(5), background: S.panel, boxShadow: `inset 0 calc(${cu(0.3)} * -1) 0 ${S.border}`, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: cu(1.2), padding: `0 ${cu(1.8)}` }}>
+      <span style={{ marginRight: "auto", width: cu(16), height: cu(1.6), borderRadius: cu(0.8), background: S.soft }} />
+      {[0, 1].map((i) => <span key={i} style={{ width: cu(3.6), height: cu(3), borderRadius: cu(0.8), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}` }} />)}
+    </div>
+  );
+};
+
+const BeosTab = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-beostab" style={{ position: "absolute", right: cu(4), top: 0, width: cu(20), height: cu(5), borderRadius: `0 0 ${cu(1.8)} ${cu(1.8)}`, background: S.panel, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}`, display: "flex", alignItems: "center", gap: cu(1.2), padding: `0 ${cu(1.8)}` }}>
+      <span style={{ width: cu(2.4), height: cu(2.4), borderRadius: cu(0.6), background: S.soft }} />
+      {[0, 1].map((i) => <span key={i} style={{ flex: 1, height: cu(1.3), borderRadius: cu(0.8), background: S.soft }} />)}
+    </div>
+  );
+};
+
+const Dock = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-dock" style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: cu(5.8), background: S.panel, boxShadow: `inset 0 ${cu(0.3)} 0 ${S.border}`, display: "flex", alignItems: "center", gap: cu(1.4), padding: `0 ${cu(2)}` }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: cu(0.6), width: cu(3.2), height: cu(3.2) }}>
+        {[0, 1, 2, 3].map((i) => <span key={i} style={{ borderRadius: cu(0.4), background: S.ink, opacity: 0.85 }} />)}
+      </div>
+      <span style={{ width: cu(11), height: cu(3.2), borderRadius: cu(1.6), background: S.win }} />
+      <span style={{ width: cu(11), height: cu(3.2), borderRadius: cu(1.6), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}` }} />
+      <span style={{ flex: 1 }} />
+      <span style={{ width: cu(2.2), height: cu(2.2), borderRadius: "50%", background: S.soft }} />
+      <span style={{ width: cu(6.5), height: cu(2.6), borderRadius: cu(1.2), background: S.win }} />
+    </div>
+  );
+};
+
+const FrontPanel = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  const Btn = () => (
+    <span style={{ width: cu(5.4), height: cu(5.4), borderRadius: cu(1.2), background: S.win, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <span style={{ width: cu(2.4), height: cu(2.4), borderRadius: cu(0.6), background: S.soft }} />
+    </span>
+  );
+  return (
+    <div data-testid="chrome-frontpanel" style={{ position: "absolute", left: "50%", bottom: cu(3), transform: "translateX(-50%)", background: S.panel, borderRadius: cu(2), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}`, display: "flex", alignItems: "center", gap: cu(1.4), padding: cu(1.4) }}>
+      <Btn /><Btn />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: cu(0.6), padding: cu(0.8), borderRadius: cu(1), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}` }}>
+        {[0, 1, 2, 3].map((i) => <span key={i} style={{ width: cu(2.4), height: cu(1.8), borderRadius: cu(0.4), background: S.soft }} />)}
+      </div>
+      <Btn /><Btn />
+    </div>
+  );
+};
+
+function renderPart(part: ChromePart, onColor: string, key: number): ComponentChildren {
+  switch (part.part) {
+    case "deskIcons": return <DeskIcons key={key} side={part.side} anchor={part.anchor} icons={part.icons} onColor={onColor} />;
+    case "window": return <SharedWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
+    case "beosWindow": return <BeosWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
+    case "taskbar": return <Taskbar key={key} onColor={onColor} />;
+    case "menuBar": return <MenuBar key={key} onColor={onColor} />;
+    case "topBar": return <TopBar key={key} onColor={onColor} />;
+    case "dock": return <Dock key={key} onColor={onColor} />;
+    case "frontPanel": return <FrontPanel key={key} onColor={onColor} />;
+    case "beosTab": return <BeosTab key={key} onColor={onColor} />;
+  }
+}
+
 export function DesktopPreview({ hex, onColor, style }: Props) {
-  const parts = STYLE_CHROME[style] ?? STYLE_CHROME.generic;
+  const spec = CHROME_SPECS[style];
   return (
     <div style={`position: absolute; inset: 0; background-color: ${hex}; overflow: hidden; container-type: inline-size;`}>
-      {parts.map((Part, i) => <Part key={i} onColor={onColor} />)}
+      {spec === null ? <ModernScene onColor={onColor} /> : spec.map((part, i) => renderPart(part, onColor, i))}
     </div>
   );
 }

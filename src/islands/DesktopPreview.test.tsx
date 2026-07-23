@@ -1,17 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/preact";
-import { DesktopPreview, STYLE_CHROME } from "./DesktopPreview";
+import { DesktopPreview } from "./DesktopPreview";
+import { CHROME_SPECS } from "../lib/chromeSpec";
 import { DESKTOP_STYLES } from "../lib/desktopStyle";
 import { onColor } from "../lib/color";
 
 const HEX = "#3a6ea5"; // a mid blue; onColor -> white
 
 describe("DesktopPreview", () => {
-  // Guards against adding a style to DESKTOP_STYLES without giving it chrome:
-  // the exhaustive Record type catches it at compile time, this catches it at run time.
-  it("every style has at least one chrome part and renders it", () => {
+  // Guards against adding a style to DESKTOP_STYLES without chrome: the exhaustive
+  // Record type catches it at compile time; this catches it at run time.
+  it("every style renders chrome", () => {
     for (const style of DESKTOP_STYLES) {
-      expect(STYLE_CHROME[style]?.length ?? 0).toBeGreaterThan(0);
+      const spec = CHROME_SPECS[style];
+      expect(spec === null || spec.length > 0).toBe(true); // null == modern (bespoke)
       const { container, unmount } = render(
         <DesktopPreview hex={HEX} onColor={onColor(HEX)} style={style} />,
       );
@@ -32,12 +34,15 @@ describe("DesktopPreview", () => {
       return [...container.querySelectorAll("[data-testid^='chrome-']")].map((el) => el.getAttribute("data-testid"));
     };
     expect(chromeFor("modern")).toEqual(["chrome-desk-icons", "chrome-windows", "chrome-dock"]);
-    expect(chromeFor("win9x")).toEqual(["chrome-icons", "chrome-taskbar"]);
-    expect(chromeFor("generic")).toEqual(["chrome-icons"]); // icons, but no taskbar
-    expect(chromeFor("macos8")).toEqual(["chrome-menubar"]);
-    expect(chromeFor("amiga")).toEqual(["chrome-titlebar"]);
-    expect(chromeFor("kde")).toEqual(["chrome-panel"]);
-    expect(chromeFor("cde")).toEqual(["chrome-panel"]); // kde and cde share the panel
+    expect(chromeFor("win9x")).toEqual(["chrome-deskicons", "chrome-window", "chrome-deskicons", "chrome-taskbar"]);
+    expect(chromeFor("win31")).toEqual(["chrome-window"]);
+    expect(chromeFor("platinum")).toEqual(["chrome-menubar", "chrome-deskicons", "chrome-window"]);
+    expect(chromeFor("beos")).toEqual(["chrome-beostab", "chrome-deskicons", "chrome-beoswindow"]);
+    expect(chromeFor("amiga")).toEqual(["chrome-topbar", "chrome-deskicons", "chrome-window"]);
+    expect(chromeFor("kde")).toEqual(["chrome-window", "chrome-dock"]);
+    expect(chromeFor("cde")).toEqual(["chrome-deskicons", "chrome-window", "chrome-frontpanel"]);
+    expect(chromeFor("gem")).toEqual(["chrome-menubar", "chrome-deskicons", "chrome-window"]);
+    expect(chromeFor("generic")).toEqual(["chrome-deskicons", "chrome-dock"]);
   });
 
   it("renders the modern default scene (windows + dock clock)", () => {
@@ -50,6 +55,6 @@ describe("DesktopPreview", () => {
   it("colors icon labels with onColor for contrast on the wallpaper", () => {
     const dark = "#101820"; // onColor -> white
     const { getByText } = render(<DesktopPreview hex={dark} onColor={onColor(dark)} style="generic" />);
-    expect(getByText("My Computer")).toHaveStyle("color: #ffffff"); // onColor(dark) === white
+    expect(getByText("Computer")).toHaveStyle("color: #ffffff"); // onColor(dark) === white
   });
 });
