@@ -76,8 +76,7 @@ describe("OsDetail", () => {
     const html = renderToString(<OsDetail view={view} initialHex="#000080" />);
     const container = document.createElement("div");
     container.innerHTML = html;
-    const highlighted = Array.from(container.querySelectorAll("div"))
-      .filter((d) => (d.getAttribute("style") || "").includes("oklch(0.96 0.03 255)"))
+    const highlighted = Array.from(container.querySelectorAll('[aria-current="true"]'))
       .map((d) => d.textContent || "");
     expect(highlighted.length).toBe(1);
     expect(highlighted[0]).toContain("Navy");
@@ -94,8 +93,7 @@ describe("OsDetail", () => {
     const html = renderToString(<OsDetail view={reordered} initialHex={null} />);
     const container = document.createElement("div");
     container.innerHTML = html;
-    const highlighted = Array.from(container.querySelectorAll("div"))
-      .filter((d) => (d.getAttribute("style") || "").includes("oklch(0.96 0.03 255)"))
+    const highlighted = Array.from(container.querySelectorAll('[aria-current="true"]'))
       .map((d) => d.textContent || "");
     expect(highlighted.length).toBe(1);
     expect(highlighted[0]).toContain("Teal");

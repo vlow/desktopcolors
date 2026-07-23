@@ -170,7 +170,7 @@ export function OsDetail({ view, initialHex }: Props) {
           </div>
           <div ref={listRef} style="flex: 1; overflow-y: auto; padding: 8px; max-height: 320px;">
             {colors.map((col, i) => (
-              <div key={col.hex} onClick={() => setSel(i)} data-testid={`color-row-${col.hex.slice(1)}`} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "oklch(0.96 0.03 255)" : "transparent"};`}>
+              <div key={col.hex} onClick={() => setSel(i)} data-testid={`color-row-${col.hex.slice(1)}`} aria-current={i === sel ? "true" : undefined} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "var(--accent-tint)" : "transparent"};`}>
                 <div style={`width: 32px; height: 32px; border-radius: 7px; background-color: ${col.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
                 <div style="flex: 1;">
                   <div style="font: 500 13px var(--font-ui);">{col.name}</div>
@@ -189,7 +189,7 @@ export function OsDetail({ view, initialHex }: Props) {
           <div style="flex: 1;">
             <div style="display: inline-flex; align-items: center; gap: 9px;">
               <span style="font: 500 20px var(--font-ui);">{c.name}</span>
-              {c.isDefault && <span style="background: oklch(0.96 0.03 255); color: var(--accent-strong); font: 600 9px var(--font-ui); letter-spacing: 0.5px; padding: 4px 8px; border-radius: 999px;">DEFAULT</span>}
+              {c.isDefault && <span style="background: var(--accent-tint); color: var(--accent-strong); font: 600 9px var(--font-ui); letter-spacing: 0.5px; padding: 4px 8px; border-radius: 999px;">DEFAULT</span>}
             </div>
             <div style="font: 400 12px var(--font-mono); color: var(--muted); margin-top: 2px;">{c.note}</div>
           </div>

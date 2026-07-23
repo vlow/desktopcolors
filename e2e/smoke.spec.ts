@@ -66,10 +66,10 @@ test("a per-color page selects that color from the first paint, not the default"
   await expect(page.getByText("0, 0, 128")).toBeVisible(); // navy RGB
   await expect(page.getByText("DEFAULT", { exact: true })).toHaveCount(0); // the badge, not "popular defaults"
 
-  // Exactly one color is highlighted in the list, and it is Navy.
-  const highlighted = page.locator("div[style*='oklch(0.96 0.03 255)']");
-  await expect(highlighted).toHaveCount(1);
-  await expect(highlighted).toContainText("Navy");
+  // Exactly one row in the color list is marked as the current selection, and it is Navy.
+  const selected = page.locator('[aria-current="true"]');
+  await expect(selected).toHaveCount(1);
+  await expect(selected).toContainText("Navy");
 
   // Selecting a different color updates the URL so it can be copied/shared.
   // Target the list row by its stable per-color test id (Teal = #008080).
