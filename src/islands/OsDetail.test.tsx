@@ -210,6 +210,22 @@ describe("OsDetail", () => {
     const chip = screen.getAllByTestId("infobox-platform")[0] as HTMLAnchorElement;
     expect(chip.getAttribute("href")).toBe("/os/kde-1/4e9a9a");
   });
+
+  it("collapses the similar-color panel on a repeat click of the same card", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    expect(screen.getAllByTestId("infobox-platform")[0]).toBeTruthy();
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    expect(screen.queryByTestId("infobox-platform")).toBeNull();
+  });
+
+  it("resets the expanded similar-color panel when the selected color changes", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    expect(screen.getAllByTestId("infobox-platform")[0]).toBeTruthy();
+    fireEvent.click(screen.getByText("Navy"));
+    expect(screen.queryByTestId("infobox-platform")).toBeNull();
+  });
 });
 
 describe("centerScrollTop", () => {
