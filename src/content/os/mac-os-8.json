@@ -1,25 +1,68 @@
 {
-  "name": "Mac OS 8 (Demo)",
+  "name": "Mac OS 8",
   "year": 1997,
   "added": "2026-07-17",
   "family": "Mac OS",
-  "tagline": "Platinum-era Mac OS in soft lavender.",
-  "description": "Mac OS 8 refined the Platinum appearance that defined the mid-90s Macintosh. Its soft lavender and cool gray tones gave the desktop a calm, distinctive character before the candy colors of Aqua arrived.",
+  "tagline": "Platinum-era desktop patterns in soft, muted accents.",
+  "description": "Mac OS 8 (1997) introduced the Platinum appearance and an Appearance control panel where the desktop could be set to a solid-color pattern. Beyond the default soft lavender-blue, the built-in solid patterns spanned muted greens, browns, and roses — quiet, desaturated tones that sat comfortably behind Platinum's calm gray chrome.",
   "desktopStyle": "platinum",
   "colors": [
     {
-      "hex": "#9999cc",
-      "name": "Lavender",
-      "note": "Platinum-era Mac OS in soft lavender.",
+      "hex": "#b3b3da",
+      "name": "French Blue (Light)",
+      "note": "The default desktop — a soft lavender-blue.",
       "default": true
     },
     {
-      "hex": "#666699",
-      "name": "Blue Gray"
+      "hex": "#8787b3",
+      "name": "French Blue (Dark)"
     },
     {
-      "hex": "#cccccc",
-      "name": "Platinum"
+      "hex": "#87b387",
+      "name": "Ivy"
+    },
+    {
+      "hex": "#548700",
+      "name": "Lime"
+    },
+    {
+      "hex": "#b38754",
+      "name": "Nutmeg"
+    },
+    {
+      "hex": "#b3b387",
+      "name": "Olive (Light)"
+    },
+    {
+      "hex": "#878754",
+      "name": "Olive (Dark)"
+    },
+    {
+      "hex": "#b387b3",
+      "name": "Plum"
+    },
+    {
+      "hex": "#dab3b3",
+      "name": "Rose"
+    },
+    {
+      "hex": "#87b3b3",
+      "name": "Teal"
+    },
+    {
+      "hex": "#9e9e9e",
+      "name": "Gray (Dithered)",
+      "note": "A solid gray desktop pattern, dithered from a lighter (#a5a5a5) and a darker (#969696) gray in an even 1:1 checkerboard. The two grays are close enough that the conventional pixel average and a linear-light gamma-corrected average both round to this same value."
+    },
+    {
+      "hex": "#a5a5a5",
+      "name": "Gray (Light Partial)",
+      "note": "One of the two grays the dithered gray desktop is mixed from — the lighter shade filling half the checkerboard."
+    },
+    {
+      "hex": "#969696",
+      "name": "Gray (Dark Partial)",
+      "note": "One of the two grays the dithered gray desktop is mixed from — the darker shade filling the other half."
     }
   ],
   "type": "Proprietary",
