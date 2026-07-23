@@ -37,15 +37,22 @@ function githubRepoUrl(): string | null {
  * Build-time git metadata for the footer's build signature. Every field
  * degrades to null when git is unavailable (e.g. building from a tarball),
  * so the footer can hide the commit line rather than break the build.
+ *
+ * Memoized: the footer renders on every page, and git HEAD is constant for the
+ * duration of a build. Without the cache this spawned ~5 `git` subprocesses per
+ * page (hundreds of process spawns across the site) — the dominant build cost.
  */
+let cached: GitInfo | undefined;
+
 export function getGitInfo(): GitInfo {
+  if (cached) return cached;
   const hash = git("rev-parse --short HEAD");
   const repoUrl = githubRepoUrl();
-  return {
+  return (cached = {
     hash,
     date: git("log -1 --format=%cs"),
     branch: git("rev-parse --abbrev-ref HEAD"),
     url: hash && repoUrl ? `${repoUrl}/commit/${hash}` : null,
     repoUrl,
-  };
+  });
 }
