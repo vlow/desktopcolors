@@ -25,11 +25,18 @@ const view: OsDetailView = {
         { key: "ral", label: "Closest RAL Classic", value: "RAL 5021 · Water Blue", copy: "RAL 5021 · Water Blue", swatch: "#07737a" },
         { key: "ralDesign", label: "Closest RAL Design+", value: "RAL 190 40 20 · Deep Sea", copy: "RAL 190 40 20 · Deep Sea", swatch: "#0d7c7d" },
       ],
-      similar: [{
-        hex: "#4e9a9a", name: "Teal", match: 88, onColor: "#ffffff", h: 178, s: 33, l: 44,
-        primarySlug: "kde-1", style: "generic",
-        platforms: [{ slug: "kde-1", name: "KDE 1", year: 1998, family: "KDE", isDefault: true }],
-      }],
+      similar: [
+        {
+          hex: "#4e9a9a", name: "Teal", match: 88, onColor: "#ffffff", h: 178, s: 33, l: 44,
+          primarySlug: "kde-1", style: "generic",
+          platforms: [{ slug: "kde-1", name: "KDE 1", year: 1998, family: "KDE", isDefault: true }],
+        },
+        {
+          hex: "#3a8f8f", name: "Pine", match: 82, onColor: "#ffffff", h: 180, s: 42, l: 40,
+          primarySlug: "beos", style: "generic",
+          platforms: [{ slug: "beos", name: "BeOS", year: 1998, family: "BeOS", isDefault: true }],
+        },
+      ],
       uses: [
         { slug: "cde", name: "CDE", year: 1993, family: "Desktop Env.", isDefault: false },
         { slug: "windows-95", name: "Windows 95", year: 1995, family: "Windows", isDefault: true },
@@ -223,6 +230,47 @@ describe("OsDetail", () => {
     expect(screen.getAllByTestId("infobox-platform")[0]).toBeTruthy();
     fireEvent.click(screen.getByText("Navy"));
     expect(screen.queryByTestId("infobox-platform")).toBeNull();
+  });
+
+  it("opens the similar-color preview showing its position in the list", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    // Teal is default-selected; expand its first similar (#4e9a9a) and preview it.
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    fireEvent.click(screen.getByRole("button", { name: /Preview/ }));
+    // The fullscreen must reflect the full similar list, not 1 / 1.
+    expect(screen.getByText(/^1 \/ 2$/)).toBeTruthy();
+    expect(screen.getByText("Teal · #4e9a9a")).toBeTruthy();
+  });
+
+  it("steps through the similar-color list in the fullscreen preview", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    fireEvent.click(screen.getByRole("button", { name: /Preview/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Next color" }));
+    // Fullscreen now shows the second similar color.
+    expect(screen.getByText("Pine · #3a8f8f")).toBeTruthy();
+    expect(screen.getByText(/^2 \/ 2$/)).toBeTruthy();
+  });
+
+  it("wraps to the last similar color when stepping back from the first", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    fireEvent.click(screen.getByRole("button", { name: /Preview/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Previous color" }));
+    expect(screen.getByText("Pine · #3a8f8f")).toBeTruthy();
+  });
+
+  it("the expanded panel below follows the preview and stays on close", () => {
+    render(<OsDetail view={view} initialHex={null} />);
+    fireEvent.click(screen.getByText("#4e9a9a"));
+    fireEvent.click(screen.getByRole("button", { name: /Preview/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Next color" }));
+    // Panel below now reflects the second color (BeOS platform chip).
+    expect((screen.getAllByTestId("infobox-platform")[0] as HTMLAnchorElement).getAttribute("href")).toBe("/os/beos/3a8f8f");
+    // Close the fullscreen; the panel stays on the landed color.
+    fireEvent.click(screen.getByRole("button", { name: /Close/ }));
+    expect(screen.queryByRole("button", { name: "Next color" })).toBeNull();
+    expect((screen.getAllByTestId("infobox-platform")[0] as HTMLAnchorElement).getAttribute("href")).toBe("/os/beos/3a8f8f");
   });
 });
 
