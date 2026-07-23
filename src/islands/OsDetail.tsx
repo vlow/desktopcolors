@@ -141,7 +141,7 @@ export function OsDetail({ view, initialHex }: Props) {
         )}
         {os.successor && (
           <a href={`/os/${os.successor.slug}`}
-            style={`${STEP_CARD} justify-content: flex-end; text-align: right;${os.predecessor ? "" : " grid-column: 2; justify-self: end;"}`}>
+            style={`${STEP_CARD} justify-content: flex-end; text-align: right;${os.predecessor ? "" : " grid-column: 2;"}`}>
             <span style="min-width: 0;">
               <span style="display: block; font: 500 11px var(--font-ui); color: var(--faint);">Later</span>
               <span style="display: block; font: 500 16px var(--font-ui); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{os.successor.name}</span>
