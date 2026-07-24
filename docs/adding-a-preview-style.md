@@ -56,6 +56,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `dock` | — | KDE / generic bottom dock |
 | `frontPanel` | — | CDE front panel |
 | `beosTab` | — | BeOS deskbar tab (top-right) |
+| `bleskos` | — | BleskOS full-screen, windowless program switcher (fills the preview) |
 
 `body` (`WindowBody`) is one of:
 - `{ kind: "gridIcons", icons: IconKind[], cols }` — a grid of line-art icons
@@ -77,6 +78,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `kde` | window + bottom dock | KDE 1/2, Plasma 6 |
 | `cde` | icon + window + front panel | CDE, Solaris |
 | `gem` | menu bar + icons + window | Digital Research GEM (FreeGEM) |
+| `bleskos` | full-screen program switcher (no window/taskbar/dock) | BleskOS |
 | `generic` | icons + dock | minimal / unknown shells |
 
 `modern` is the schema default (`desktopStyle` is optional) and the safety fallback: it

@@ -311,6 +311,47 @@ const FrontPanel = ({ onColor }: { onColor: string }) => {
   );
 };
 
+// BleskOS has no window, taskbar, or dock: it is a windowless, full-screen
+// program switcher, so the desktop IS a full-bleed menu. A title bar at top,
+// two columns of grouped menu buttons — each with a leading keyboard-shortcut
+// square — and a hint at the bottom-right. Fills the whole preview (inset 0).
+const Bleskos = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  const label = (w: number) => (
+    <span style={{ display: "block", width: cu(w), height: cu(1.3), borderRadius: cu(0.7), background: S.soft }} />
+  );
+  // A menu entry: leading key-hint square + a label bar filling `w`% of the row.
+  const btn = (k: number, w: number) => (
+    <div key={k} style={{ height: cu(4), borderRadius: cu(1), background: S.win, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}`, display: "flex", alignItems: "center", gap: cu(1.4), padding: `0 ${cu(1.6)}` }}>
+      <span style={{ width: cu(2.6), height: cu(2.6), borderRadius: cu(0.6), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}`, flex: "none" }} />
+      <span style={{ height: cu(1.3), width: `${w}%`, borderRadius: cu(0.7), background: S.soft }} />
+    </div>
+  );
+  const group = (labelW: number, widths: number[]) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: cu(1.2) }}>
+      {label(labelW)}
+      <div style={{ display: "flex", flexDirection: "column", gap: cu(1.3) }}>{widths.map((w, i) => btn(i, w))}</div>
+    </div>
+  );
+  return (
+    <div data-testid="chrome-bleskos" style={{ position: "absolute", inset: 0, padding: `${cu(3)} ${cu(4.5)} ${cu(8.5)}`, display: "flex", flexDirection: "column" }}>
+      {label(26)}
+      <div style={{ display: "flex", gap: cu(5.5), marginTop: cu(2.6), flex: 1 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: cu(2.6) }}>
+          {group(11, [58, 66, 54, 72])}
+          {group(9, [50, 78, 44])}
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          {group(20, [70, 46, 82, 60])}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", marginTop: cu(1.6) }}>
+        {label(28)}
+      </div>
+    </div>
+  );
+};
+
 function renderPart(part: ChromePart, onColor: string, key: number): ComponentChildren {
   switch (part.part) {
     case "deskIcons": return <DeskIcons key={key} side={part.side} anchor={part.anchor} icons={part.icons} onColor={onColor} />;
@@ -323,6 +364,7 @@ function renderPart(part: ChromePart, onColor: string, key: number): ComponentCh
     case "dock": return <Dock key={key} onColor={onColor} />;
     case "frontPanel": return <FrontPanel key={key} onColor={onColor} />;
     case "beosTab": return <BeosTab key={key} onColor={onColor} />;
+    case "bleskos": return <Bleskos key={key} onColor={onColor} />;
   }
 }
 

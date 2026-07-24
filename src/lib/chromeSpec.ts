@@ -29,6 +29,7 @@ export const ChromePart = z.discriminatedUnion("part", [
   z.object({ part: z.literal("dock") }),
   z.object({ part: z.literal("frontPanel") }),
   z.object({ part: z.literal("beosTab") }),
+  z.object({ part: z.literal("bleskos") }),
 ]);
 export type ChromePart = z.infer<typeof ChromePart>;
 
@@ -77,6 +78,9 @@ export const CHROME_SPECS: Record<DesktopStyle, ChromeSpec | null> = {
     { part: "menuBar" },
     { part: "deskIcons", side: "right", icons: [{ kind: "disk", label: "Floppy Disk" }, { kind: "drive", label: "Hard Disk" }, { kind: "trash", label: "Trash" }] },
     { part: "window", left: 12, top: 11, w: 46, body: { kind: "gridIcons", icons: ["folder", "folder", "disk", "folder", "drive", "folder"], cols: 3 } },
+  ],
+  bleskos: [
+    { part: "bleskos" },
   ],
   generic: [
     { part: "deskIcons", side: "left", icons: [{ kind: "computer", label: "Computer" }, { kind: "folder", label: "Files" }] },
