@@ -24,23 +24,25 @@ const blocks = [
   <div class="dc-page-x"><hr class="dc-rule" /></div>
 
   <!-- BODY -->
-  <div class="dc-page-x" style="padding-block: 40px 20px; max-width: 900px;">
-    <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
-      {blocks.map((b, i) => (
-        <div class="dc-legal-row" style={`display: grid; gap: 24px; padding: 24px 28px; border-top: ${i === 0 ? "none" : "1px solid #f0eeec"}; align-items: start;`}>
-          <div style="display: flex; align-items: center; gap: 11px;">
-            <span style={`width: 12px; height: 12px; border-radius: 4px; background-color: ${b.dot}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`}></span>
-            <div style="font: 500 12px var(--font-mono); color: #8a847c; letter-spacing: 1px;">{b.label}</div>
+  <div class="dc-page-x" style="padding-block: 40px 20px;">
+    <div style="max-width: 900px;">
+      <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
+        {blocks.map((b, i) => (
+          <div class="dc-legal-row" style={`display: grid; gap: 24px; padding: 24px 28px; border-top: ${i === 0 ? "none" : "1px solid #f0eeec"}; align-items: start;`}>
+            <div style="display: flex; align-items: center; gap: 11px;">
+              <span style={`width: 12px; height: 12px; border-radius: 4px; background-color: ${b.dot}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`}></span>
+              <div style="font: 500 12px var(--font-mono); color: #8a847c; letter-spacing: 1px;">{b.label}</div>
+            </div>
+            <div style="font-size: 15px; line-height: 1.65; color: var(--ink); white-space: pre-line;">{b.value}</div>
           </div>
-          <div style="font-size: 15px; line-height: 1.65; color: var(--ink); white-space: pre-line;">{b.value}</div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
 
-    <!-- LIABILITY -->
-    <div style="margin-top: 22px; padding: 22px 26px; background: #f6f7f7; border: 1px solid var(--card-border); border-radius: 16px;">
-      <div style="font: 600 10px var(--font-mono); color: #8a847c; letter-spacing: 1.2px;">HAFTUNGSHINWEIS · DISCLAIMER</div>
-      <p style="font-size: 14px; line-height: 1.7; color: var(--muted); margin: 10px 0 0; text-wrap: pretty;">Despite careful review, we assume no liability for the content of external links; their operators are solely responsible. Platform names, logos, and color values are catalogued for reference and remain the property of their respective owners. This archive is an independent, non-commercial project and is not affiliated with or endorsed by any operating-system vendor.</p>
+      <!-- LIABILITY -->
+      <div style="margin-top: 22px; padding: 22px 26px; background: #f6f7f7; border: 1px solid var(--card-border); border-radius: 16px;">
+        <div style="font: 600 10px var(--font-mono); color: #8a847c; letter-spacing: 1.2px;">HAFTUNGSHINWEIS · DISCLAIMER</div>
+        <p style="font-size: 14px; line-height: 1.7; color: var(--muted); margin: 10px 0 0; text-wrap: pretty;">Despite careful review, we assume no liability for the content of external links; their operators are solely responsible. Platform names, logos, and color values are catalogued for reference and remain the property of their respective owners. This archive is an independent, non-commercial project and is not affiliated with or endorsed by any operating-system vendor.</p>
+      </div>
     </div>
   </div>
   <div style="height: 40px;"></div>

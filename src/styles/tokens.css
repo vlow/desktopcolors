@@ -28,7 +28,11 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f
 a { color: inherit; text-decoration: none; }
 
 /* Shared page-wide horizontal inset (header, content, footer). Elements set
-   their own vertical padding via `padding-block`; this owns left/right only. */
+   their own vertical padding via `padding-block`; this owns left/right only.
+   NB: the centering term resolves `100%` against the parent's full width, so a
+   .dc-page-x band must span the viewport. Never put `max-width` on the band
+   itself — on wide screens the padding would outgrow the capped box and crush
+   the content. Cap content on an inner wrapper instead (see the legal pages). */
 .dc-page-x { padding-inline: max(var(--page-px), calc((100% - var(--page-max)) / 2)); }
 
 /* On small viewports, shrink the side inset so content uses more of the narrow

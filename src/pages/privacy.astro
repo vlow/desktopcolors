@@ -41,32 +41,34 @@ const clauses = [
   <div class="dc-page-x"><hr class="dc-rule" /></div>
 
   <!-- BODY -->
-  <div class="dc-page-x" style="padding-block: 40px 20px; max-width: 900px;">
-    <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
-      {clauses.map((c, i) => (
-        <div class="dc-privacy-row" style={`display: grid; gap: 24px; padding: 26px 28px; border-top: ${i === 0 ? "none" : "1px solid #f0eeec"}; align-items: start;`}>
-          <div>
-            <div style="display: flex; align-items: center; gap: 11px;">
-              <span style={`width: 12px; height: 12px; border-radius: 4px; background-color: ${c.dot}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`}></span>
-              <div style="font: 500 17px var(--font-ui); color: var(--ink);">{c.title}</div>
+  <div class="dc-page-x" style="padding-block: 40px 20px;">
+    <div style="max-width: 900px;">
+      <div style="background: var(--panel); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden;">
+        {clauses.map((c, i) => (
+          <div class="dc-privacy-row" style={`display: grid; gap: 24px; padding: 26px 28px; border-top: ${i === 0 ? "none" : "1px solid #f0eeec"}; align-items: start;`}>
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px;">
+                <span style={`width: 12px; height: 12px; border-radius: 4px; background-color: ${c.dot}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`}></span>
+                <div style="font: 500 17px var(--font-ui); color: var(--ink);">{c.title}</div>
+              </div>
+              <p style="font-size: 15px; line-height: 1.65; color: var(--muted); margin: 12px 0 0; max-width: 460px; text-wrap: pretty;">{c.formal}</p>
             </div>
-            <p style="font-size: 15px; line-height: 1.65; color: var(--muted); margin: 12px 0 0; max-width: 460px; text-wrap: pretty;">{c.formal}</p>
+            <div style={`background: #f6f7f7; border-left: 2px solid ${c.dot}; border-radius: 0 10px 10px 0; padding: 13px 16px;`}>
+              <div style="font: 600 9px var(--font-mono); color: #8a847c; letter-spacing: 1.2px;">PLAIN ENGLISH</div>
+              <div style="font: 400 14px var(--font-ui); line-height: 1.5; color: #44403c; margin-top: 5px;">{c.plain}</div>
+            </div>
           </div>
-          <div style={`background: #f6f7f7; border-left: 2px solid ${c.dot}; border-radius: 0 10px 10px 0; padding: 13px 16px;`}>
-            <div style="font: 600 9px var(--font-mono); color: #8a847c; letter-spacing: 1.2px;">PLAIN ENGLISH</div>
-            <div style="font: 400 14px var(--font-ui); line-height: 1.5; color: #44403c; margin-top: 5px;">{c.plain}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <!-- CONTACT -->
-    <div style="margin-top: 22px; padding: 22px 24px; border: 1px dashed #cfcac4; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
-      <div>
-        <div style="font: 700 17px var(--font-ui); letter-spacing: -0.3px;">Questions about your data?</div>
-        <div style="font-size: 14px; color: #78716c; margin-top: 4px;">There's very little of it, but you can always ask.</div>
+        ))}
       </div>
-      <a class="dc-privacy-contact" href={`mailto:${email}`} style="background: var(--ink); color: #fff; font: 500 14px var(--font-ui); padding: 12px 18px; border-radius: 10px;">{email}</a>
+
+      <!-- CONTACT -->
+      <div style="margin-top: 22px; padding: 22px 24px; border: 1px dashed #cfcac4; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+        <div>
+          <div style="font: 700 17px var(--font-ui); letter-spacing: -0.3px;">Questions about your data?</div>
+          <div style="font-size: 14px; color: #78716c; margin-top: 4px;">There's very little of it, but you can always ask.</div>
+        </div>
+        <a class="dc-privacy-contact" href={`mailto:${email}`} style="background: var(--ink); color: #fff; font: 500 14px var(--font-ui); padding: 12px 18px; border-radius: 10px;">{email}</a>
+      </div>
     </div>
   </div>
   <div style="height: 40px;"></div>
