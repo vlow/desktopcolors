@@ -153,6 +153,7 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
                     onClick={() => {
                       if (s.key === sort) { setRev((r) => !r); }
                       else { setSort(s.key); setRev(false); }
+                      close();
                     }}
                   >
                     {s.icon && <span style="font-size: 13px;">{s.icon} </span>}

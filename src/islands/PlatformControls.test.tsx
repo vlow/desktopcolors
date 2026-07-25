@@ -82,11 +82,12 @@ describe("PlatformControls", () => {
   it("reverses direction when the active sort is tapped in the dropdown", () => {
     render(<PlatformControls items={items} />);
     fireEvent.click(screen.getByRole("button", { name: /^Sort:/ }));
-    // "New" selects newest-first (Amiga 2026-07-20 before Windows 2026-07-17)
+    // "New" selects newest-first (Amiga 2026-07-20 before Windows 2026-07-17); menu closes
     fireEvent.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: /New/ }));
     let names = screen.getAllByTestId("os-name").map((n) => n.textContent);
     expect(names[0]).toBe("Amiga Workbench");
-    // Tapping the now-active "New" reverses to oldest-first; menu stays open
+    // reopen the menu and tap the now-active "New" to reverse to oldest-first
+    fireEvent.click(screen.getByRole("button", { name: /^Sort:/ }));
     fireEvent.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: /New/ }));
     names = screen.getAllByTestId("os-name").map((n) => n.textContent);
     expect(names[0]).toBe("Windows 95");
