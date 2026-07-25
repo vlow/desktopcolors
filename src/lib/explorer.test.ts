@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   toExplorerColors, groupIntoBands, rankColors, familyCounts, typeCounts,
   COLOR_TYPE_DEFS, FAMILY_DEFS, buildPlatformsByHex, buildOsUniverse,
+  matchesExplorerQuery,
 } from "./explorer";
 import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
@@ -63,6 +64,50 @@ describe("groupIntoBands", () => {
     const bands = groupIntoBands(colors, { group: "hue", family: "teal", types: [], sort: "spectrum" });
     expect(bands.length).toBe(1);
     expect(bands[0].colors[0].hex).toBe("#008080");
+  });
+});
+
+describe("matchesExplorerQuery", () => {
+  const platformsByHex = buildPlatformsByHex(catalog);
+  const teal = colors.find((c) => c.hex === "#008080")!;
+  const red = colors.find((c) => c.hex === "#ff0000")!;
+
+  it("empty/whitespace query matches everything", () => {
+    expect(matchesExplorerQuery(teal, "", platformsByHex)).toBe(true);
+    expect(matchesExplorerQuery(teal, "   ", platformsByHex)).toBe(true);
+  });
+
+  it("matches by color name, case-insensitively", () => {
+    expect(matchesExplorerQuery(teal, "teal", platformsByHex)).toBe(true);
+    expect(matchesExplorerQuery(teal, "TEAL", platformsByHex)).toBe(true);
+    expect(matchesExplorerQuery(red, "teal", platformsByHex)).toBe(false);
+  });
+
+  it("matches by full or partial hex", () => {
+    expect(matchesExplorerQuery(teal, "#008080", platformsByHex)).toBe(true);
+    expect(matchesExplorerQuery(teal, "0080", platformsByHex)).toBe(true);
+  });
+
+  it("matches by family key and family display name", () => {
+    expect(matchesExplorerQuery(teal, "teal", platformsByHex)).toBe(true); // key
+    expect(matchesExplorerQuery(teal, "teals", platformsByHex)).toBe(true); // "Teals"
+  });
+
+  it("matches by the name of an OS that shipped the color", () => {
+    // Teal ships on OS "A"; Red ships on OS "B".
+    expect(matchesExplorerQuery(red, "b", platformsByHex)).toBe(true);
+    expect(matchesExplorerQuery(teal, "b", platformsByHex)).toBe(false);
+  });
+
+  it("matches a literal year present in the range", () => {
+    expect(matchesExplorerQuery(teal, "1995", platformsByHex)).toBe(true);
+    expect(matchesExplorerQuery(red, "1995", platformsByHex)).toBe(false);
+  });
+
+  it("matches a year that falls inside a multi-year range", () => {
+    const ranged: ExplorerColor = { ...teal, yearRange: "1990–2000" };
+    expect(matchesExplorerQuery(ranged, "1995", {})).toBe(true); // between, not literal
+    expect(matchesExplorerQuery(ranged, "1985", {})).toBe(false);
   });
 });
 

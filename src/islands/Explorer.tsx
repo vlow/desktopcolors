@@ -3,7 +3,7 @@ import type { DesktopStyle } from "../lib/desktopStyle";
 import type { FamilyKey, ColorTypeKey } from "../lib/color";
 import {
   groupIntoBands, rankColors, familyCounts, typeCounts,
-  osMatch, osOptionDisabled,
+  osMatch, osOptionDisabled, matchesExplorerQuery,
   FAMILY_DEFS, COLOR_TYPE_DEFS,
   type ExplorerColor, type Platform, type OsUniverse, type OsFamily, type OsMode,
 } from "../lib/explorer";
@@ -28,6 +28,7 @@ const seg = (active: boolean): string =>
 export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Props) {
   const [group, setGroup] = useState<Group>("hue");
   const [sort, setSort] = useState<Sort>("spectrum");
+  const [search, setSearch] = useState("");
   const [family, setFamily] = useState<FamilyKey | null>(null);
   const [type, setType] = useState<ColorTypeKey | null>(null);
   const [exp, setExp] = useState<string | null>(null);
@@ -40,31 +41,38 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
 
   const osSelKeys = useMemo(() => Object.keys(osSel).filter((k) => osSel[k]), [osSel]);
 
-  // Facet counts (unchanged from prior behavior — color pills count against the
-  // OTHER color facet only; the OS filter does not affect these counts).
+  // Free-text search narrows the working set before any faceting, so the family
+  // and type pill counts (and the OS filter results) all reflect the query.
+  const matched = useMemo(
+    () => colors.filter((c) => matchesExplorerQuery(c, search, platformsByHex)),
+    [colors, search, platformsByHex]);
+  const empty = matched.length === 0;
+
+  // Facet counts — color pills count against the OTHER color facet only; the OS
+  // filter does not affect these counts (they run on the search-narrowed set).
   const counts = useMemo(
-    () => familyCounts(colors.filter((c) => !type || c.types.includes(type))),
-    [colors, type]);
-  const countsAll = useMemo(() => familyCounts(colors), [colors]);
+    () => familyCounts(matched.filter((c) => !type || c.types.includes(type))),
+    [matched, type]);
+  const countsAll = useMemo(() => familyCounts(matched), [matched]);
   const tCounts = useMemo(
-    () => typeCounts(colors.filter((c) => !family || c.family === family)),
-    [colors, family]);
-  const tCountsAll = useMemo(() => typeCounts(colors), [colors]);
+    () => typeCounts(matched.filter((c) => !family || c.family === family)),
+    [matched, family]);
+  const tCountsAll = useMemo(() => typeCounts(matched), [matched]);
   const countLabel = (n: number, total: number) => (n === total ? `${total}` : `${n}/${total}`);
 
   const osMatches = (c: ExplorerColor) => osMatch(c.hex, platformsByHex, osSel, osMode);
 
   const bands = useMemo(
     () => group === "flat" ? [] :
-      groupIntoBands(colors.filter(osMatches),
+      groupIntoBands(matched.filter(osMatches),
         { group: "hue", family, types: type ? [type] : [], sort }),
-    [colors, platformsByHex, group, family, type, sort, osSel, osMode]);
+    [matched, platformsByHex, group, family, type, sort, osSel, osMode]);
   const ranking = useMemo(() => {
     if (group !== "flat") return [];
-    const base = colors.filter(osMatches);
+    const base = matched.filter(osMatches);
     const filtered = type ? base.filter((c) => c.types.includes(type)) : base;
     return rankColors(filtered, { family, sort });
-  }, [colors, platformsByHex, group, family, type, sort, osSel, osMode]);
+  }, [matched, platformsByHex, group, family, type, sort, osSel, osMode]);
 
   // Universe for OS-option disabling: colors passing the family/type filter only.
   const osUniverseColors = useMemo(
@@ -128,6 +136,14 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
     <div class="dc-explorer dc-page-x" style="padding-block: 26px 56px;">
       <h1 style="font: 700 32px var(--font-ui); letter-spacing: -0.8px; margin: 0;">Color Explorer</h1>
       <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 8px 0 0;">Group by hue to browse, filter by color type, or ungroup to rank colors by how often people download and copy them.</p>
+
+      <label style="margin-top: 20px; display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--field-border); border-radius: 13px; padding: 0 16px; height: 52px; max-width: 680px;">
+        <span aria-hidden="true" style="color: var(--faint); transform: rotate(-45deg); font-size: 17px;">&#9906;</span>
+        <input value={search} onInput={(e) => { setSearch((e.target as HTMLInputElement).value); setExp(null); }}
+          aria-label="Search colors" placeholder="Search colors — teal, pastel, #008080, 1995…"
+          style="border: none; outline: none; background: transparent; font: 400 15px var(--font-ui); color: var(--ink); width: 100%;" />
+        {search && <button onClick={() => { setSearch(""); setExp(null); }} aria-label="Clear search" style="border: none; background: transparent; cursor: pointer; font-size: 15px; color: var(--faint); line-height: 1;">✕</button>}
+      </label>
 
       <div style="display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin-top: 20px;">
         <div style="display: flex; align-items: center; gap: 9px;">
@@ -229,7 +245,12 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
         </div>
       )}
 
-      {group !== "flat" ? (
+      {empty ? (
+        <div style="padding: 64px 0; text-align: center; color: var(--muted);">
+          <div style="font: 500 20px var(--font-ui); color: var(--ink);">No colors match “{search}”</div>
+          <div style="font-size: 14px; margin-top: 8px;">Try a color name, a group like “teal”, a hex value, or a year.</div>
+        </div>
+      ) : group !== "flat" ? (
         <div style="margin-top: 18px;">
           {bands.map((b) => {
             const idx = exp ? b.colors.findIndex((c) => c.hex === exp) : -1;
@@ -273,7 +294,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
           })}
         </div>
       ) : (
-        <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 4px; max-width: 1000px;">
+        <div class="dc-rank-grid" style="margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(660px, 1fr)); gap: 4px 26px; align-items: start;">
           {ranking.map((c, i) => {
             const open = exp === c.hex;
             return (
@@ -281,7 +302,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
                 <div data-testid="rank-row" class="dc-rank-row" role="button" tabIndex={0}
                   aria-expanded={open} aria-label={`${c.name} ${c.hex} — ${open ? "hide" : "show"} details`}
                   onClick={() => toggleExp(c.hex)} onKeyDown={(e) => onRowKey(e, c.hex)}
-                  style={`cursor: pointer; display: grid; grid-template-columns: 40px 56px 1fr 220px 84px; gap: 16px; align-items: center; padding: 10px; border-radius: ${open ? "12px 12px 0 0" : "12px"}; ${open ? "border: 1px solid var(--field-border); border-bottom: none; border-left: 3px solid var(--accent); padding: 9px 9px 10px 8px;" : ""} background: ${open ? "#fbfaf9" : "transparent"};`}>
+                  style={`cursor: pointer; display: grid; grid-template-columns: 40px 56px minmax(0, 1fr) minmax(130px, 210px) 84px; gap: 16px; align-items: center; padding: 10px; border-radius: ${open ? "12px 12px 0 0" : "12px"}; ${open ? "border: 1px solid var(--field-border); border-bottom: none; border-left: 3px solid var(--accent); padding: 9px 9px 10px 7px;" : ""} background: ${open ? "#fbfaf9" : "transparent"};`}>
                   <span style="font: 600 20px var(--font-mono); color: #cbc7c2; text-align: right;">{c.rank}</span>
                   <span class="dc-rank-swatch" style={`display: block; height: 56px; border-radius: 10px; background-color: ${c.hex}; box-shadow: ${open ? "inset 0 0 0 2px var(--accent)" : "inset 0 0 0 1px rgba(0,0,0,0.1)"};`} />
                   <span>

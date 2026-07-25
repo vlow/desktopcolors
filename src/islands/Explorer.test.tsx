@@ -137,6 +137,35 @@ describe("Explorer", () => {
     expect((screen.getByRole("button", { name: "BeOS" }) as HTMLButtonElement).disabled).toBe(false);
   });
 
+  it("search narrows the bands by name/hex/year/color", () => {
+    render(<Explorer {...props} />);
+    const box = screen.getByPlaceholderText(/Search colors/i);
+    fireEvent.input(box, { target: { value: "teal" } });
+    let names = screen.getAllByTestId("band-name").map((n) => n.textContent);
+    expect(names).toEqual(["Teals"]);            // by color name
+    fireEvent.input(box, { target: { value: "#ff0000" } });
+    names = screen.getAllByTestId("band-name").map((n) => n.textContent);
+    expect(names).toEqual(["Reds"]);             // by hex
+  });
+
+  it("shows an empty state when nothing matches the search", () => {
+    render(<Explorer {...props} />);
+    fireEvent.input(screen.getByPlaceholderText(/Search colors/i), { target: { value: "zzzznope" } });
+    expect(screen.queryAllByTestId("band-name")).toHaveLength(0);
+    expect(screen.getByText(/No colors match/i)).toBeTruthy();
+  });
+
+  it("clears the search with the clear button", () => {
+    render(<Explorer {...props} />);
+    const box = screen.getByPlaceholderText(/Search colors/i) as HTMLInputElement;
+    fireEvent.input(box, { target: { value: "teal" } });
+    expect(screen.getAllByTestId("band-name").map((n) => n.textContent)).toEqual(["Teals"]);
+    fireEvent.click(screen.getByRole("button", { name: /Clear search/i }));
+    const names = screen.getAllByTestId("band-name").map((n) => n.textContent);
+    expect(names).toContain("Teals");
+    expect(names).toContain("Reds");             // both back after clearing
+  });
+
   it("ungrouped rows are keyboard-operable (role=button, tabindex, Enter toggles)", () => {
     render(<Explorer {...props} />);
     fireEvent.click(screen.getByRole("button", { name: "Ungrouped" }));

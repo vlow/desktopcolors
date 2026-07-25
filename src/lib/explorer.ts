@@ -62,6 +62,38 @@ export function typeCounts(colors: ExplorerColor[]): Record<ColorTypeKey, number
   return out;
 }
 
+// Free-text Explorer search. Matches a color against the query by name, family
+// (key + display name), hex, year range, color-type names, and the names of the
+// OSes that shipped it. A bare four-digit year also matches any color whose year
+// range spans it, even when that exact year isn't written in the label.
+export function matchesExplorerQuery(
+  c: ExplorerColor,
+  query: string,
+  platformsByHex: Record<string, Platform[]>,
+): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const famName = FAMILY_DEFS.find((f) => f.key === c.family)?.name ?? "";
+  const typeNames = c.types
+    .map((t) => COLOR_TYPE_DEFS.find((d) => d.key === t)?.name ?? t)
+    .join(" ");
+  const oses = (platformsByHex[c.hex.toLowerCase()] ?? [])
+    .map((p) => `${p.name} ${p.family}`)
+    .join(" ");
+  const hay = [c.name, famName, c.family, c.hex, c.yearRange, typeNames, oses]
+    .join(" ")
+    .toLowerCase();
+  if (hay.includes(q)) return true;
+  if (/^\d{4}$/.test(q)) {
+    const ys = c.yearRange.match(/\d{4}/g);
+    if (ys) {
+      const a = +ys[0], b = +ys[ys.length - 1];
+      if (+q >= a && +q <= b) return true;
+    }
+  }
+  return false;
+}
+
 const spectrumCmp = (a: ExplorerColor, b: ExplorerColor): number =>
   a.h - b.h || a.l - b.l;
 const popCmp = (a: ExplorerColor, b: ExplorerColor): number =>
