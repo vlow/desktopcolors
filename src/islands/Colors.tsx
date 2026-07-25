@@ -322,7 +322,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
             const caretLeft = hasPanel ? (idx % cols) * (EXP_COLW + EXP_GAP) + EXP_COLW / 2 : 0;
             const panelColor = hasPanel ? b.colors[idx] : null;
             return (
-              <div key={b.key} class="dc-colors-band" style="display: grid; grid-template-columns: 190px 1fr; gap: 28px; padding: 22px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
+              <div key={b.key} class="dc-colors-band" style="display: grid; grid-template-columns: 190px 1fr; gap: 28px; padding: 22px 0; align-items: start;">
                 <div>
                   <div style="display: inline-flex; align-items: center; gap: 9px;">
                     <span style={`width: 20px; height: 20px; border-radius: 6px; background-color: ${b.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />

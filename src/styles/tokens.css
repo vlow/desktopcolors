@@ -101,6 +101,11 @@ a { color: inherit; text-decoration: none; }
    would span the full viewport instead. */
 .dc-rule { border: 0; border-top: 1px solid var(--hairline); margin: 0; }
 
+/* Hue bands are separated by a hairline beneath each. The final band has no
+   band following it, so it drops the rule to avoid a dangling separator. */
+.dc-colors-band { border-bottom: 1px solid var(--card-border); }
+.dc-colors-band:last-child { border-bottom: 0; }
+
 /* Hover affordances — inline styles can't express :hover, so islands opt in
    with these classes (Platform cards & swatches, Colors swatches & rows). */
 .dc-card { transition: transform 0.14s ease, box-shadow 0.14s ease; }
