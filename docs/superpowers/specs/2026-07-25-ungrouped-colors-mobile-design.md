@@ -63,12 +63,14 @@ site-wide meaning (per `CLAUDE.md`'s styling rules).
 In `tokens.css`, `.dc-rank-row` at `max-width: 759.98px`:
 
 ```
-grid-template-columns: 36px 44px 1fr 16px !important;
+grid-template-columns: 38px 44px 1fr 16px !important;
 ```
 
-- Rank column 28px → **36px** so three-digit ranks fit. The 36px figure is an
-  estimate from a measured `scrollWidth` of 36px for `"100"`; **confirm the real
-  glyph width in the browser during implementation** and adjust if needed.
+- Rank column 28px → **38px** so three-digit ranks fit. Measured in the browser
+  during implementation: a 3-digit rank is exactly 36.00px in IBM Plex Mono at
+  `600 20px` (0.6em advance per digit), and 95 of the 194 rows have 3-digit
+  ranks. 38px keeps 2px of slack in case the webfont falls back to a wider
+  `ui-monospace`.
 - Last column **16px**, sized for the chevron only.
 - `.dc-rank-bar { grid-column: 3 / -1; grid-row: 2 }` needs no change — it
   already spans the name + affordance columns on the second row.
@@ -106,6 +108,11 @@ which is precisely why dead mobile CSS shipped unnoticed. Add to
 `e2e/smoke.spec.ts`: at a 390px viewport on the Colors page in Ungrouped mode,
 assert `document.documentElement.scrollWidth <= window.innerWidth`, both with
 the infobox collapsed and with one open.
+
+The test needs an `islandsHydrated(page)` helper (added to the spec file):
+clicking an island control before Preact mounts silently does nothing, and
+`goto` alone does not wait for that. Astro renders `<astro-island ssr>` and drops
+the `ssr` attribute on hydration, which makes a deterministic gate.
 
 Existing `Colors.test.tsx` cases are unaffected: they select rows via
 `data-testid="rank-row"` and assert on `aria-expanded`, not on the label text,

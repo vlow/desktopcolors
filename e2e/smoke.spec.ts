@@ -30,6 +30,16 @@ function sawEvent(bodies: string[], expected: Record<string, string>): boolean {
   });
 }
 
+/**
+ * Wait until every Preact island on the page has hydrated. Astro renders
+ * `<astro-island ssr>` and drops the `ssr` attribute once the component is
+ * mounted, so this is a deterministic gate — clicking an island control before
+ * it hydrates silently does nothing.
+ */
+async function islandsHydrated(page: import("@playwright/test").Page): Promise<void> {
+  await page.waitForFunction(() => !document.querySelector("astro-island[ssr]"));
+}
+
 test("home lists platforms and search filters", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Desktop background colors, by operating system" })).toBeVisible();
@@ -75,6 +85,31 @@ test("a per-color page selects that color from the first paint, not the default"
   // Target the list row by its stable per-color test id (Teal = #008080).
   await page.getByTestId("color-row-008080").click();
   await expect(page).toHaveURL(/\/os\/windows-95\/008080$/);
+});
+
+test("the ungrouped colors view fits a phone viewport", async ({ page }) => {
+  // Layout regression guard. The unit tests run in jsdom, which has no layout
+  // engine — the mobile rules for .dc-rank-row were dead for a long time (their
+  // 1fr resolved against a fixed 660px minimum track on the container) and no
+  // jsdom test could have noticed. Only a real browser catches this.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/colors");
+  await islandsHydrated(page);
+
+  // Below 760px the Group control is the mobile <Dropdown> (D2), not the segmented buttons.
+  await page.getByRole("button", { name: /^Group:/ }).click();
+  await page.getByRole("menuitem", { name: "Ungrouped" }).click();
+  await expect(page.getByTestId("rank-row").first()).toBeVisible();
+
+  const overflows = () =>
+    page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+
+  expect(await overflows()).toBe(false);
+
+  // The in-place infobox is the widest thing the view renders; check it too.
+  await page.getByTestId("rank-row").first().click();
+  await expect(page.getByTestId("copy-hex").first()).toBeVisible();
+  expect(await overflows()).toBe(false);
 });
 
 test("copying a color value fires a copy beacon", async ({ page, context }) => {

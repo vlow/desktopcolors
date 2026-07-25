@@ -130,6 +130,13 @@ review and other docs can reference it. Use this template:
   - The `<Dropdown>` owns open/close (outside-click + Escape); callers pass a
     `trigger` and `children(close)` and render their own `menuitem` rows,
     marking the active one with `aria-current="true"`.
+  - When a grid sets a fixed minimum track, write it
+    `minmax(min(<px>, 100%), 1fr)` rather than `minmax(<px>, 1fr)`. A bare
+    `minmax()` minimum cannot shrink below `<px>`, so the grid overflows every
+    viewport narrower than it — and, because the row's own `1fr` columns then
+    resolve against that too-wide track, any mobile rules for the row silently
+    do nothing. `min(<px>, 100%)` clamps the track to its container, so the grid
+    self-corrects at every width with no breakpoint.
   - Where a JS branch (not just styling) must react to the breakpoint — e.g.
     forcing the Platforms content to Cards when a desktop window is narrowed —
     use the `useIsNarrow()` hook (`src/lib/useIsNarrow.ts`), the one sanctioned

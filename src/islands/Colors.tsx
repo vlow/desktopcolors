@@ -355,7 +355,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
           })}
         </div>
       ) : (
-        <div class="dc-rank-grid" style="margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(660px, 1fr)); gap: 4px 26px; align-items: start;">
+        <div class="dc-rank-grid" style="margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(660px, 100%), 1fr)); gap: 4px 26px; align-items: start;">
           {ranking.map((c, i) => {
             const open = exp === c.hex;
             return (
@@ -374,7 +374,10 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
                     <span style="flex: 1; height: 8px; border-radius: 999px; background: var(--card-border); overflow: hidden;"><span style={`display: block; height: 100%; width: ${c.pct}%; background: var(--accent);`} /></span>
                     <span style="flex: none; min-width: 52px; text-align: right; font: 500 12px var(--font-mono); color: var(--muted);">{c.scoreLabel}</span>
                   </span>
-                  <span class="dc-rank-pv" style="font: 500 12px var(--font-ui); color: var(--accent-strong); text-align: right;">{open ? "Close ✕" : "Details"}</span>
+                  <span class="dc-rank-pv" style="font: 500 12px var(--font-ui); color: var(--accent-strong); text-align: right;">
+                    <span class="dc-rank-pv-label">{open ? "Close ✕" : "Details"}</span>
+                    <span class="dc-rank-pv-icon" aria-hidden="true">▾</span>
+                  </span>
                 </div>
                 {open && (
                   <div class="dc-infobox" style={`margin: 0 0 10px; border: 1px solid var(--field-border); border-top: none; border-left: 3px solid ${c.hex}; border-radius: 0 0 12px 12px; background: #fbfaf9; padding: 16px 18px;`}>

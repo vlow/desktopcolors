@@ -169,9 +169,18 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* Colors — compact header, single-column hue bands, and a
-   two-row leaderboard: rank · swatch · name · icon on top, the score bar
-   spanning underneath. The preview button collapses to its icon. */
+   two-row leaderboard: rank · swatch · name · chevron on top, the score bar
+   spanning underneath.
+
+   Leaderboard row affordance: desktop shows the word ("Details" / "Close ✕");
+   below 760px there is no room, so the word is swapped for a chevron that points
+   down when closed and up when open. The rotation is driven off the row's
+   existing aria-expanded, so the visual cue cannot drift from the a11y state.
+   The chevron is kept (rather than dropping the column) because mobile has no
+   hover: without a marker, a closed row gives no hint that it opens. */
 .dc-rank-pv-label { display: inline; }
+.dc-rank-pv-icon { display: none; }
+.dc-rank-row[aria-expanded="true"] .dc-rank-pv-icon { transform: rotate(180deg); }
 /* Filter pill (D5) — a togglable facet chip. The Colors page's two facets
    (Basic Colors families, Type) share this one class so they read as the same
    control at every width. Active state is the aria-pressed attribute (also the
@@ -222,8 +231,12 @@ a { color: inherit; text-decoration: none; }
   .dc-pill-count { font-size: 10px; }
   .dc-filter-clear { font-size: 12px; padding: 6px 4px; }
   .dc-colors-band { grid-template-columns: 1fr !important; gap: 12px !important; }
+  /* Rank column fits a 3-digit rank (the catalog is ~200 colors, so most ranks
+     are 3 digits). "100" measures exactly 36px in IBM Plex Mono at 600 20px;
+     38px keeps a little slack in case the webfont falls back to a wider
+     ui-monospace. The last column is sized for the chevron alone. */
   .dc-rank-row {
-    grid-template-columns: 28px 44px 1fr 30px !important;
+    grid-template-columns: 38px 44px 1fr 16px !important;
     grid-template-rows: auto auto;
     column-gap: 12px !important;
     row-gap: 6px;
@@ -231,6 +244,7 @@ a { color: inherit; text-decoration: none; }
   .dc-rank-swatch { height: 44px !important; }
   .dc-rank-pv { grid-column: 4; grid-row: 1; }
   .dc-rank-pv-label { display: none; }
+  .dc-rank-pv-icon { display: inline-block; transition: transform 0.15s ease; }
   .dc-rank-bar { grid-column: 3 / -1; grid-row: 2; }
   .dc-os-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
   .dc-os-panel { padding: 14px 14px !important; }
