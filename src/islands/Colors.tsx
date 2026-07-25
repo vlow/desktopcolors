@@ -150,14 +150,14 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
 
       <div style="display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin-top: 20px;">
         <div class="dc-desktop-only" style="display: flex; align-items: center; gap: 9px;">
-          <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">GROUP</span>
+          <span class="dc-control-label">GROUP</span>
           <div style="display: inline-flex; background: #efedea; border-radius: 999px; padding: 3px;">
             <button style={seg(group === "hue")} onClick={() => setGroup("hue")}>By hue</button>
             <button style={seg(group === "flat")} onClick={() => setGroup("flat")}>Ungrouped</button>
           </div>
         </div>
         <div class="dc-desktop-only" style="display: flex; align-items: center; gap: 9px;">
-          <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SORT</span>
+          <span class="dc-control-label">SORT</span>
           <div style="display: inline-flex; background: #efedea; border-radius: 999px; padding: 3px;">
             <button style={seg(sort === "spectrum")} onClick={() => setSort("spectrum")}>Spectrum</button>
             <button style={seg(sort === "pop")} onClick={() => setSort("pop")}>Popularity</button>
@@ -167,7 +167,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
           <Dropdown
             ariaLabel={`Group: ${group === "hue" ? "By hue" : "Ungrouped"}`}
             trigger={<>
-              <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">GROUP</span>
+              <span class="dc-control-label">GROUP</span>
               <span>{group === "hue" ? "By hue" : "Ungrouped"}</span>
               <span style="opacity: 0.5;">▾</span>
             </>}
@@ -190,7 +190,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
           <Dropdown
             ariaLabel={`Sort: ${sort === "spectrum" ? "Spectrum" : "Popularity"}`}
             trigger={<>
-              <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SORT</span>
+              <span class="dc-control-label">SORT</span>
               <span>{sort === "spectrum" ? "Spectrum" : "Popularity"}</span>
               <span style="opacity: 0.5;">▾</span>
             </>}
@@ -213,7 +213,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
       </div>
 
       <div style="margin-top: 18px;">
-        <div style="font: 400 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-bottom: 12px;">BASIC COLORS — CLICK TO NARROW</div>
+        <div class="dc-control-label" style="margin-bottom: 12px;">BASIC COLORS — CLICK TO NARROW</div>
         <div style="display: flex; gap: 9px; flex-wrap: wrap;">
           {FAMILY_DEFS.filter((f) => countsAll[f.key] > 0).map((f) => {
             const active = family === f.key;
@@ -228,8 +228,8 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
           })}
           {family && <button onClick={() => setFamily(null)} style="cursor: pointer; background: transparent; border: none; color: var(--accent-strong); font: 500 13px var(--font-ui); padding: 8px 6px;">Clear ✕</button>}
         </div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
-          <span style="font: 400 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">TYPE</span>
+        <div style="display: flex; align-items: center; gap: 9px; margin-top: 14px; flex-wrap: wrap;">
+          <span class="dc-control-label">TYPE</span>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             {COLOR_TYPE_DEFS.filter((t) => tCountsAll[t.key] > 0).map((t) => {
               const active = type === t.key;
@@ -251,8 +251,8 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
         <div class="dc-os-panel" style="margin-top: 16px; border: 1px solid var(--field-border); border-radius: 14px; background: #fff; padding: 18px 20px;">
           <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px;">
             <span style="font: 500 15px var(--font-ui);">Filter by operating system</span>
-            <div style="display: inline-flex; align-items: center; gap: 8px;">
-              <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SHOW COLORS IN</span>
+            <div style="display: inline-flex; align-items: center; gap: 9px;">
+              <span class="dc-control-label">SHOW COLORS IN</span>
               <div style="display: inline-flex; background: #efedea; border-radius: 999px; padding: 3px;">
                 <button onClick={() => setOsMode("any")} style={seg(osMode === "any")}>ANY picked</button>
                 <button onClick={() => setOsMode("all")} style={seg(osMode === "all")}>ALL picked</button>

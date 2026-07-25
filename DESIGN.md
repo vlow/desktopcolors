@@ -187,3 +187,37 @@ review and other docs can reference it. Use this template:
   classes makes it identical by construction and gives one place to retune, per
   `CLAUDE.md`'s reuse-first rules. Only per-page _structure_ (content that
   follows the lead) stays inline.
+
+### D4 — Inline control label (`.dc-control-label`): name a toolbar control the same way everywhere
+
+- **Element** — the quiet mono, uppercase, faint micro-label that sits beside
+  (or above) a toolbar control: `VIEW`, `SORT`, `GROUP`, `TYPE`, `SHOW COLORS
+  IN`, `BASIC COLORS — CLICK TO NARROW`. One class, `.dc-control-label`.
+
+- **Purpose (UX)** — a control's label should read as the same kind of thing on
+  every toolbar, and stay visually subordinate to both the control it names and
+  the page eyebrow (**D3**). A consistent size and label→control gap keeps the
+  Platforms and Colors toolbars feeling like one system.
+
+- **Use it when** — labelling an interactive control (a switch, a segmented
+  toggle, a filter group) in a page toolbar or filter panel.
+
+- **Don't use it when**
+  - It's the page kicker above the `<h1>` — that's the larger `.dc-page-eyebrow`
+    (**D3**).
+  - It's a mono caption _inside_ content (a card's `FULL GUIDE`, a swatch's hex
+    line). Those are content type, not control chrome.
+
+- **How**
+  - `.dc-control-label` in `tokens.css` owns type only — `500 10px` mono,
+    `letter-spacing 1.5px`, `--faint` (one step down from the 11px eyebrow).
+  - Spacing is on the container, not the label: sit an inline label **9px** from
+    its control (the flex `gap`); a block label above a control sets its own
+    `margin-bottom`. Where a control group holds several buttons with their own
+    rhythm (Platforms `VIEW`/`SORT`), wrap the buttons in an inner flex so the
+    label keeps the 9px gap while the buttons keep theirs.
+
+- **Why this way** — these labels had drifted across weight (400/500), size
+  (10/11px), and label→control gap (8/9/10/14px). Collapsing the type into one
+  class and standardizing the gap removes the drift and gives a single knob,
+  per `CLAUDE.md`'s reuse-first rules.
