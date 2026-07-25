@@ -24,6 +24,7 @@ export const ChromePart = z.discriminatedUnion("part", [
   z.object({ part: z.literal("beosWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("platinumWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("cdeWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
+  z.object({ part: z.literal("gemWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("taskbar") }),
   z.object({ part: z.literal("menuBar") }),
   z.object({ part: z.literal("topBar") }),
@@ -78,7 +79,7 @@ export const CHROME_SPECS: Record<DesktopStyle, ChromeSpec | null> = {
   gem: [
     { part: "menuBar" },
     { part: "deskIcons", side: "right", icons: [{ kind: "disk", label: "Floppy Disk" }, { kind: "drive", label: "Hard Disk" }, { kind: "trash", label: "Trash" }] },
-    { part: "window", left: 12, top: 11, w: 46, body: { kind: "gridIcons", icons: ["folder", "folder", "disk", "folder", "drive", "folder"], cols: 3 } },
+    { part: "gemWindow", left: 12, top: 11, w: 46, body: { kind: "gridIcons", icons: ["folder", "folder", "disk", "folder", "drive", "folder"], cols: 3 } },
   ],
   bleskos: [
     { part: "bleskos" },

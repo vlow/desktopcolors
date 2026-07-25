@@ -380,6 +380,7 @@ function renderPart(part: ChromePart, onColor: string, key: number): ComponentCh
     case "beosWindow": return <BeosWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "platinumWindow": return <PlatinumWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "cdeWindow": return <GadgetWindow key={key} testid="chrome-cdewindow" left={part.left} top={part.top} w={part.w} body={part.body} rightBoxes={2} onColor={onColor} />;
+    case "gemWindow": return <GadgetWindow key={key} testid="chrome-gemwindow" left={part.left} top={part.top} w={part.w} body={part.body} rightBoxes={1} onColor={onColor} />;
     case "taskbar": return <Taskbar key={key} onColor={onColor} />;
     case "menuBar": return <MenuBar key={key} onColor={onColor} />;
     case "topBar": return <TopBar key={key} onColor={onColor} />;

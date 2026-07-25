@@ -41,7 +41,7 @@ describe("DesktopPreview", () => {
     expect(chromeFor("amiga")).toEqual(["chrome-topbar", "chrome-deskicons", "chrome-window"]);
     expect(chromeFor("kde")).toEqual(["chrome-window", "chrome-dock"]);
     expect(chromeFor("cde")).toEqual(["chrome-deskicons", "chrome-cdewindow", "chrome-frontpanel"]);
-    expect(chromeFor("gem")).toEqual(["chrome-menubar", "chrome-deskicons", "chrome-window"]);
+    expect(chromeFor("gem")).toEqual(["chrome-menubar", "chrome-deskicons", "chrome-gemwindow"]);
     expect(chromeFor("bleskos")).toEqual(["chrome-bleskos"]);
     expect(chromeFor("generic")).toEqual(["chrome-deskicons", "chrome-dock"]);
   });
