@@ -31,6 +31,14 @@ a { color: inherit; text-decoration: none; }
    their own vertical padding via `padding-block`; this owns left/right only. */
 .dc-page-x { padding-inline: max(var(--page-px), calc((100% - var(--page-max)) / 2)); }
 
+/* On small viewports, shrink the side inset so content uses more of the narrow
+   screen. Retuning the shared token here keeps header, content, and footer
+   lined up edge-to-edge (they all inset via --page-px). Matches the 760px
+   breakpoint used throughout. */
+@media (max-width: 759.98px) {
+  :root { --page-px: 16px; }
+}
+
 /* Content-wide hairline divider. Placed inside a .dc-page-x wrapper so the line
    aligns to the capped content column — a border on the .dc-page-x band itself
    would span the full viewport instead. */
@@ -91,7 +99,7 @@ a { color: inherit; text-decoration: none; }
 /* OS Detail — stack the preview over the color list, drop to a single column
    of values/details, shrink the title/padding, and make Download full-width. */
 @media (max-width: 759.98px) {
-  .dc-detail { padding-left: 18px !important; padding-right: 18px !important; }
+  .dc-detail { padding-left: 16px !important; padding-right: 16px !important; }
   .dc-detail h1 { font-size: 24px !important; }
   .dc-detail-hero { grid-template-columns: 1fr !important; min-height: 0 !important; }
   .dc-detail-meta { grid-template-columns: 1fr !important; }
