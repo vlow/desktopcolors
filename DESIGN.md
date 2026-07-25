@@ -192,7 +192,7 @@ review and other docs can reference it. Use this template:
 
 - **Element** — the quiet mono, uppercase, faint micro-label that sits beside
   (or above) a toolbar control: `VIEW`, `SORT`, `GROUP`, `TYPE`, `SHOW COLORS
-  IN`, `BASIC COLORS — CLICK TO NARROW`. One class, `.dc-control-label`.
+  IN`, `BASIC COLORS`. One class, `.dc-control-label`.
 
 - **Purpose (UX)** — a control's label should read as the same kind of thing on
   every toolbar, and stay visually subordinate to both the control it names and
@@ -216,8 +216,60 @@ review and other docs can reference it. Use this template:
     `margin-bottom`. Where a control group holds several buttons with their own
     rhythm (Platforms `VIEW`/`SORT`), wrap the buttons in an inner flex so the
     label keeps the 9px gap while the buttons keep theirs.
+  - The Colors filter groups (`BASIC COLORS`, `TYPE`) are the responsive case:
+    the label sits **above** the pills on wide viewports and moves **inline to
+    the left** below 760px. That block/inline switch is owned by
+    `.dc-filter-group` (**D5**), not by this label class — the label stays
+    type-only here.
 
 - **Why this way** — these labels had drifted across weight (400/500), size
   (10/11px), and label→control gap (8/9/10/14px). Collapsing the type into one
   class and standardizing the gap removes the drift and gives a single knob,
   per `CLAUDE.md`'s reuse-first rules.
+
+### D5 — Filter pill (`.dc-filter-pill` + `.dc-filter-group`): a togglable facet chip
+
+- **Element** — a rounded, bordered button carrying a small round color chip, a
+  name, and a mono count: `.dc-filter-pill` with a `.dc-filter-pill-chip` and a
+  `.dc-pill-count`. Several pills sit in a `.dc-filter-pills` row under a
+  `.dc-control-label` (**D4**), the whole labelled unit wrapped in a
+  `.dc-filter-group`. A trailing `.dc-filter-clear` text button resets the
+  facet. In play on Colors for both facets — **Basic Colors** (families) and
+  **TYPE** (color types). All in [`src/styles/tokens.css`](src/styles/tokens.css).
+
+- **Purpose (UX)** — the two Colors facets are peer controls; a reader should
+  see them as the same kind of thing, not two bespoke widgets. One shared pill
+  keeps their size, chip, count, active look, and label rhythm identical to each
+  other at every viewport width.
+
+- **Use it when** — a page offers a set of togglable filters where each option
+  carries a color swatch and a live count, and the group needs a quiet label.
+
+- **Don't use it when**
+  - The chip is a _data sample_ to browse/preview, not a filter toggle — that's
+    the hue-band/leaderboard swatch (`.dc-swatch`), which is bigger, un-bordered,
+    and opens an infobox rather than narrowing a set.
+  - A single primary action fits inline (Colors "Filter by OS") — leave it a
+    plain pill button, not a labelled `.dc-filter-group`.
+
+- **How**
+  - `.dc-filter-pill` owns the button chrome; the **active** state is the
+    `aria-pressed="true"` attribute (which is also the correct pressed-state a11y
+    signal for a toggle button), and the **disabled/zero-in-context** state is
+    `:disabled`. Callers set `aria-pressed={active}` and `disabled={dim}` — no
+    inline state styling.
+  - The chip's `background-color` is **data-driven** (per family/type), so it
+    stays inline on the `.dc-filter-pill-chip` span; everything else is the class.
+  - Size and label layout are **responsive** and switch at 760px, both facets
+    identically: wide → larger pills (`13px`) with the label **above**; narrow →
+    compact pills (`12px`) with the label **inline, left** of the pills (aligned
+    to the first row when they wrap). The desktop rules and the `< 760px`
+    overrides both live in `tokens.css`.
+  - The count uses `.dc-pill-count`'s fixed-width tabular slot so a pill never
+    resizes as its count changes (`9` → `0/9`).
+
+- **Why this way** — the two facets had drifted apart on pill size, chip size,
+  count size, and label placement/text, each hand-tuned inline. One shared
+  component makes them identical by construction and gives a single place to
+  retune, per `CLAUDE.md`'s reuse-first rules. Keeping only the data-driven chip
+  color inline honors the one-off exception in the styling conventions.
