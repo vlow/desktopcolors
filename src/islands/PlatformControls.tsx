@@ -82,9 +82,9 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
 
   return (
     <div>
-      <div class="dc-page-x" style="padding-block: 34px 22px;">
+      <div class="dc-page-x dc-page-head" style="padding-block-end: 22px;">
         <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">PLATFORMS</div>
-        <h1 style="font: 700 30px var(--font-ui); letter-spacing: -0.5px; margin: 8px 0 0;">Desktop background colors, by operating system</h1>
+        <h1 class="dc-page-title" style="margin: 8px 0 0;">Desktop background colors, by operating system</h1>
         <div style="color: var(--muted); font-size: 15px; margin-top: 6px; max-width: 560px; line-height: 1.5;">
           Every solid desktop background color shipped by classic operating systems and desktop environments.
         </div>

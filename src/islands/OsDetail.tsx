@@ -125,7 +125,7 @@ export function OsDetail({ view, initialHex }: Props) {
   );
 
   return (
-    <div class="dc-detail dc-page-x" style="padding-block: 18px 56px;">
+    <div class="dc-detail dc-page-x dc-page-head" style="padding-block-end: 56px;">
       <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 18px;">
         <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
         {(os.project || os.wikipedia) && (
@@ -137,7 +137,7 @@ export function OsDetail({ view, initialHex }: Props) {
         )}
       </div>
       <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-top: 14px;">{os.family} · {os.year}{os.type && <> <span style="color: var(--faint);">·</span> <span style="color: var(--muted);">{os.type}</span></>}</div>
-      <h1 style="font: 700 36px var(--font-ui); letter-spacing: -0.8px; margin: 6px 0 8px;">{os.name}</h1>
+      <h1 class="dc-page-title" style="margin: 6px 0 8px;">{os.name}</h1>
       <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 680px; margin: 0 0 16px;">{os.description}</p>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 560px; margin-bottom: 22px;">

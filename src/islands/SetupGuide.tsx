@@ -22,9 +22,9 @@ export function SetupGuide({ guides }: { guides: SetupGuideEntry[] }) {
 
   return (
     <div>
-      <div class="dc-page-x" style="padding-block: 34px 4px;">
+      <div class="dc-page-x dc-page-head" style="padding-block-end: 4px;">
         <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SETUP GUIDE</div>
-        <h1 style="font: 700 34px var(--font-ui); letter-spacing: -0.8px; margin: 8px 0;">Set a solid color on a modern OS</h1>
+        <h1 class="dc-page-title" style="margin: 8px 0;">Set a solid color on a modern OS</h1>
         <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 0;">Every hex on this site works as a plain desktop background today. Pick a color, copy its hex, then follow the steps for your system.</p>
       </div>
 
