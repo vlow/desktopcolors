@@ -23,6 +23,7 @@ export const ChromePart = z.discriminatedUnion("part", [
   z.object({ part: z.literal("window"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("beosWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("platinumWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
+  z.object({ part: z.literal("cdeWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("taskbar") }),
   z.object({ part: z.literal("menuBar") }),
   z.object({ part: z.literal("topBar") }),
@@ -71,7 +72,7 @@ export const CHROME_SPECS: Record<DesktopStyle, ChromeSpec | null> = {
   ],
   cde: [
     { part: "deskIcons", side: "left", icons: [{ kind: "folder", label: "Home" }] },
-    { part: "window", left: 22, top: 8, w: 46, body: { kind: "gridIcons", icons: ["folder", "folder", "drive", "folder", "disk", "folder"], cols: 3 } },
+    { part: "cdeWindow", left: 22, top: 8, w: 46, body: { kind: "gridIcons", icons: ["folder", "folder", "drive", "folder", "disk", "folder"], cols: 3 } },
     { part: "frontPanel" },
   ],
   gem: [

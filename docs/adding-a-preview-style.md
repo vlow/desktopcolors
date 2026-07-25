@@ -50,6 +50,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `window` | `left`, `top`, `w` (scale units), `body` | a translucent window (title bar + dots + body) |
 | `beosWindow` | `left`, `top`, `w`, `body` | a BeOS-style tabbed window |
 | `platinumWindow` | `left`, `top`, `w`, `body` | a Mac OS 8 Platinum window (close box + pinstripe title + centered title + zoom/collapse boxes) |
+| `cdeWindow` | `left`, `top`, `w`, `body` | a CDE/Motif window (one window-menu square left + centered title + minimize/maximize squares right) |
 | `taskbar` | — | Win9x bottom taskbar |
 | `menuBar` | — | Mac Platinum / GEM top menu bar |
 | `topBar` | — | Amiga Workbench top bar |
@@ -76,7 +77,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `beos` | deskbar tab + icons + tabbed window | BeOS, Haiku |
 | `amiga` | top bar + icons + window | Amiga Workbench |
 | `kde` | window + bottom dock | KDE 1/2, Plasma 6 |
-| `cde` | icon + window + front panel | CDE, Solaris |
+| `cde` | icon + Motif window + front panel | CDE, Solaris |
 | `gem` | menu bar + icons + window | Digital Research GEM (FreeGEM) |
 | `bleskos` | full-screen program switcher (no window/taskbar/dock) | BleskOS |
 | `generic` | icons + dock | minimal / unknown shells |

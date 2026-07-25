@@ -231,6 +231,27 @@ const PlatinumWindow = ({ left, top, w, body, onColor }: { left: number; top: nu
   );
 };
 
+// A "gadget box" window: the title bar carries a single square gadget at the
+// left, a centered title, and one or more square gadgets at the right — squarer
+// corners than the rounded generic SharedWindow. Both CDE/Motif (a minimize +
+// maximize pair — two right) and GEM (a single sizer — one right) draw this
+// shape, differing only in `rightBoxes`.
+const GadgetWindow = ({ testid, left, top, w, body, rightBoxes, onColor }: { testid: string; left: number; top: number; w: number; body: WindowBody; rightBoxes: number; onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid={testid} style={{ position: "absolute", left: cu(left), top: cu(top), width: cu(w), background: S.win, borderRadius: cu(0.8), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}, 0 ${cu(2.4)} ${cu(6)} rgba(0,0,0,0.18)`, overflow: "hidden" }}>
+      <div style={{ position: "relative", height: cu(5.5), display: "flex", alignItems: "center", justifyContent: "space-between", padding: `0 ${cu(1.8)}`, boxShadow: `inset 0 calc(${cu(0.3)} * -1) 0 ${S.border}` }}>
+        <PlatinumBox S={S} />
+        <span style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: cu(14), height: cu(1.6), borderRadius: cu(0.8), background: S.soft }} />
+        <div style={{ display: "flex", gap: cu(1) }}>
+          {Array.from({ length: rightBoxes }).map((_, i) => <PlatinumBox key={i} S={S} />)}
+        </div>
+      </div>
+      <div style={{ padding: cu(2.2) }}><WindowBodyView body={body} onColor={onColor} /></div>
+    </div>
+  );
+};
+
 const Taskbar = ({ onColor }: { onColor: string }) => {
   const S = chromeSurfaces(onColor);
   return (
@@ -358,6 +379,7 @@ function renderPart(part: ChromePart, onColor: string, key: number): ComponentCh
     case "window": return <SharedWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "beosWindow": return <BeosWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "platinumWindow": return <PlatinumWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
+    case "cdeWindow": return <GadgetWindow key={key} testid="chrome-cdewindow" left={part.left} top={part.top} w={part.w} body={part.body} rightBoxes={2} onColor={onColor} />;
     case "taskbar": return <Taskbar key={key} onColor={onColor} />;
     case "menuBar": return <MenuBar key={key} onColor={onColor} />;
     case "topBar": return <TopBar key={key} onColor={onColor} />;
