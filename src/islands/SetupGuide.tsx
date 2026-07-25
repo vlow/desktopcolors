@@ -28,7 +28,7 @@ export function SetupGuide({ guides }: { guides: SetupGuideEntry[] }) {
         <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 0;">Every hex on this site works as a plain desktop background today. Pick a color, copy its hex, then follow the steps for your system.</p>
       </div>
 
-      <div class="dc-page-x" style="padding-block: 20px 6px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <div class="dc-page-x" style="padding-block: 20px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
         <label style="flex: 1; min-width: 240px; max-width: 460px; display: flex; align-items: center; gap: 11px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 12px; padding: 0 15px; height: 46px;">
           <span style="color: var(--faint); transform: rotate(-45deg); display: inline-block;">⌕</span>
           <input value={query} onInput={(e) => setQuery((e.target as HTMLInputElement).value)} placeholder="Search systems — Windows, macOS, GNOME, iOS…" style="border: none; outline: none; background: transparent; font: 400 14px var(--font-ui); color: var(--ink); width: 100%;" />
@@ -41,6 +41,8 @@ export function SetupGuide({ guides }: { guides: SetupGuideEntry[] }) {
           ))}
         </div>
       </div>
+
+      <div class="dc-page-x"><hr class="dc-rule" /></div>
 
       {shown.length === 0 ? (
         <div class="dc-page-x" style="padding-block: 60px; text-align: center; color: var(--muted);">
