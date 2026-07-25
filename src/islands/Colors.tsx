@@ -136,9 +136,9 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
   return (
     <div>
     <div class="dc-colors dc-page-x dc-page-head" style="padding-block-end: 24px;">
-      <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">COLORS</div>
-      <h1 class="dc-page-title" style="margin: 6px 0 0;">Every solid desktop background color, by hue</h1>
-      <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 8px 0 0;">Group by hue to browse, filter by color type, or ungroup to rank colors by how often people download and copy them.</p>
+      <div class="dc-page-eyebrow">COLORS</div>
+      <h1 class="dc-page-title">Every solid desktop background color, by hue</h1>
+      <p class="dc-page-lead">Group by hue to browse, filter by color type, or ungroup to rank colors by how often people download and copy them.</p>
 
       <label style="margin-top: 20px; display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--field-border); border-radius: 13px; padding: 0 16px; height: 52px; max-width: 680px;">
         <span aria-hidden="true" style="color: var(--faint); transform: rotate(-45deg); font-size: 17px;">&#9906;</span>

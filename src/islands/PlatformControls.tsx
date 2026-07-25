@@ -83,11 +83,9 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
   return (
     <div>
       <div class="dc-page-x dc-page-head" style="padding-block-end: 22px;">
-        <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">PLATFORMS</div>
-        <h1 class="dc-page-title" style="margin: 8px 0 0;">Desktop background colors, by operating system</h1>
-        <div style="color: var(--muted); font-size: 15px; margin-top: 6px; max-width: 560px; line-height: 1.5;">
-          Every solid desktop background color shipped by classic operating systems and desktop environments.
-        </div>
+        <div class="dc-page-eyebrow">PLATFORMS</div>
+        <h1 class="dc-page-title">Desktop background colors, by operating system</h1>
+        <p class="dc-page-lead">Every solid desktop background color shipped by classic operating systems and desktop environments.</p>
         <label style="margin-top: 26px; display: flex; align-items: center; gap: 12px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 13px; padding: 0 16px; height: 52px; max-width: 680px;">
           <span style="color: var(--faint); transform: rotate(-45deg);">&#9906;</span>
           <input

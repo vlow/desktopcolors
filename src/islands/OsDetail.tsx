@@ -136,9 +136,9 @@ export function OsDetail({ view, initialHex }: Props) {
           </div>
         )}
       </div>
-      <div style="font: 400 12px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-top: 14px;">{os.family} · {os.year}{os.type && <> <span style="color: var(--faint);">·</span> <span style="color: var(--muted);">{os.type}</span></>}</div>
-      <h1 class="dc-page-title" style="margin: 6px 0 8px;">{os.name}</h1>
-      <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 680px; margin: 0 0 16px;">{os.description}</p>
+      <div class="dc-page-eyebrow" style="margin-top: 14px;">{os.family} · {os.year}{os.type && <> <span style="color: var(--faint);">·</span> <span style="color: var(--muted);">{os.type}</span></>}</div>
+      <h1 class="dc-page-title">{os.name}</h1>
+      <p class="dc-page-lead" style="margin-bottom: 16px;">{os.description}</p>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 560px; margin-bottom: 22px;">
         {os.predecessor && (

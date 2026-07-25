@@ -47,9 +47,16 @@ a { color: inherit; text-decoration: none; }
    horizontal inset and set the band's bottom gap via `padding-block-end`. */
 .dc-page-head { padding-block-start: 34px; }
 
-/* The page title (h1) inside a heading zone. One size and weight across the
-   whole site; pages keep their own `margin` for the eyebrow/description gaps. */
-.dc-page-title { font: 700 32px/1.1 var(--font-ui); letter-spacing: -0.8px; }
+/* The three parts of a heading zone, stacked in order. They own the whole
+   masthead rhythm — type and the gaps between eyebrow → title → lead — so every
+   page opens identically. Pages add these classes and no longer set font or the
+   inter-part margins inline.
+     .dc-page-eyebrow — the mono kicker (PLATFORMS, COLORS, …), first, no margin.
+     .dc-page-title   — the h1; 8px gap below the eyebrow.
+     .dc-page-lead    — the description paragraph; 10px gap below the title. */
+.dc-page-eyebrow { font: 500 11px var(--font-mono); letter-spacing: 1.5px; color: var(--faint); }
+.dc-page-title { font: 700 32px/1.1 var(--font-ui); letter-spacing: -0.8px; margin: 8px 0 0; }
+.dc-page-lead { max-width: 640px; margin: 10px 0 0; font-size: 15px; line-height: 1.6; color: var(--muted); text-wrap: pretty; }
 
 /* Content-wide hairline divider. Placed inside a .dc-page-x wrapper so the line
    aligns to the capped content column — a border on the .dc-page-x band itself

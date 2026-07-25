@@ -141,35 +141,49 @@ review and other docs can reference it. Use this template:
   `<Dropdown>` keeps the three menus identical and the open/close logic in one
   place, per `CLAUDE.md`'s reuse-first styling rules.
 
-### D3 — Page heading zone (`.dc-page-head` + `.dc-page-title`): open every page the same way
+### D3 — Page heading zone (`.dc-page-head` + `.dc-page-eyebrow`/`.dc-page-title`/`.dc-page-lead`): open every page the same way
 
 - **Element** — the heading band that opens a top-level page, directly under
-  the header: an eyebrow label, the `<h1>`, and a description. The band carries
-  `.dc-page-x .dc-page-head`; the title carries `.dc-page-title`.
+  the header, stacking three parts in order: a mono **eyebrow** label
+  (`.dc-page-eyebrow`), the **title** `<h1>` (`.dc-page-title`), and a
+  **lead** description paragraph (`.dc-page-lead`). The band carries
+  `.dc-page-x .dc-page-head`.
 
-- **Purpose (UX)** — every page should feel like the same site. A single title
-  size and a single gap from the header keep the masthead consistent as you move
-  between Platforms, Colors, Setup, About, the legal pages, and OS detail.
+- **Purpose (UX)** — every page should feel like the same site. One eyebrow
+  style, one title size, one lead size, and one set of gaps (from the header and
+  between the three parts) keep the masthead identical as you move between
+  Platforms, Colors, Setup, About, the legal pages, and OS detail.
 
 - **Use it when** — a page (or a leaf page like OS detail) opens with a
   title zone below the header. Pair with the section rule (**D1**) when a
   toolbar or content follows.
 
 - **Don't use it when** — a heading is nested _inside_ content (a card title, a
-  section sub-heading). Those are local and keep their own type scale.
+  section sub-heading, a toolbar's `VIEW`/`SORT` mono labels). Those are local
+  and keep their own type scale.
 
 - **How**
   - `.dc-page-head` owns only the top gap from the header (`padding-block-start:
     34px`); the band sets its own bottom gap via `padding-block-end` so the
     breathing room before the rule/content stays per-page.
-  - `.dc-page-title` owns the title type — `700 32px/1.1`, `letter-spacing
-    -0.8px` — shrinking to `24px` below 760px. Pages keep only their own `margin`
-    on the `<h1>` for the eyebrow/description gaps; they no longer set font size.
-  - Both live in `tokens.css`. Islands (`.tsx`) have no scoped styles, so this is
+  - The three part classes own type **and** the gaps between them, so pages set
+    neither font nor inter-part margins inline:
+    - `.dc-page-eyebrow` — `500 11px` mono, `letter-spacing 1.5px`, `--faint`.
+      First in the band, no margin.
+    - `.dc-page-title` — `700 32px/1.1`, `letter-spacing -0.8px`, `24px` below
+      760px; `margin: 8px 0 0` (gap below the eyebrow).
+    - `.dc-page-lead` — `15px/1.6`, `--muted`, `max-width 640px`, `text-wrap:
+      pretty`; `margin: 10px 0 0` (gap below the title).
+  - A page still uses inline style only for genuinely per-page structure — e.g.
+    OS detail's reference row pushes its eyebrow down with `margin-top`, and its
+    lead adds a `margin-bottom` before the predecessor/successor cards. Top gaps
+    stay class-driven; only the extra edge is inline.
+  - All live in `tokens.css`. Islands (`.tsx`) have no scoped styles, so this is
     the only place the rules can live and be shared with the `.astro` pages.
 
-- **Why this way** — the sizes and top gaps had drifted to five different values
-  across the pages. Centralizing the two that define the masthead (title type,
-  header gap) into shared classes makes them identical by construction and gives
-  one place to retune, per `CLAUDE.md`'s reuse-first rules. Vertical rhythm
-  _inside_ the band stays inline because it is genuinely per-page.
+- **Why this way** — title size, header gap, eyebrow type, lead size, and the
+  inter-part padding had each drifted to several different values across the
+  pages. Centralizing everything that defines the masthead into a few shared
+  classes makes it identical by construction and gives one place to retune, per
+  `CLAUDE.md`'s reuse-first rules. Only per-page _structure_ (content that
+  follows the lead) stays inline.
