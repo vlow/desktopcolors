@@ -10,6 +10,7 @@ import {
 import { FullscreenPreview } from "./FullscreenPreview";
 import { DownloadSheet } from "./DownloadSheet";
 import { ColorInfobox } from "./ColorInfobox";
+import { Dropdown } from "./Dropdown";
 
 interface Props {
   colors: ColorEntry[];
@@ -148,19 +149,65 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
       </label>
 
       <div style="display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin-top: 20px;">
-        <div style="display: flex; align-items: center; gap: 9px;">
+        <div class="dc-desktop-only" style="display: flex; align-items: center; gap: 9px;">
           <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">GROUP</span>
           <div style="display: inline-flex; background: #efedea; border-radius: 999px; padding: 3px;">
             <button style={seg(group === "hue")} onClick={() => setGroup("hue")}>By hue</button>
             <button style={seg(group === "flat")} onClick={() => setGroup("flat")}>Ungrouped</button>
           </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 9px;">
+        <div class="dc-desktop-only" style="display: flex; align-items: center; gap: 9px;">
           <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SORT</span>
           <div style="display: inline-flex; background: #efedea; border-radius: 999px; padding: 3px;">
             <button style={seg(sort === "spectrum")} onClick={() => setSort("spectrum")}>Spectrum</button>
             <button style={seg(sort === "pop")} onClick={() => setSort("pop")}>Popularity</button>
           </div>
+        </div>
+        <div class="dc-mobile-only">
+          <Dropdown
+            ariaLabel={`Group: ${group === "hue" ? "By hue" : "Ungrouped"}`}
+            trigger={<>
+              <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">GROUP</span>
+              <span>{group === "hue" ? "By hue" : "Ungrouped"}</span>
+              <span style="opacity: 0.5;">▾</span>
+            </>}
+          >
+            {(close) => (["hue", "flat"] as const).map((g) => (
+              <button
+                key={g}
+                role="menuitem"
+                class="dc-menu-item"
+                aria-current={group === g ? "true" : undefined}
+                onClick={() => { setGroup(g); close(); }}
+              >
+                {g === "hue" ? "By hue" : "Ungrouped"}
+                <span style="margin-left: auto;">{group === g ? "✓" : ""}</span>
+              </button>
+            ))}
+          </Dropdown>
+        </div>
+        <div class="dc-mobile-only">
+          <Dropdown
+            ariaLabel={`Sort: ${sort === "spectrum" ? "Spectrum" : "Popularity"}`}
+            trigger={<>
+              <span style="font: 400 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SORT</span>
+              <span>{sort === "spectrum" ? "Spectrum" : "Popularity"}</span>
+              <span style="opacity: 0.5;">▾</span>
+            </>}
+          >
+            {(close) => (["spectrum", "pop"] as const).map((s) => (
+              <button
+                key={s}
+                role="menuitem"
+                class="dc-menu-item"
+                aria-current={sort === s ? "true" : undefined}
+                onClick={() => { setSort(s); close(); }}
+              >
+                {s === "spectrum" ? "Spectrum" : "Popularity"}
+                <span style="margin-left: auto;">{sort === s ? "✓" : ""}</span>
+              </button>
+            ))}
+          </Dropdown>
         </div>
         <button onClick={() => setOsOpen((o) => !o)} style={`cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 15px; font: 500 13px var(--font-ui); border: 1px solid ${osOpen || osSelKeys.length ? "var(--ink)" : "var(--field-border)"}; background: ${osOpen || osSelKeys.length ? "var(--ink)" : "#fff"}; color: ${osOpen || osSelKeys.length ? "#fff" : "var(--ink)"};`}>⧉ Filter by OS{osSelKeys.length ? ` · ${osSelKeys.length}` : ""}</button>
       </div>
