@@ -178,6 +178,16 @@ review and other docs can reference it. Use this template:
     OS detail's reference row pushes its eyebrow down with `margin-top`, and its
     lead adds a `margin-bottom` before the predecessor/successor cards. Top gaps
     stay class-driven; only the extra edge is inline.
+  - **Never wrap the masthead in an inner `max-width`.** The eyebrow and title
+    fill the `.dc-page-x` band on every page; only `.dc-page-lead` self-caps (at
+    640px) for line length. Boxing the whole zone in a narrower column (the legal
+    and About pages used to wrap it at 720px) makes those pages open visibly
+    narrower than Platforms/Colors and defeats the point of this decision.
+  - The band's left edge is stable across pages because the vertical scrollbar
+    gutter is reserved globally (`html { scrollbar-gutter: stable }` in
+    `tokens.css`). Without it, a short page (no scrollbar) and a long page (with
+    one) center against different viewport widths, so the whole column — header
+    logo included — jumps sideways as you navigate.
   - All live in `tokens.css`. Islands (`.tsx`) have no scoped styles, so this is
     the only place the rules can live and be shared with the `.astro` pages.
 
@@ -276,3 +286,35 @@ review and other docs can reference it. Use this template:
   component makes them identical by construction and gives a single place to
   retune, per `CLAUDE.md`'s reuse-first rules. Keeping only the data-driven chip
   color inline honors the one-off exception in the styling conventions.
+
+### D6 — Page search field (`.dc-page-search`): open a searchable page the same way
+
+- **Element** — the full-width search box that opens the Platforms and Colors
+  pages, sitting directly under the lead (**D3**): a `.dc-page-search` `<label>`
+  wrapping a search-glyph icon, the text `<input>`, and (on Colors) a clear
+  button. In [`src/styles/tokens.css`](src/styles/tokens.css).
+
+- **Purpose (UX)** — both pages are, first, a search-and-filter surface, so the
+  reader should meet the same search box in the same place at the same distance
+  below the description — not two boxes that sit and size slightly differently.
+
+- **Use it when** — a top-level page opens with a free-text search field as the
+  first control below the lead.
+
+- **Don't use it when** — the input is a nested/secondary control (a filter
+  panel's field, an inline search inside content). Those keep their own size.
+
+- **How**
+  - `.dc-page-search` owns the **canonical gap from the lead** (`margin-top:
+    24px`) and the **canonical size** (flex row, `52px` tall, capped at `680px`,
+    `13px` radius, `0 16px` padding). The gap lives here, not in the page-head's
+    `padding-block-end` — that stays the band's bottom gap before the toolbar/rule.
+  - Pages set no box styling inline; they add only the **children** — the icon,
+    the `<input>` (with its own `value`/`placeholder`/`aria-label`), and, where
+    the page supports it, a clear button.
+
+- **Why this way** — the two search boxes had drifted on the lead→field distance
+  (26px vs 20px) and were each re-declaring the identical box inline. Folding
+  both the gap and the size into one class makes them identical by construction
+  and gives a single place to retune, per `CLAUDE.md`'s reuse-first rules — the
+  same centralize-the-rhythm move as the masthead itself (**D3**).

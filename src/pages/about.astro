@@ -15,11 +15,9 @@ const heroSwatches = [
 <Base title="About — desktopcolors.com" description="A small archive of the colors we booted into — and why it exists." active="about">
   <!-- HERO -->
   <div class="dc-page-x dc-page-head" style="padding-block-end: 30px;">
-    <div style="max-width: 720px;">
-      <div class="dc-page-eyebrow">ABOUT</div>
-      <h1 class="dc-page-title">A small archive of the colors we booted into.</h1>
-      <p class="dc-page-lead">Every solid desktop background shipped by the operating systems that raised us — catalogued, named, and free to take with you.</p>
-    </div>
+    <div class="dc-page-eyebrow">ABOUT</div>
+    <h1 class="dc-page-title">A small archive of the colors we booted into.</h1>
+    <p class="dc-page-lead">Every solid desktop background shipped by the operating systems that raised us — catalogued, named, and free to take with you.</p>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px;">
       {heroSwatches.map((c) => (
         <span title={c.name} style={`width: 46px; height: 46px; border-radius: 9px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);`}></span>

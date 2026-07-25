@@ -86,7 +86,7 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
         <div class="dc-page-eyebrow">PLATFORMS</div>
         <h1 class="dc-page-title">Desktop background colors, by operating system</h1>
         <p class="dc-page-lead">Every solid desktop background color shipped by classic operating systems and desktop environments.</p>
-        <label style="margin-top: 26px; display: flex; align-items: center; gap: 12px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 13px; padding: 0 16px; height: 52px; max-width: 680px;">
+        <label class="dc-page-search">
           <span style="color: var(--faint); transform: rotate(-45deg);">&#9906;</span>
           <input
             value={query}
