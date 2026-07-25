@@ -177,4 +177,22 @@ describe("Colors", () => {
     expect(screen.getByText("SHIPPED ON THESE PLATFORMS")).toBeTruthy();
     expect(screen.getAllByTestId("rank-row")[0].getAttribute("aria-expanded")).toBe("true");
   });
+
+  it("keeps both the desktop segmented controls and the mobile dropdowns in the DOM", () => {
+    render(<Colors {...props} />);
+    expect(screen.getByRole("button", { name: "Ungrouped" })).toBeTruthy(); // desktop group
+    expect(screen.getByRole("button", { name: "Popularity" })).toBeTruthy(); // desktop sort
+    expect(screen.getByRole("button", { name: /^Group:/ })).toBeTruthy();   // mobile group trigger
+    expect(screen.getByRole("button", { name: /^Sort:/ })).toBeTruthy();    // mobile sort trigger
+  });
+
+  it("switches to the leaderboard from the mobile Group and Sort dropdowns", () => {
+    render(<Colors {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: /^Group:/ }));
+    fireEvent.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: "Ungrouped" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Sort:/ }));
+    fireEvent.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: "Popularity" }));
+    const rows = screen.getAllByTestId("rank-row");
+    expect(within(rows[0]).getByText("Teal")).toBeTruthy();
+  });
 });
