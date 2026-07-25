@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/preact";
+import { render, screen, fireEvent, within } from "@testing-library/preact";
 import { PlatformControls, type PlatformItem } from "./PlatformControls";
 
 const items: PlatformItem[] = [
@@ -59,5 +59,50 @@ describe("PlatformControls", () => {
     fireEvent.click(newBtn); // click active → reverse → oldest first
     names = screen.getAllByTestId("os-name").map((n) => n.textContent);
     expect(names[0]).toBe("Windows 95");
+  });
+
+  it("keeps both the desktop View controls and the mobile Sort dropdown in the DOM", () => {
+    render(<PlatformControls items={items} />);
+    // Desktop inline controls
+    expect(screen.getByRole("button", { name: /Cards/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /List/ })).toBeTruthy();
+    // Mobile dropdown trigger (accessible name is "Sort: <current>")
+    expect(screen.getByRole("button", { name: /^Sort:/ })).toBeTruthy();
+  });
+
+  it("sorts A–Z from the mobile Sort dropdown", () => {
+    render(<PlatformControls items={items} />);
+    fireEvent.click(screen.getByRole("button", { name: /^Sort:/ }));
+    const menu = screen.getByRole("menu");
+    fireEvent.click(within(menu).getByRole("menuitem", { name: /A.Z/ }));
+    const names = screen.getAllByTestId("os-name").map((n) => n.textContent);
+    expect(names[0]).toBe("Amiga Workbench");
+  });
+
+  it("reverses direction when the active sort is tapped in the dropdown", () => {
+    render(<PlatformControls items={items} />);
+    fireEvent.click(screen.getByRole("button", { name: /^Sort:/ }));
+    // "New" selects newest-first (Amiga 2026-07-20 before Windows 2026-07-17)
+    fireEvent.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: /New/ }));
+    let names = screen.getAllByTestId("os-name").map((n) => n.textContent);
+    expect(names[0]).toBe("Amiga Workbench");
+    // Tapping the now-active "New" reverses to oldest-first; menu stays open
+    fireEvent.click(within(screen.getByRole("menu")).getByRole("menuitem", { name: /New/ }));
+    names = screen.getAllByTestId("os-name").map((n) => n.textContent);
+    expect(names[0]).toBe("Windows 95");
+  });
+
+  it("forces Cards view on narrow viewports even when List is selected", () => {
+    const orig = window.matchMedia;
+    window.matchMedia = ((q: string) => ({
+      matches: true, media: q, onchange: null,
+      addEventListener: () => {}, removeEventListener: () => {},
+      addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+    render(<PlatformControls items={items} />);
+    fireEvent.click(screen.getByRole("button", { name: /List/ }));
+    // Card view shows "N colors" count labels; list view does not.
+    expect(screen.getAllByText(/colors$/).length).toBeGreaterThan(0);
+    window.matchMedia = orig;
   });
 });

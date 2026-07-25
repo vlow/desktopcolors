@@ -65,15 +65,28 @@ a { color: inherit; text-decoration: none; }
    so they use !important to win over the inline `style` attribute.
    =========================================================================== */
 
-/* Platforms — list view is a wide-screen affordance. Below 760px the List toggle
-   is greyed and inert, a note explains why, and (as a safety net for a resize
-   from a wide list view) the list rows collapse to a single column. */
-.dc-list-note { display: none; }
+/* Collapsible toolbar controls. Below 760px the Platforms VIEW switcher and the
+   inline Sort/Group controls (.dc-desktop-only) hide, and a dropdown
+   (.dc-mobile-only) takes their place. Both variants are always in the DOM;
+   only visibility flips, so there is no hydration flash. */
+.dc-mobile-only { display: none !important; }
 @media (max-width: 759.98px) {
-  .dc-list-toggle { pointer-events: none; color: #cbc7c1 !important; }
-  .dc-list-note { display: block; }
+  .dc-desktop-only { display: none !important; }
+  .dc-mobile-only { display: block !important; }
+  /* Safety net: during a wide→narrow resize, before useIsNarrow forces Cards,
+     any still-rendered list rows collapse to a single column. */
   .dc-platform-list-row { grid-template-columns: 1fr !important; gap: 16px !important; }
 }
+
+/* A row inside a <Dropdown> menu (role="menuitem"). Active row uses
+   aria-current="true". Base + hover here; per-row state stays inline. */
+.dc-menu-item {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 9px 12px; border: none; background: none; border-radius: 8px;
+  cursor: pointer; font: 500 14px var(--font-ui); color: var(--ink); text-align: left;
+}
+.dc-menu-item:hover { background: var(--panel); }
+.dc-menu-item[aria-current="true"] { color: var(--accent-strong); }
 
 /* OS Detail — stack the preview over the color list, drop to a single column
    of values/details, shrink the title/padding, and make Download full-width. */

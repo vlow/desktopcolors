@@ -1,5 +1,7 @@
 import { useMemo, useState } from "preact/hooks";
 import { colorPath } from "../lib/links";
+import { useIsNarrow } from "../lib/useIsNarrow";
+import { Dropdown } from "./Dropdown";
 
 export interface PlatformItem {
   slug: string;
@@ -39,6 +41,9 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
   const [sort, setSort] = useState<SortKey>("popular");
   const [rev, setRev] = useState(false);
   const [view, setView] = useState<"card" | "list">("card");
+  const isNarrow = useIsNarrow();
+  const effectiveView = isNarrow ? "card" : view;
+  const activeSort = SORTS.find((s) => s.key === sort)!;
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -93,36 +98,72 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
           />
         </label>
         <div style="display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap;">
-          <span style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">VIEW</span>
-          <button
-            onClick={() => setView("card")}
-            style={`cursor: pointer; border: none; background: none; padding: 0; font: 500 15px var(--font-ui); color: ${view === "card" ? "var(--ink)" : "var(--faint)"}; ${underline(view === "card")}`}
-          ><span style="font-size: 13px;">&#9635;</span> Cards</button>
-          <span style="color: #d6d3d1;">|</span>
-          <button
-            class="dc-list-toggle"
-            onClick={() => setView("list")}
-            style={`cursor: pointer; border: none; background: none; padding: 0; font: 500 15px var(--font-ui); color: ${view === "list" ? "var(--ink)" : "var(--faint)"}; ${underline(view === "list")}`}
-          ><span style="font-size: 13px;">&#9776;</span> List</button>
+          <div class="dc-view-controls dc-desktop-only" style="display: flex; align-items: center; gap: 14px;">
+            <span style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">VIEW</span>
+            <button
+              onClick={() => setView("card")}
+              style={`cursor: pointer; border: none; background: none; padding: 0; font: 500 15px var(--font-ui); color: ${view === "card" ? "var(--ink)" : "var(--faint)"}; ${underline(view === "card")}`}
+            ><span style="font-size: 13px;">&#9635;</span> Cards</button>
+            <span style="color: #d6d3d1;">|</span>
+            <button
+              onClick={() => setView("list")}
+              style={`cursor: pointer; border: none; background: none; padding: 0; font: 500 15px var(--font-ui); color: ${view === "list" ? "var(--ink)" : "var(--faint)"}; ${underline(view === "list")}`}
+            ><span style="font-size: 13px;">&#9776;</span> List</button>
+          </div>
 
-          <span style="margin-left: auto; font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SORT</span>
-          {SORTS.map((s) => {
-            const active = sort === s.key;
-            return (
-              <button
-                key={s.key}
-                onClick={() => selectSort(s.key)}
-                title={active ? `${s.full} — click to reverse (${dirWord[s.key]})` : `Sort by ${s.full.toLowerCase()}`}
-                style={`cursor: pointer; border: none; background: none; padding: 0; font: 500 15px var(--font-ui); color: ${active ? "var(--ink)" : "var(--faint)"}; ${underline(active)}`}
-              >
-                {s.icon && <span style="font-size: 13px;">{s.icon} </span>}
-                {s.label}
-                <span style={`font-size: 12px; opacity: ${active ? "1" : "0.25"};`}> {active && rev ? "↑" : "↓"}</span>
-              </button>
-            );
-          })}
+          <div class="dc-sort-inline dc-desktop-only" style="display: flex; align-items: center; gap: 14px; margin-left: auto;">
+            <span style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SORT</span>
+            {SORTS.map((s) => {
+              const active = sort === s.key;
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => selectSort(s.key)}
+                  title={active ? `${s.full} — click to reverse (${dirWord[s.key]})` : `Sort by ${s.full.toLowerCase()}`}
+                  style={`cursor: pointer; border: none; background: none; padding: 0; font: 500 15px var(--font-ui); color: ${active ? "var(--ink)" : "var(--faint)"}; ${underline(active)}`}
+                >
+                  {s.icon && <span style="font-size: 13px;">{s.icon} </span>}
+                  {s.label}
+                  <span style={`font-size: 12px; opacity: ${active ? "1" : "0.25"};`}> {active && rev ? "↑" : "↓"}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div class="dc-sort-menu dc-mobile-only" style="margin-left: auto;">
+            <Dropdown
+              ariaLabel={`Sort: ${activeSort.label}`}
+              align="right"
+              trigger={<>
+                <span style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">SORT</span>
+                {activeSort.icon && <span style="font-size: 13px;">{activeSort.icon}</span>}
+                <span>{activeSort.label}</span>
+                <span style="opacity: 0.7;">{rev ? "↑" : "↓"}</span>
+                <span style="opacity: 0.5;">▾</span>
+              </>}
+            >
+              {(close) => SORTS.map((s) => {
+                const active = sort === s.key;
+                return (
+                  <button
+                    key={s.key}
+                    role="menuitem"
+                    class="dc-menu-item"
+                    aria-current={active ? "true" : undefined}
+                    onClick={() => {
+                      if (s.key === sort) { setRev((r) => !r); }
+                      else { setSort(s.key); setRev(false); }
+                    }}
+                  >
+                    {s.icon && <span style="font-size: 13px;">{s.icon} </span>}
+                    {s.label}
+                    <span style="margin-left: auto; font-size: 12px;">{active ? (rev ? "↑" : "↓") : ""}</span>
+                  </button>
+                );
+              })}
+            </Dropdown>
+          </div>
         </div>
-        <div class="dc-list-note" style="font: 400 12px var(--font-mono); color: var(--faint); margin-top: 10px;">List view needs a wider screen</div>
       </div>
 
       <div class="dc-page-x"><hr class="dc-rule" /></div>
@@ -132,7 +173,7 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
           <div style="font: 500 20px var(--font-ui); color: var(--ink);">No platforms or colors match &ldquo;{query}&rdquo;</div>
           <div style="font-size: 14px; margin-top: 8px;">Try a platform name, a color name like &ldquo;teal&rdquo;, or a hex value.</div>
         </div>
-      ) : view === "card" ? (
+      ) : effectiveView === "card" ? (
         <main class="dc-page-x" style="padding-block: 32px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
           {shown.map((it) => (
             <a key={it.slug} href={it.href} class="dc-card" style="border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; background: var(--panel); display: block;">
