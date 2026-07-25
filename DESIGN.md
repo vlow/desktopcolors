@@ -99,3 +99,44 @@ review and other docs can reference it. Use this template:
   content column_ — is the cue readers use to tell "the app" from "this page." A
   single reusable class (instead of repeated inline borders) keeps every page's
   separator identical, per `CLAUDE.md`'s styling rules.
+
+### D2 — Collapse-to-dropdown on mobile (`.dc-desktop-only` / `.dc-mobile-only` + `<Dropdown>`): fit a wide toolbar onto a narrow screen
+
+- **Element** — a toolbar renders **both** its desktop control and a mobile
+  `<Dropdown>` (`src/islands/Dropdown.tsx`); visibility is toggled by the
+  `.dc-desktop-only` / `.dc-mobile-only` utility classes in
+  [`src/styles/tokens.css`](src/styles/tokens.css). Menu rows are
+  `<button role="menuitem" class="dc-menu-item">`.
+
+- **Purpose (UX)** — a heading-zone toolbar with several inline controls (view
+  switcher, sort, grouping) wraps onto multiple lines below 760px and steals
+  vertical space. Collapsing the controls into a single dropdown button keeps
+  the setup zone compact while preserving every option one tap away.
+
+- **Use it when** — a page's inline toolbar controls overflow on narrow screens.
+  In play on Platforms (Sort) and Colors (Group + Sort).
+
+- **Don't use it when**
+  - A control is meaningless on mobile (e.g. the Platforms List view): drop it
+    entirely with `.dc-desktop-only` rather than moving it into a menu.
+  - A single primary action fits fine (e.g. the Colors "Filter by OS" button):
+    leave it inline.
+
+- **How**
+  - Render both variants; never conditionally render one based on a JS
+    breakpoint — that reintroduces hydration flash. `.dc-mobile-only` is
+    `display:none` by default and shown below 760px; `.dc-desktop-only` is
+    hidden below 760px.
+  - The `<Dropdown>` owns open/close (outside-click + Escape); callers pass a
+    `trigger` and `children(close)` and render their own `menuitem` rows,
+    marking the active one with `aria-current="true"`.
+  - Where a JS branch (not just styling) must react to the breakpoint — e.g.
+    forcing the Platforms content to Cards when a desktop window is narrowed —
+    use the `useIsNarrow()` hook (`src/lib/useIsNarrow.ts`), the one sanctioned
+    JS breakpoint read. Keep it out of visual layout so no flash is introduced.
+
+- **Why this way** — rendering both variants and toggling with CSS keeps the
+  site's flash-free, server-rendered responsive model (the same reason islands
+  put their media queries in `tokens.css` rather than in JS). A single shared
+  `<Dropdown>` keeps the three menus identical and the open/close logic in one
+  place, per `CLAUDE.md`'s reuse-first styling rules.
