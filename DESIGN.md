@@ -265,8 +265,11 @@ review and other docs can reference it. Use this template:
     compact pills (`12px`) with the label **inline, left** of the pills (aligned
     to the first row when they wrap). The desktop rules and the `< 760px`
     overrides both live in `tokens.css`.
-  - The count uses `.dc-pill-count`'s fixed-width tabular slot so a pill never
-    resizes as its count changes (`9` → `0/9`).
+  - The count uses `.dc-pill-count`'s narrow tabular slot (`2.4em`) so a pill
+    stays stable as its count changes (`9` → `0/9`) while keeping the slot tight
+    — the reserve was the main source of dead space, and trimming it lets a full
+    facet row (e.g. the 11 Type pills) stay on one line at the capped content
+    width. Only a 3-digit total (`0/104`) nudges a pill.
 
 - **Why this way** — the two facets had drifted apart on pill size, chip size,
   count size, and label placement/text, each hand-tuned inline. One shared
