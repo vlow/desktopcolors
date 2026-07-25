@@ -34,6 +34,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
   const [type, setType] = useState<ColorTypeKey | null>(null);
   const [exp, setExp] = useState<string | null>(null);
   const [osOpen, setOsOpen] = useState(false);
+  const [colorOpen, setColorOpen] = useState(false);
   const [osSel, setOsSel] = useState<Record<string, true>>({});
   const [osMode, setOsMode] = useState<OsMode>("any");
   const [pv, setPv] = useState<{ list: ColorEntry[]; idx: number } | null>(null);
@@ -210,9 +211,15 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
           </Dropdown>
         </div>
         <button onClick={() => setOsOpen((o) => !o)} style={`cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 15px; font: 500 13px var(--font-ui); border: 1px solid ${osOpen || osSelKeys.length ? "var(--ink)" : "var(--field-border)"}; background: ${osOpen || osSelKeys.length ? "var(--ink)" : "#fff"}; color: ${osOpen || osSelKeys.length ? "#fff" : "var(--ink)"};`}>⧉ Filter by OS{osSelKeys.length ? ` · ${osSelKeys.length}` : ""}</button>
+        <div class="dc-mobile-only">
+          {(() => { const on = colorOpen || !!family || !!type; return (
+            <button onClick={() => setColorOpen((o) => !o)} aria-expanded={colorOpen} aria-controls="dc-color-filters"
+              style={`cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 15px; font: 500 13px var(--font-ui); border: 1px solid ${on ? "var(--ink)" : "var(--field-border)"}; background: ${on ? "var(--ink)" : "#fff"}; color: ${on ? "#fff" : "var(--ink)"};`}>◧ Filter by color</button>
+          ); })()}
+        </div>
       </div>
 
-      <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 16px;">
+      <div id="dc-color-filters" class={`dc-color-filters${colorOpen ? " dc-open" : ""}`}>
         <div class="dc-filter-group">
           <span class="dc-control-label">BASIC COLORS</span>
           <div class="dc-filter-pills">

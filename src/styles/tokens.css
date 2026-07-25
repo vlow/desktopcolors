@@ -172,6 +172,12 @@ a { color: inherit; text-decoration: none; }
    control at every width. Active state is the aria-pressed attribute (also the
    pressed-state a11y hook); disabled dims. Responsive size lives in the < 760px
    block below. The chip's background-color is data-driven and stays inline. */
+/* Color-facet container. Desktop: the two facet groups sit always-visible in a
+   plain column. Below 760px they collapse behind the mobile-only "Filter by
+   color" toggle (see the < 760px block) and, when open (`.dc-open`), render in a
+   bordered card mirroring .dc-os-panel — the same collapse model as Filter by OS
+   (D2). Base values here match the container's former inline style. */
+.dc-color-filters { margin-top: 18px; display: flex; flex-direction: column; gap: 16px; }
 .dc-filter-group { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .dc-filter-pills { display: flex; flex-wrap: wrap; gap: 7px; }
 .dc-filter-pill {
@@ -193,6 +199,15 @@ a { color: inherit; text-decoration: none; }
 .dc-pill-count { display: inline-block; min-width: 2.4em; text-align: right; font: 400 11px var(--font-mono); opacity: 0.6; font-variant-numeric: tabular-nums; }
 @media (max-width: 759.98px) {
   .dc-colors-body { padding: 6px 16px 48px !important; }
+  /* Collapse the color facets behind the mobile-only "Filter by color" toggle:
+     hidden by default, and when open render as a bordered card matching the
+     Filter by OS panel (.dc-os-panel). */
+  .dc-color-filters { display: none; }
+  .dc-color-filters.dc-open {
+    display: flex; margin-top: 16px;
+    border: 1px solid var(--field-border); border-radius: 14px;
+    background: #fff; padding: 14px 14px;
+  }
   /* Filter groups (D5): label moves inline to the left of the pills (aligned to
      the first row when they wrap), and the pills shrink a step. */
   .dc-filter-group { flex-direction: row; align-items: flex-start; gap: 9px; }

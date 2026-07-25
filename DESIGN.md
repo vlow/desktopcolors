@@ -280,6 +280,15 @@ review and other docs can reference it. Use this template:
     — the reserve was the main source of dead space, and trimming it lets a full
     facet row (e.g. the 11 Type pills) stay on one line at the capped content
     width. Only a 3-digit total (`0/104`) nudges a pill.
+  - **Mobile collapse** — below 760px both facet groups sit inside a
+    `.dc-color-filters` container that is hidden by default and revealed by a
+    single mobile-only **"Filter by color"** toggle in the toolbar (the D2
+    collapse model). When open (`.dc-open`) the container renders as a bordered
+    card mirroring the Filter by OS panel (`.dc-os-panel`). The toggle button
+    reuses the OS button's pill style and highlights when open **or** a
+    family/type filter is active (no count badge). Desktop keeps the groups
+    always-visible in a plain column; both states stay in the DOM and only CSS
+    flips, per D2's flash-free rule.
 
 - **Why this way** — the two facets had drifted apart on pill size, chip size,
   count size, and label placement/text, each hand-tuned inline. One shared

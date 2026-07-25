@@ -195,4 +195,21 @@ describe("Colors", () => {
     const rows = screen.getAllByTestId("rank-row");
     expect(within(rows[0]).getByText("Teal")).toBeTruthy();
   });
+
+  it("the mobile 'Filter by color' toggle collapses/expands the facet panel", () => {
+    render(<Colors {...props} />);
+    const toggle = screen.getByRole("button", { name: /Filter by color/ });
+    const panel = document.getElementById("dc-color-filters")!;
+    // Collapsed by default: aria-expanded false and the panel lacks the open class
+    // (the pills remain in the DOM — CSS hides them below 760px).
+    expect(toggle.getAttribute("aria-controls")).toBe("dc-color-filters");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(panel.classList.contains("dc-open")).toBe(false);
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(panel.classList.contains("dc-open")).toBe(true);
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(panel.classList.contains("dc-open")).toBe(false);
+  });
 });
