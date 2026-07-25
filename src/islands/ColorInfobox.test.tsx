@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/preact";
 import { ColorInfobox, type InfoboxColor } from "./ColorInfobox";
-import type { Platform } from "../lib/explorer";
+import type { Platform } from "../lib/colorCatalog";
 
 const color: InfoboxColor = {
   hex: "#008080", name: "Teal", onColor: "#ffffff",

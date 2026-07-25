@@ -32,8 +32,8 @@ function sawEvent(bodies: string[], expected: Record<string, string>): boolean {
 
 test("home lists platforms and search filters", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText("The desktop color archive")).toBeVisible();
-  // exact: true — the browse card title is its own text node equal to exactly
+  await expect(page.getByRole("heading", { name: "Desktop background colors, by operating system" })).toBeVisible();
+  // exact: true — the platform card title is its own text node equal to exactly
   // "Windows 95"; a non-exact match also hits Windows NT 4.0's tagline
   // ("...the Windows 95 shell...").
   await expect(page.getByText("Windows 95", { exact: true })).toBeVisible();
@@ -55,8 +55,8 @@ test("opening an OS page fires an osview beacon", async ({ page }) => {
 });
 
 test("a per-color page selects that color from the first paint, not the default", async ({ page }) => {
-  // This is the path a cross-design color link produces (similar color, explorer
-  // swatch, browse swatch). The page is statically built, so the correct color
+  // This is the path a cross-design color link produces (similar color, a
+  // Colors-page swatch, a platform swatch). The page is statically built, so the correct color
   // must be baked into the HTML — no client-side flash of the default.
   await page.goto("/os/windows-95/000080"); // Navy, not the default (Teal)
   await expect(page.getByRole("heading", { name: "Windows 95" })).toBeVisible();

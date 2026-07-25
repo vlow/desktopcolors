@@ -1,0 +1,17 @@
+---
+import Base from "../layouts/Base.astro";
+import { Colors } from "../islands/Colors";
+import { loadCatalog } from "../lib/loadCatalog";
+import { toColorEntries, buildPlatformsByHex, buildOsUniverse } from "../lib/colorCatalog";
+import type { DesktopStyle } from "../lib/desktopStyle";
+
+const catalog = await loadCatalog();
+const colors = toColorEntries(catalog);
+const platformsByHex = buildPlatformsByHex(catalog);
+const osUniverse = buildOsUniverse(catalog);
+const styleBySlug: Record<string, DesktopStyle> = {};
+for (const o of catalog.osList) styleBySlug[o.slug] = o.desktopStyle;
+---
+<Base title="Desktop background colors by hue — desktopcolors.com" description="Every solid desktop background color, grouped by hue, filterable by color type, and ranked by popularity." active="colors">
+  <Colors colors={colors} styleBySlug={styleBySlug} platformsByHex={platformsByHex} osUniverse={osUniverse} client:load />
+</Base>

@@ -3,16 +3,16 @@ import type { DesktopStyle } from "../lib/desktopStyle";
 import type { FamilyKey, ColorTypeKey } from "../lib/color";
 import {
   groupIntoBands, rankColors, familyCounts, typeCounts,
-  osMatch, osOptionDisabled, matchesExplorerQuery,
+  osMatch, osOptionDisabled, matchesColorQuery,
   FAMILY_DEFS, COLOR_TYPE_DEFS,
-  type ExplorerColor, type Platform, type OsUniverse, type OsFamily, type OsMode,
-} from "../lib/explorer";
+  type ColorEntry, type Platform, type OsUniverse, type OsFamily, type OsMode,
+} from "../lib/colorCatalog";
 import { FullscreenPreview } from "./FullscreenPreview";
 import { DownloadSheet } from "./DownloadSheet";
 import { ColorInfobox } from "./ColorInfobox";
 
 interface Props {
-  colors: ExplorerColor[];
+  colors: ColorEntry[];
   styleBySlug: Record<string, DesktopStyle>;
   platformsByHex: Record<string, Platform[]>;
   osUniverse: OsUniverse;
@@ -25,7 +25,7 @@ const EXP_COLW = 116, EXP_GAP = 12;
 const seg = (active: boolean): string =>
   `cursor: pointer; border: none; border-radius: 999px; padding: 7px 15px; font: 500 13px var(--font-ui); background: ${active ? "#fff" : "transparent"}; color: ${active ? "var(--ink)" : "var(--muted)"}; box-shadow: ${active ? "0 1px 3px rgba(0,0,0,0.14)" : "none"};`;
 
-export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Props) {
+export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Props) {
   const [group, setGroup] = useState<Group>("hue");
   const [sort, setSort] = useState<Sort>("spectrum");
   const [search, setSearch] = useState("");
@@ -35,7 +35,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
   const [osOpen, setOsOpen] = useState(false);
   const [osSel, setOsSel] = useState<Record<string, true>>({});
   const [osMode, setOsMode] = useState<OsMode>("any");
-  const [pv, setPv] = useState<{ list: ExplorerColor[]; idx: number } | null>(null);
+  const [pv, setPv] = useState<{ list: ColorEntry[]; idx: number } | null>(null);
   const [sheet, setSheet] = useState<{ name: string; hex: string; slug: string } | null>(null);
   const [bandWidth, setBandWidth] = useState(850);
 
@@ -44,7 +44,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
   // Free-text search narrows the working set before any faceting, so the family
   // and type pill counts (and the OS filter results) all reflect the query.
   const matched = useMemo(
-    () => colors.filter((c) => matchesExplorerQuery(c, search, platformsByHex)),
+    () => colors.filter((c) => matchesColorQuery(c, search, platformsByHex)),
     [colors, search, platformsByHex]);
   const empty = matched.length === 0;
 
@@ -60,7 +60,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
   const tCountsAll = useMemo(() => typeCounts(matched), [matched]);
   const countLabel = (n: number, total: number) => (n === total ? `${total}` : `${n}/${total}`);
 
-  const osMatches = (c: ExplorerColor) => osMatch(c.hex, platformsByHex, osSel, osMode);
+  const osMatches = (c: ColorEntry) => osMatch(c.hex, platformsByHex, osSel, osMode);
 
   const bands = useMemo(
     () => group === "flat" ? [] :
@@ -86,7 +86,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
     if (n && n.clientWidth && n.clientWidth !== bandWidth) setBandWidth(n.clientWidth);
   };
 
-  const openPv = (list: ExplorerColor[], idx: number) => setPv({ list, idx });
+  const openPv = (list: ColorEntry[], idx: number) => setPv({ list, idx });
   const stepPv = (d: number) => setPv((s) => s ? { ...s, idx: (s.idx + d + s.list.length) % s.list.length } : s);
   const cur = pv ? pv.list[pv.idx] : null;
 
@@ -114,11 +114,11 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
     });
   };
 
-  const swatch = (c: ExplorerColor) => {
+  const swatch = (c: ColorEntry) => {
     const open = exp === c.hex;
     const dCount = (platformsByHex[c.hex.toLowerCase()] ?? []).filter((p) => p.isDefault).length;
     return (
-      <button key={c.hex} data-testid="explorer-swatch" onClick={() => toggleExp(c.hex)}
+      <button key={c.hex} data-testid="colors-swatch" onClick={() => toggleExp(c.hex)}
         style="width: 116px; cursor: pointer; border: none; background: none; padding: 0; text-align: left; display: block; align-self: start;">
         <div class="dc-swatch" style={`position: relative; height: 78px; border-radius: 10px; background-color: ${c.hex}; box-shadow: ${open ? "inset 0 0 0 2px var(--accent), 0 6px 16px rgba(0,0,0,0.16)" : "inset 0 0 0 1px rgba(0,0,0,0.08)"}; transition: box-shadow 0.12s ease;`}>
           <span style={`position: absolute; left: 9px; bottom: 8px; font: 500 11px var(--font-mono); color: ${c.onColor}; opacity: 0.9;`}>{c.hex}</span>
@@ -133,8 +133,10 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
   };
 
   return (
-    <div class="dc-explorer dc-page-x" style="padding-block: 26px 56px;">
-      <h1 style="font: 700 32px var(--font-ui); letter-spacing: -0.8px; margin: 0;">Color Explorer</h1>
+    <div>
+    <div class="dc-colors dc-page-x" style="padding-block: 26px 24px;">
+      <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">COLORS</div>
+      <h1 style="font: 700 32px var(--font-ui); letter-spacing: -0.8px; margin: 6px 0 0;">Every solid desktop background color, by hue</h1>
       <p style="font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 640px; margin: 8px 0 0;">Group by hue to browse, filter by color type, or ungroup to rank colors by how often people download and copy them.</p>
 
       <label style="margin-top: 20px; display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--field-border); border-radius: 13px; padding: 0 16px; height: 52px; max-width: 680px;">
@@ -245,6 +247,9 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
         </div>
       )}
 
+      </div>
+      <div class="dc-page-x"><hr class="dc-rule" /></div>
+      <div class="dc-colors-body dc-page-x" style="padding-block: 6px 56px;">
       {empty ? (
         <div style="padding: 64px 0; text-align: center; color: var(--muted);">
           <div style="font: 500 20px var(--font-ui); color: var(--ink);">No colors match “{search}”</div>
@@ -261,7 +266,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
             const caretLeft = hasPanel ? (idx % cols) * (EXP_COLW + EXP_GAP) + EXP_COLW / 2 : 0;
             const panelColor = hasPanel ? b.colors[idx] : null;
             return (
-              <div key={b.key} class="dc-explorer-band" style="display: grid; grid-template-columns: 190px 1fr; gap: 28px; padding: 22px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
+              <div key={b.key} class="dc-colors-band" style="display: grid; grid-template-columns: 190px 1fr; gap: 28px; padding: 22px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
                 <div>
                   <div style="display: inline-flex; align-items: center; gap: 9px;">
                     <span style={`width: 20px; height: 20px; border-radius: 6px; background-color: ${b.chip}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
@@ -327,6 +332,7 @@ export function Explorer({ colors, styleBySlug, platformsByHex, osUniverse }: Pr
           })}
         </div>
       )}
+      </div>
 
       {cur && (
         <FullscreenPreview

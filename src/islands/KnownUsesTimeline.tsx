@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks";
 import type { ComponentChildren } from "preact";
-import type { Platform } from "../lib/explorer";
+import type { Platform } from "../lib/colorCatalog";
 import { colorPath } from "../lib/links";
 
 interface Props { hex: string; uses: Platform[]; currentSlug: string }

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/preact";
-import { Explorer } from "./Explorer";
-import type { ExplorerColor, Platform, OsUniverse } from "../lib/explorer";
+import { Colors } from "./Colors";
+import type { ColorEntry, Platform, OsUniverse } from "../lib/colorCatalog";
 
-const colors: ExplorerColor[] = [
+const colors: ColorEntry[] = [
   { hex: "#008080", name: "Teal", family: "teal", types: ["cool"], h: 180, s: 100, l: 25, onColor: "#ffffff", score: 5000, scoreLabel: "5k", yearRange: "1995", primarySlug: "windows-95", href: "/os/windows-95/008080" },
   { hex: "#ff0000", name: "Red", family: "red", types: ["vivid", "neon", "jewel", "warm"], h: 0, s: 100, l: 50, onColor: "#ffffff", score: 1000, scoreLabel: "1k", yearRange: "1995", primarySlug: "windows-95", href: "/os/windows-95/ff0000" },
 ];
@@ -31,16 +31,16 @@ const osUniverse: OsUniverse = {
 };
 const props = { colors, styleBySlug, platformsByHex, osUniverse };
 
-describe("Explorer", () => {
+describe("Colors", () => {
   it("renders grouped bands by hue by default", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     const names = screen.getAllByTestId("band-name").map((n) => n.textContent);
     expect(names).toContain("Teals");
     expect(names).toContain("Reds");
   });
 
   it("filters to a family when its chip is clicked", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.click(screen.getByRole("button", { name: /Teals/ }));
     const names = screen.getAllByTestId("band-name").map((n) => n.textContent);
     expect(names).toContain("Teals");
@@ -48,7 +48,7 @@ describe("Explorer", () => {
   });
 
   it("switches to the leaderboard when Ungrouped is chosen", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.click(screen.getByRole("button", { name: "Ungrouped" }));
     fireEvent.click(screen.getByRole("button", { name: "Popularity" }));
     // leaderboard ranks teal (5k) first
@@ -57,7 +57,7 @@ describe("Explorer", () => {
   });
 
   it("filters to a color type when its chip is clicked", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.click(screen.getByRole("button", { name: /^Cool/ }));
     const names = screen.getAllByTestId("band-name").map((n) => n.textContent);
     expect(names).toContain("Teals");
@@ -65,7 +65,7 @@ describe("Explorer", () => {
   });
 
   it("single-selects color types — picking another replaces the first", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.click(screen.getByRole("button", { name: /^Cool/ }));
     let names = screen.getAllByTestId("band-name").map((n) => n.textContent);
     expect(names).toEqual(["Teals"]); // cool → teal only
@@ -75,7 +75,7 @@ describe("Explorer", () => {
   });
 
   it("shows contextual/total counts and disables zero-in-context type pills", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     // No filter yet: Cool's contextual count equals its total (1 teal), so a single number.
     expect(screen.getByRole("button", { name: /^Cool/ }).textContent).toContain("1");
     // Narrow to the Red family — the only cool color (teal) is now out of scope.
@@ -88,8 +88,8 @@ describe("Explorer", () => {
   });
 
   it("opens an infobox when a swatch is clicked and closes it on a second click", () => {
-    render(<Explorer {...props} />);
-    const swatch = screen.getAllByTestId("explorer-swatch")[0];
+    render(<Colors {...props} />);
+    const swatch = screen.getAllByTestId("colors-swatch")[0];
     fireEvent.click(swatch);
     expect(screen.getByText("SHIPPED ON THESE PLATFORMS")).toBeTruthy();
     fireEvent.click(swatch);
@@ -97,19 +97,19 @@ describe("Explorer", () => {
   });
 
   it("infobox platform chips link to the color detail page", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     // Click the Teal swatch specifically (rather than assuming DOM position):
     // bands render in FAMILY_DEFS order, which puts Reds before Teals, so
     // "the first swatch" is not Teal even though the fixture's teal href
     // targets 008080.
-    const tealSwatch = screen.getAllByTestId("explorer-swatch").find((s) => s.textContent?.includes("Teal"))!;
+    const tealSwatch = screen.getAllByTestId("colors-swatch").find((s) => s.textContent?.includes("Teal"))!;
     fireEvent.click(tealSwatch);
     const links = screen.getAllByTestId("infobox-platform") as HTMLAnchorElement[];
     expect(links.some((a) => a.getAttribute("href")?.endsWith("/008080"))).toBe(true);
   });
 
   it("ANY OS filter narrows results to colors on the picked OS", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.click(screen.getByRole("button", { name: /Filter by OS/ }));
     fireEvent.click(screen.getByRole("button", { name: "BeOS" }));
     const names = screen.getAllByTestId("band-name").map((n) => n.textContent);
@@ -118,7 +118,7 @@ describe("Explorer", () => {
   });
 
   it("ALL OS filter requires the color on every picked OS", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.click(screen.getByRole("button", { name: /Filter by OS/ }));
     fireEvent.click(screen.getByRole("button", { name: "ALL picked" }));
     fireEvent.click(screen.getByRole("button", { name: "Windows 95" }));
@@ -129,7 +129,7 @@ describe("Explorer", () => {
   });
 
   it("disables an impossible OS given the active family filter", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.click(screen.getByRole("button", { name: /Reds/ }));       // family = red
     fireEvent.click(screen.getByRole("button", { name: /Filter by OS/ }));
     // red ships only on windows-95 + beos, never windows-98 → disabled
@@ -138,7 +138,7 @@ describe("Explorer", () => {
   });
 
   it("search narrows the bands by name/hex/year/color", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     const box = screen.getByPlaceholderText(/Search colors/i);
     fireEvent.input(box, { target: { value: "teal" } });
     let names = screen.getAllByTestId("band-name").map((n) => n.textContent);
@@ -149,14 +149,14 @@ describe("Explorer", () => {
   });
 
   it("shows an empty state when nothing matches the search", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.input(screen.getByPlaceholderText(/Search colors/i), { target: { value: "zzzznope" } });
     expect(screen.queryAllByTestId("band-name")).toHaveLength(0);
     expect(screen.getByText(/No colors match/i)).toBeTruthy();
   });
 
   it("clears the search with the clear button", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     const box = screen.getByPlaceholderText(/Search colors/i) as HTMLInputElement;
     fireEvent.input(box, { target: { value: "teal" } });
     expect(screen.getAllByTestId("band-name").map((n) => n.textContent)).toEqual(["Teals"]);
@@ -167,7 +167,7 @@ describe("Explorer", () => {
   });
 
   it("ungrouped rows are keyboard-operable (role=button, tabindex, Enter toggles)", () => {
-    render(<Explorer {...props} />);
+    render(<Colors {...props} />);
     fireEvent.click(screen.getByRole("button", { name: "Ungrouped" }));
     const row = screen.getAllByTestId("rank-row")[0];
     expect(row.getAttribute("role")).toBe("button");

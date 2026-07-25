@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 import {
-  toExplorerColors, groupIntoBands, rankColors, familyCounts, typeCounts,
+  toColorEntries, groupIntoBands, rankColors, familyCounts, typeCounts,
   COLOR_TYPE_DEFS, FAMILY_DEFS, buildPlatformsByHex, buildOsUniverse,
-  matchesExplorerQuery,
-} from "./explorer";
+  matchesColorQuery,
+} from "./colorCatalog";
 import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
 import type { OsEntry } from "./derive";
 import type { OsInput } from "../content/config";
-import type { ExplorerColor, Platform } from "./explorer";
+import type { ColorEntry, Platform } from "./colorCatalog";
 
 const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => ({
   name: "X", year: 2000, added: "2000-01-01", family: "Fam", tagline: "t", description: "d",
@@ -25,9 +25,9 @@ const entries: OsEntry[] = [
   ] }) },
 ];
 const catalog = buildCatalog(entries, parseScores({ colors: { "#008080": 5000, "#ff0000": 1000 }, os: {} }));
-const colors = toExplorerColors(catalog);
+const colors = toColorEntries(catalog);
 
-describe("toExplorerColors", () => {
+describe("toColorEntries", () => {
   it("maps merged colors with hsl and href", () => {
     const teal = colors.find((c) => c.hex === "#008080")!;
     expect(teal.family).toBe("teal");
@@ -67,47 +67,47 @@ describe("groupIntoBands", () => {
   });
 });
 
-describe("matchesExplorerQuery", () => {
+describe("matchesColorQuery", () => {
   const platformsByHex = buildPlatformsByHex(catalog);
   const teal = colors.find((c) => c.hex === "#008080")!;
   const red = colors.find((c) => c.hex === "#ff0000")!;
 
   it("empty/whitespace query matches everything", () => {
-    expect(matchesExplorerQuery(teal, "", platformsByHex)).toBe(true);
-    expect(matchesExplorerQuery(teal, "   ", platformsByHex)).toBe(true);
+    expect(matchesColorQuery(teal, "", platformsByHex)).toBe(true);
+    expect(matchesColorQuery(teal, "   ", platformsByHex)).toBe(true);
   });
 
   it("matches by color name, case-insensitively", () => {
-    expect(matchesExplorerQuery(teal, "teal", platformsByHex)).toBe(true);
-    expect(matchesExplorerQuery(teal, "TEAL", platformsByHex)).toBe(true);
-    expect(matchesExplorerQuery(red, "teal", platformsByHex)).toBe(false);
+    expect(matchesColorQuery(teal, "teal", platformsByHex)).toBe(true);
+    expect(matchesColorQuery(teal, "TEAL", platformsByHex)).toBe(true);
+    expect(matchesColorQuery(red, "teal", platformsByHex)).toBe(false);
   });
 
   it("matches by full or partial hex", () => {
-    expect(matchesExplorerQuery(teal, "#008080", platformsByHex)).toBe(true);
-    expect(matchesExplorerQuery(teal, "0080", platformsByHex)).toBe(true);
+    expect(matchesColorQuery(teal, "#008080", platformsByHex)).toBe(true);
+    expect(matchesColorQuery(teal, "0080", platformsByHex)).toBe(true);
   });
 
   it("matches by family key and family display name", () => {
-    expect(matchesExplorerQuery(teal, "teal", platformsByHex)).toBe(true); // key
-    expect(matchesExplorerQuery(teal, "teals", platformsByHex)).toBe(true); // "Teals"
+    expect(matchesColorQuery(teal, "teal", platformsByHex)).toBe(true); // key
+    expect(matchesColorQuery(teal, "teals", platformsByHex)).toBe(true); // "Teals"
   });
 
   it("matches by the name of an OS that shipped the color", () => {
     // Teal ships on OS "A"; Red ships on OS "B".
-    expect(matchesExplorerQuery(red, "b", platformsByHex)).toBe(true);
-    expect(matchesExplorerQuery(teal, "b", platformsByHex)).toBe(false);
+    expect(matchesColorQuery(red, "b", platformsByHex)).toBe(true);
+    expect(matchesColorQuery(teal, "b", platformsByHex)).toBe(false);
   });
 
   it("matches a literal year present in the range", () => {
-    expect(matchesExplorerQuery(teal, "1995", platformsByHex)).toBe(true);
-    expect(matchesExplorerQuery(red, "1995", platformsByHex)).toBe(false);
+    expect(matchesColorQuery(teal, "1995", platformsByHex)).toBe(true);
+    expect(matchesColorQuery(red, "1995", platformsByHex)).toBe(false);
   });
 
   it("matches a year that falls inside a multi-year range", () => {
-    const ranged: ExplorerColor = { ...teal, yearRange: "1990–2000" };
-    expect(matchesExplorerQuery(ranged, "1995", {})).toBe(true); // between, not literal
-    expect(matchesExplorerQuery(ranged, "1985", {})).toBe(false);
+    const ranged: ColorEntry = { ...teal, yearRange: "1990–2000" };
+    expect(matchesColorQuery(ranged, "1995", {})).toBe(true); // between, not literal
+    expect(matchesColorQuery(ranged, "1985", {})).toBe(false);
   });
 });
 
@@ -122,7 +122,7 @@ describe("rankColors", () => {
   });
 
   it("all-zero-scores → pct 0 (no divide-by-zero, no NaN)", () => {
-    const zeroScores: ExplorerColor[] = [
+    const zeroScores: ColorEntry[] = [
       {
         hex: "#ff0000", name: "Red", family: "red", types: ["vivid", "warm"],
         h: 0, s: 100, l: 50, onColor: "#ffffff", score: 0, scoreLabel: "< 1k",
@@ -228,7 +228,7 @@ describe("buildOsUniverse", () => {
   });
 });
 
-import { osMatch, osOptionDisabled } from "./explorer";
+import { osMatch, osOptionDisabled } from "./colorCatalog";
 
 const P = (slug: string, isDefault = false): Platform =>
   ({ slug, name: slug, year: 2000, family: "F", isDefault });
@@ -238,9 +238,9 @@ const pmap: Record<string, Platform[]> = {
   "#008080": [P("w95", true), P("w98", true)],
   "#ff0000": [P("w95"), P("beos", true)],
 };
-const C = (hex: string, family: ExplorerColor["family"], types: ExplorerColor["types"]): ExplorerColor =>
+const C = (hex: string, family: ColorEntry["family"], types: ColorEntry["types"]): ColorEntry =>
   ({ hex, name: hex, family, types, h: 0, s: 0, l: 0, onColor: "#fff", score: 0, scoreLabel: "0", yearRange: "2000", primarySlug: "w95", href: "/x" });
-const universe: ExplorerColor[] = [C("#008080", "teal", ["cool"]), C("#ff0000", "red", ["warm"])];
+const universe: ColorEntry[] = [C("#008080", "teal", ["cool"]), C("#ff0000", "red", ["warm"])];
 
 describe("osMatch", () => {
   it("matches all when nothing is selected", () => {

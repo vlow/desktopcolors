@@ -36,7 +36,7 @@ export function OsDetail({ view, initialHex }: Props) {
   // from the very first paint. No `window`/query reading, so no hydration
   // mismatch and no flash of the default color.
   //
-  // When no color is deep-linked (e.g. opening /os/<slug> from Browse), start on
+  // When no color is deep-linked (e.g. opening /os/<slug> from Platforms), start on
   // the OS's default color rather than whatever happens to be first in the list.
   const defaultIdx = (): number => {
     const d = colors.findIndex((c) => c.isDefault);

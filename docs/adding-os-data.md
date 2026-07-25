@@ -37,7 +37,7 @@ This is the full guide (for humans and LLM agents). For the quick version see
 | `name` | ✅ | Display name. Don't include a `(Demo)`/placeholder suffix once real data lands. |
 | `year` | ✅ | Integer release year. |
 | `added` | ✅ | `YYYY-MM-DD`, the date the entry was **added to the catalog** — keep the original when you later fill in real data; don't bump it to "today". |
-| `family` | ✅ | Groups the OS on Browse. Reuse an existing value (`Windows`, `Mac OS`, `Amiga`, `Desktop Env.`, …) unless it's genuinely a new family. |
+| `family` | ✅ | Groups the OS on Platforms. Reuse an existing value (`Windows`, `Mac OS`, `Amiga`, `Desktop Env.`, …) unless it's genuinely a new family. |
 | `tagline` | ✅ | One evocative line. |
 | `description` | ✅ | One or two sentences of real context. |
 | `slug` | — | Defaults to the filename (`beos.json` → `beos`). |

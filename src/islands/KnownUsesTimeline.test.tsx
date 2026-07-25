@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/preact";
 import { KnownUsesTimeline } from "./KnownUsesTimeline";
-import type { Platform } from "../lib/explorer";
+import type { Platform } from "../lib/colorCatalog";
 
 const uses: Platform[] = [
   { slug: "cde", name: "CDE", year: 1993, family: "Desktop Env.", isDefault: false },

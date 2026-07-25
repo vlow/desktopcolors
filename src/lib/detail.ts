@@ -1,6 +1,6 @@
 import { closestRal, closestRalDesign, onColor, hexToHsl, hexToRgb, rgbToLab, labToLch, rgbToOklab } from "./color";
 import { similarColors, eraPeers, type OsEntry, type SimilarColor, type EraPeer } from "./derive";
-import { buildPlatformsByHex, type Platform } from "./explorer";
+import { buildPlatformsByHex, type Platform } from "./colorCatalog";
 import type { Catalog, OsView, ColorView } from "./catalog";
 import type { DesktopStyle } from "./desktopStyle";
 

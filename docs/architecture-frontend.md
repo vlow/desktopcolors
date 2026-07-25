@@ -69,7 +69,7 @@ type OsInput = {
 ```
 
 Adding a platform = dropping a JSON file here. Nothing else needs editing — it flows
-automatically into Browse, the Explorer, similarity matches, and era sections. See
+automatically into Platforms, the Colors page, similarity matches, and era sections. See
 [README → Adding a new OS](../README.md#adding-a-new-os).
 
 ### 2. Loading — `lib/entries.ts`, `lib/loadCatalog.ts`, `lib/scores.ts`
@@ -96,7 +96,7 @@ produces the `Catalog` that nearly every page consumes:
 interface Catalog {
   osList: OsView[];                 // one per platform, colors as ColorView[]
   bySlug: Map<string, OsView>;      // slug → OsView lookup
-  colors: MergedColorView[];        // colors merged across platforms by hex (for the Explorer)
+  colors: MergedColorView[];        // colors merged across platforms by hex (for the Colors page)
 }
 ```
 
@@ -111,14 +111,14 @@ helpers:
 - **`derive.ts`** — cross-platform relationships over the raw entries:
   `mergeColorsByHex`, `similarColors`, `eraPeers`, `firstKnownUse`, `defaultColor`.
 
-### 4. Page-specific view builders — `lib/detail.ts`, `lib/explorer.ts`
+### 4. Page-specific view builders — `lib/detail.ts`, `lib/colorCatalog.ts`
 
 These take the `Catalog` and shape it for one page:
 
 - **`detail.ts`** → `buildOsDetail(entries, catalog, slug): OsDetailView` — assembles an OS
   detail page: each color with its closest RAL match, up to 6 similar colors elsewhere (with
   hrefs), "first known use", and same-era peers.
-- **`explorer.ts`** — the Color Explorer model: `toExplorerColors`, family definitions
+- **`colorCatalog.ts`** — the Colors page model: `toColorEntries`, family definitions
   (`FAMILY_DEFS`), color-type definitions (`COLOR_TYPE_DEFS`), counting (`familyCounts`,
   `typeCounts`), banding (`groupIntoBands`), and `rankColors`.
 
@@ -151,10 +151,10 @@ Each page is thin: load the catalog at build time, shape props, mount an island.
 
 | Route                    | File                          | Island mounted        |
 |--------------------------|-------------------------------|-----------------------|
-| `/` (Browse)             | `pages/index.astro`           | `BrowseControls`      |
+| `/` (Platforms)             | `pages/index.astro`           | `PlatformControls`      |
 | `/os/<slug>`             | `pages/os/[slug].astro`       | `OsDetail`            |
 | `/os/<slug>/<hex>`       | `pages/os/[slug]/[hex].astro` | `OsDetail` (initialHex) |
-| `/explorer`              | `pages/explorer.astro`        | `Explorer`            |
+| `/colors`              | `pages/colors.astro`        | `Colors`            |
 | `/setup`                 | `pages/setup.astro`           | `SetupGuide`          |
 | `/about`                 | `pages/about.astro`           | — (static)            |
 
@@ -171,9 +171,9 @@ them.
 
 | Island               | Responsibility                                                        |
 |----------------------|-----------------------------------------------------------------------|
-| `BrowseControls.tsx` | The Browse page: search, sort (Popular/Year/A–Z), family filter, cards |
+| `PlatformControls.tsx` | The Platforms page: search, sort (Popular/Year/A–Z), family filter, cards |
 | `OsDetail.tsx`       | The OS detail page: color picker, copy, preview, opens `DownloadSheet` |
-| `Explorer.tsx`       | The Color Explorer: family + multi-label color-type filtering, grouped by hue or ungrouped |
+| `Colors.tsx`       | The Colors page: family + multi-label color-type filtering, grouped by hue or ungrouped |
 | `DesktopPreview.tsx` | Renders the schematic desktop chrome behind a color (see `STYLE_CHROME`) |
 | `FullscreenPreview.tsx` | Full-viewport preview overlay                                      |
 | `DownloadSheet.tsx`  | Resolution picker → generates + downloads a wallpaper                  |
@@ -218,9 +218,9 @@ missing entry fails the build. Adding a style is a two-file change with its own 
 | Change cross-platform relations (similar, era, merge)  | `lib/derive.ts`                                  |
 | Change what a color/OS view model contains             | `lib/catalog.ts` (`ColorView` / `OsView` / `MergedColorView`) |
 | Change the OS detail page's data                       | `lib/detail.ts` (`OsDetailView`)                 |
-| Change Explorer filtering/banding                      | `lib/explorer.ts`                                |
+| Change Colors filtering/banding                      | `lib/colorCatalog.ts`                                |
 | Add/change a route                                     | `pages/…` (+ a new island if interactive)        |
-| Change Browse / detail / explorer UI behavior          | the matching `islands/*.tsx`                     |
+| Change Platforms / detail / colors UI behavior          | the matching `islands/*.tsx`                     |
 | Add a new desktop preview style                        | `lib/desktopStyle.ts` + `DesktopPreview.tsx` (see guide) |
 | Change wallpaper resolutions or filename               | `lib/wallpaper.ts`                               |
 | Change what popularity events fire, or their payload   | `lib/track.ts` (**and** the counter's `scoring.Event`) |
@@ -233,7 +233,7 @@ missing entry fails the build. Adding a style is a two-file change with its own 
   View concerns live in `islands/`/`components/`; derivation lives in `lib/`.
 - **No read APIs at runtime.** Islands get their data as build-time props; the site must
   render (and be correct) even if the counter is down.
-- **Scores are read only at build time.** Anything score-derived (Browse's Popular order,
+- **Scores are read only at build time.** Anything score-derived (Platforms' Popular order,
   labels) is baked into the HTML — never re-fetched or reordered client-side.
 - **Two contracts with the counter must stay in lockstep:** `lib/track.ts`'s `TrackEvent` ⟷
   `scoring.Event` (write side), and `lib/scores.ts`'s `Scores` ⟷ `store.Scores` (read side).

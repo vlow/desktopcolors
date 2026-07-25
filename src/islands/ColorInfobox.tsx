@@ -2,7 +2,7 @@ import { useState } from "preact/hooks";
 import { hexToRgb, rgbToCmyk } from "../lib/color";
 import { colorPath } from "../lib/links";
 import { track } from "../lib/track";
-import type { Platform } from "../lib/explorer";
+import type { Platform } from "../lib/colorCatalog";
 
 export interface InfoboxColor {
   hex: string;

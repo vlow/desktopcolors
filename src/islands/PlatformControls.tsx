@@ -1,7 +1,7 @@
 import { useMemo, useState } from "preact/hooks";
 import { colorPath } from "../lib/links";
 
-export interface BrowseItem {
+export interface PlatformItem {
   slug: string;
   name: string;
   year: number;
@@ -34,7 +34,7 @@ const underline = (active: boolean): string =>
     ? "text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; text-decoration-color: var(--accent);"
     : "text-decoration: none;";
 
-export function BrowseControls({ items }: { items: BrowseItem[] }) {
+export function PlatformControls({ items }: { items: PlatformItem[] }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("popular");
   const [rev, setRev] = useState(false);
@@ -53,7 +53,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
     }
     // Default direction per sort: popularity → most first, year → oldest first,
     // new → newest first, A–Z → ascending. Reverse flips whichever is active.
-    const cmp: Record<SortKey, (a: BrowseItem, b: BrowseItem) => number> = {
+    const cmp: Record<SortKey, (a: PlatformItem, b: PlatformItem) => number> = {
       popular: (a, b) => b.score - a.score,
       year: (a, b) => a.year - b.year,
       new: (a, b) => b.added.localeCompare(a.added),
@@ -77,8 +77,9 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
 
   return (
     <div>
-      <div class="dc-page-x" style="padding-block: 34px 22px; border-bottom: 1px solid var(--hairline);">
-        <div style="font: 700 30px var(--font-ui); letter-spacing: -0.5px;">The desktop color archive</div>
+      <div class="dc-page-x" style="padding-block: 34px 22px;">
+        <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">PLATFORMS</div>
+        <h1 style="font: 700 30px var(--font-ui); letter-spacing: -0.5px; margin: 8px 0 0;">Desktop background colors, by operating system</h1>
         <div style="color: var(--muted); font-size: 15px; margin-top: 6px; max-width: 560px; line-height: 1.5;">
           Every solid desktop background color shipped by classic operating systems and desktop environments.
         </div>
@@ -124,6 +125,8 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
         <div class="dc-list-note" style="font: 400 12px var(--font-mono); color: var(--faint); margin-top: 10px;">List view needs a wider screen</div>
       </div>
 
+      <div class="dc-page-x"><hr class="dc-rule" /></div>
+
       {shown.length === 0 ? (
         <div class="dc-page-x" style="padding-block: 72px; text-align: center; color: var(--muted);">
           <div style="font: 500 20px var(--font-ui); color: var(--ink);">No platforms or colors match &ldquo;{query}&rdquo;</div>
@@ -158,7 +161,7 @@ export function BrowseControls({ items }: { items: BrowseItem[] }) {
       ) : (
         <main class="dc-page-x" style="padding-block: 6px 80px;">
           {shown.map((it) => (
-            <div key={it.slug} class="dc-browse-list-row" style="display: grid; grid-template-columns: 230px 1fr; gap: 32px; padding: 26px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
+            <div key={it.slug} class="dc-platform-list-row" style="display: grid; grid-template-columns: 230px 1fr; gap: 32px; padding: 26px 0; border-bottom: 1px solid var(--card-border); align-items: start;">
               <div>
                 <a href={it.href} data-testid="os-name" style="font: 500 19px var(--font-ui);">{it.name} ↗</a>
                 <div style="font: 400 12px var(--font-mono); color: var(--faint); margin-top: 6px;">{it.year} · {it.family} · {it.colorCount} colors</div>

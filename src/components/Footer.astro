@@ -8,9 +8,9 @@ const platformCount = catalog.osList.length;
 const year = new Date().getFullYear();
 const git = getGitInfo();
 
-const browseLinks = [
+const siteLinks = [
   { label: "All platforms", href: "/" },
-  { label: "Color Explorer", href: "/explorer" },
+  { label: "Colors", href: "/colors" },
   { label: "Setup Guide", href: "/setup" },
 ];
 const projectLinks = [
@@ -35,7 +35,7 @@ const legalLinks = [
       <div>
         <div style="font: 500 10px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-bottom: 11px;">BROWSE</div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          {browseLinks.map((l) => (<a class="dc-foot-link" href={l.href} style="font: 400 14px var(--font-ui); color: var(--muted);">{l.label}</a>))}
+          {siteLinks.map((l) => (<a class="dc-foot-link" href={l.href} style="font: 400 14px var(--font-ui); color: var(--muted);">{l.label}</a>))}
         </div>
       </div>
       <div>
@@ -98,7 +98,7 @@ const legalLinks = [
       <div>
         <div style="font: 500 11px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; margin-bottom: 14px;">BROWSE</div>
         <div style="display: flex; flex-direction: column; gap: 11px;">
-          {browseLinks.map((l) => (<a class="dc-foot-link" href={l.href} style="font: 400 14px var(--font-ui); color: var(--muted);">{l.label}</a>))}
+          {siteLinks.map((l) => (<a class="dc-foot-link" href={l.href} style="font: 400 14px var(--font-ui); color: var(--muted);">{l.label}</a>))}
         </div>
       </div>
       <div>

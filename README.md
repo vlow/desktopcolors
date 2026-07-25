@@ -21,7 +21,7 @@ Three parts, designed so the site is fully static and the only runtime backend i
                      └────────────────────────────────────────────────────────┘
 ```
 
-1. **Static site — Astro (SSG) + Preact islands.** Every page (Browse, each `/os/<slug>`, Color Explorer,
+1. **Static site — Astro (SSG) + Preact islands.** Every page (Platforms, each `/os/<slug>`, Colors,
    About, Setup Guide) is pre-rendered to HTML at build time for SEO. Interactive bits are small Preact
    islands that receive the full, build-computed dataset as props and do all search/filter/sort **in the
    browser** — no read APIs at runtime.
@@ -55,10 +55,10 @@ memory only and never persists or logs anything IP-derived. nginx logs are IP-an
 ```
 src/
   content/os/*.json      # one JSON per platform — the source of truth (+ Zod schema in config.ts)
-  lib/                   # pure, tested build-time logic (color, derive, catalog, explorer, detail, scores, wallpaper, track)
-  islands/*.tsx          # Preact interactive components (Browse controls, OsDetail, Explorer, DownloadSheet, previews, MobileNav, SetupGuide)
+  lib/                   # pure, tested build-time logic (color, derive, catalog, colorCatalog, detail, scores, wallpaper, track)
+  islands/*.tsx          # Preact interactive components (Platform controls, OsDetail, Colors, DownloadSheet, previews, MobileNav, SetupGuide)
   components/ layouts/    # static Astro shell (Header, Base)
-  pages/                 # routes: index, explorer, about, setup, os/[slug]
+  pages/                 # routes: index, colors, about, setup, os/[slug]
   styles/tokens.css      # design tokens
 counter/                 # Go module: cmd (serve|dump) + internal/{scoring,store,ratelimit,server}
 deploy/                  # rebuild.sh, nginx conf, systemd units, SETUP.md (deployment runbook)
@@ -147,8 +147,8 @@ CI (`.github/workflows/ci.yml`) runs all of the above on every push/PR.
    optional and defaults to `modern` — the platform-neutral default preview — or one of
    `win9x | win31 | platinum | beos | amiga | kde | cde | gem | generic`, see [Adding a preview style](#adding-a-preview-style).)
 2. `npm run build`. The Zod schema validates the file (a bad hex, missing field, >1 default, or dangling
-   predecessor/successor **fails the build**), and the new platform automatically flows into Browse, the
-   Explorer, similarity matches, and era sections — no other edits needed.
+   predecessor/successor **fails the build**), and the new platform automatically flows into Platforms, the
+   Colors, similarity matches, and era sections — no other edits needed.
 
 See the full guide, written for humans and LLM agents — including field conventions and the **dithered
 colors** workflow — in **[`docs/adding-os-data.md`](docs/adding-os-data.md)**.

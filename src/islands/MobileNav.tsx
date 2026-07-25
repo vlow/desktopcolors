@@ -1,8 +1,8 @@
 import { useState } from "preact/hooks";
 
 const LINKS = [
-  { key: "browse", label: "Browse", href: "/" },
-  { key: "explorer", label: "Color Explorer", href: "/explorer" },
+  { key: "platforms", label: "Platforms", href: "/" },
+  { key: "colors", label: "Colors", href: "/colors" },
   { key: "setup", label: "Setup Guide", href: "/setup" },
   { key: "about", label: "About", href: "/about" },
 ];

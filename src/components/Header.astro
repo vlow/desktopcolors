@@ -1,19 +1,23 @@
 ---
 import { MobileNav } from "../islands/MobileNav";
-interface Props { active?: "browse" | "explorer" | "setup" | "about"; }
+interface Props { active?: "platforms" | "colors" | "setup" | "about"; }
 const { active } = Astro.props;
 const links = [
-  { key: "browse", label: "Browse", href: "/" },
-  { key: "explorer", label: "Color Explorer", href: "/explorer" },
+  { key: "platforms", label: "Platforms", href: "/" },
+  { key: "colors", label: "Colors", href: "/colors" },
   { key: "setup", label: "Setup Guide", href: "/setup" },
   { key: "about", label: "About", href: "/about" },
 ];
+// The active link mirrors the active-filter affordance: a blue underline
+// (text-decoration-color: var(--accent)) with a 6px offset.
+const activeUnderline =
+  "text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; text-decoration-color: var(--accent);";
 ---
 <header class="dc-page-x" style="position: relative; padding-block: 20px; border-bottom: 1px solid var(--hairline); display: flex; align-items: center; justify-content: space-between; gap: 20px;">
   <a href="/" style="font: 700 19px var(--font-ui); letter-spacing: -0.4px;">desktopcolors<span style="color: var(--faint);">.com</span></a>
   <nav class="dc-wide-nav" style="gap: 22px; font-size: 14px;">
     {links.map((l) => (
-      <a href={l.href} style={`color: ${l.key === active ? "var(--ink)" : "var(--muted)"}; font-weight: ${l.key === active ? 500 : 400};`}>{l.label}</a>
+      <a href={l.href} style={`color: ${l.key === active ? "var(--ink)" : "var(--muted)"}; font-weight: ${l.key === active ? 500 : 400}; ${l.key === active ? activeUnderline : ""}`}>{l.label}</a>
     ))}
   </nav>
   <div class="dc-mobile-nav"><MobileNav active={active} client:load /></div>

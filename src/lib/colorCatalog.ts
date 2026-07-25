@@ -2,7 +2,7 @@ import { hexToHsl, type FamilyKey, type ColorTypeKey } from "./color";
 import type { Catalog } from "./catalog";
 import { colorPath } from "./links";
 
-export interface ExplorerColor {
+export interface ColorEntry {
   hex: string; name: string;
   family: FamilyKey; types: ColorTypeKey[];
   h: number; s: number; l: number;
@@ -36,7 +36,7 @@ export const COLOR_TYPE_DEFS: { key: ColorTypeKey; name: string; chip: string }[
   { key: "neon", name: "Neon", chip: "#16d6c1" },
 ];
 
-export function toExplorerColors(catalog: Catalog): ExplorerColor[] {
+export function toColorEntries(catalog: Catalog): ColorEntry[] {
   return catalog.colors.map((c) => {
     const [h, s, l] = hexToHsl(c.hex);
     return {
@@ -48,26 +48,26 @@ export function toExplorerColors(catalog: Catalog): ExplorerColor[] {
   });
 }
 
-export function familyCounts(colors: ExplorerColor[]): Record<FamilyKey, number> {
+export function familyCounts(colors: ColorEntry[]): Record<FamilyKey, number> {
   const out = {} as Record<FamilyKey, number>;
   for (const d of FAMILY_DEFS) out[d.key] = 0;
   for (const c of colors) out[c.family]++;
   return out;
 }
 
-export function typeCounts(colors: ExplorerColor[]): Record<ColorTypeKey, number> {
+export function typeCounts(colors: ColorEntry[]): Record<ColorTypeKey, number> {
   const out = {} as Record<ColorTypeKey, number>;
   for (const d of COLOR_TYPE_DEFS) out[d.key] = 0;
   for (const c of colors) for (const t of c.types) out[t]++;
   return out;
 }
 
-// Free-text Explorer search. Matches a color against the query by name, family
+// Free-text color search. Matches a color against the query by name, family
 // (key + display name), hex, year range, color-type names, and the names of the
 // OSes that shipped it. A bare four-digit year also matches any color whose year
 // range spans it, even when that exact year isn't written in the label.
-export function matchesExplorerQuery(
-  c: ExplorerColor,
+export function matchesColorQuery(
+  c: ColorEntry,
   query: string,
   platformsByHex: Record<string, Platform[]>,
 ): boolean {
@@ -94,18 +94,18 @@ export function matchesExplorerQuery(
   return false;
 }
 
-const spectrumCmp = (a: ExplorerColor, b: ExplorerColor): number =>
+const spectrumCmp = (a: ColorEntry, b: ColorEntry): number =>
   a.h - b.h || a.l - b.l;
-const popCmp = (a: ExplorerColor, b: ExplorerColor): number =>
+const popCmp = (a: ColorEntry, b: ColorEntry): number =>
   b.score - a.score || a.h - b.h;
 
-export interface Band { key: string; name: string; chip: string; colors: ExplorerColor[] }
+export interface Band { key: string; name: string; chip: string; colors: ColorEntry[] }
 
 export function groupIntoBands(
-  colors: ExplorerColor[],
+  colors: ColorEntry[],
   opts: { group: "hue"; family: FamilyKey | null; types: ColorTypeKey[]; sort: "spectrum" | "pop" },
 ): Band[] {
-  const match = (c: ExplorerColor): boolean =>
+  const match = (c: ColorEntry): boolean =>
     (!opts.family || c.family === opts.family) &&
     (opts.types.length === 0 || opts.types.some((t) => c.types.includes(t)));
   const defs = opts.family ? FAMILY_DEFS.filter((d) => d.key === opts.family) : FAMILY_DEFS;
@@ -119,9 +119,9 @@ export function groupIntoBands(
 }
 
 export function rankColors(
-  colors: ExplorerColor[],
+  colors: ColorEntry[],
   opts: { family: FamilyKey | null; sort: "spectrum" | "pop" },
-): (ExplorerColor & { rank: number; pct: number })[] {
+): (ColorEntry & { rank: number; pct: number })[] {
   const filtered = colors.filter((c) => !opts.family || c.family === opts.family);
   const maxScore = filtered.reduce((mx, c) => Math.max(mx, c.score), 0);
   const cmp = opts.sort === "pop" ? popCmp : spectrumCmp;
@@ -194,7 +194,7 @@ export function osMatch(
 export function osOptionDisabled(
   candidateSlug: string,
   opts: {
-    universe: ExplorerColor[];
+    universe: ColorEntry[];
     platformsByHex: Record<string, Platform[]>;
     osSel: Record<string, true>;
     mode: OsMode;
