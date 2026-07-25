@@ -8,6 +8,9 @@ For how the system fits together, read the existing documentation first — it i
 entry point for understanding the codebase:
 
 - [`README.md`](README.md) — project overview and quick start.
+- [`DESIGN.md`](DESIGN.md) — the UX/purpose behind shared design elements: which
+  element to use when. Read it (and add to it) when adding a page, a section, or
+  a new shared UI element.
 - [`docs/architecture-frontend.md`](docs/architecture-frontend.md) — the Astro
   static site + Preact islands (pages, content, build).
 - [`docs/architecture-edge.md`](docs/architecture-edge.md) — the `counter` Go
