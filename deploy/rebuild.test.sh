@@ -70,7 +70,13 @@ case "$1" in
     if [ "$2" = "build" ]; then
       if [ -f "$STUB_STATE/npm_build_slow" ]; then
         touch "$STUB_STATE/build_started"
-        sleep 2
+        # 5s, not 2s: the signal test polls for build_started every 1s, so a
+        # 2s sleep left only about one poll interval of margin between
+        # "sentinel detected" and "stub sleep ends on its own" — tight enough
+        # for a loaded machine to occasionally race the TERM against the
+        # build finishing naturally. 5s gives a comfortable margin without
+        # weakening what the test actually asserts.
+        sleep 5
       fi
       mkdir -p dist
       if [ -f "$STUB_STATE/npm_build_empty" ]; then
@@ -124,6 +130,15 @@ if [ -f "$STUB_STATE/chmod_fails" ]; then
   echo "stub chmod: forced failure" >&2
   exit 1
 fi
+# Delays the call rebuild.sh makes against "$rel.tmp" — after cp -R has
+# created it, before mv renames it into place — so a test can signal the
+# script while it holds the lock *and* owns a staging directory. Touches a
+# sentinel the instant it starts blocking, mirroring npm_build_slow above,
+# so the test polls for that instead of guessing a fixed delay.
+if [ -f "$STUB_STATE/chmod_slow" ]; then
+  touch "$STUB_STATE/chmod_started"
+  sleep 5
+fi
 exec /bin/chmod "$@"
 EOS
   # Absolute path: once $STUB/chmod (below) exists on PATH, a bare `chmod`
@@ -157,6 +172,34 @@ run_rebuild() {
       KEEP="${KEEP_OVERRIDE:-3}" \
       RESTART_CMD="sudo /usr/bin/systemctl restart counter.service" \
       bash "$REBUILD" ) > "$ROOT/run.log" 2>&1
+}
+
+# Runs rebuild.sh directly in the background — via `exec`, so $! is
+# rebuild.sh's own pid rather than a wrapping subshell's — for tests that
+# need to deliver a signal mid-run. Sets SPAWN_PID rather than echoing the
+# pid: a plain function call runs in the caller's own shell, so the `&`
+# background job lands as a direct child the caller can `wait` on. Piping
+# through `$(...)` to capture a printed pid would run this function in a
+# command-substitution subshell instead, backgrounding the job as a child of
+# *that* subshell — which exits (and reaps nothing) the instant it echoes
+# the pid, leaving the caller with a pid that is no longer its own child.
+#
+# Shared by both signal tests rather than inlined twice: two separate
+# `export VAR=...; exec bash "$REBUILD"` subshells with the same variable
+# names read as conflicting writes to shellcheck (SC2030/SC2031), even
+# though each is confined to its own subshell. The `env VAR=... command`
+# prefix form here — like run_rebuild above — scopes the assignment to the
+# one command instead, which shellcheck does not flag.
+spawn_killable_rebuild() {
+  local logfile="$1"
+  (
+    cd "$REPO" || exit 1
+    exec env REPO_DIR="$REPO" WWW_DIR="$WWW" STATE_DIR="$STATE" \
+      COUNTER_BIN="$REPO/counter/counter" BRANCH=release KEEP=3 \
+      RESTART_CMD="sudo /usr/bin/systemctl restart counter.service" \
+      bash "$REBUILD"
+  ) > "$logfile" 2>&1 &
+  SPAWN_PID=$!
 }
 
 # Commits a change on the origin's release branch, so the next run picks it up.
@@ -496,14 +539,8 @@ fi
 # it mid-run. The npm stub touches a sentinel the instant it starts blocking,
 # so we poll for that instead of guessing a fixed delay.
 touch "$STUB_STATE/npm_build_slow"
-(
-  cd "$REPO" || exit 1
-  export REPO_DIR="$REPO" WWW_DIR="$WWW" STATE_DIR="$STATE" \
-    COUNTER_BIN="$REPO/counter/counter" BRANCH=release KEEP=3 \
-    RESTART_CMD="sudo /usr/bin/systemctl restart counter.service"
-  exec bash "$REBUILD"
-) > "$ROOT/signal_run.log" 2>&1 &
-sig_pid=$!
+spawn_killable_rebuild "$ROOT/signal_run.log"
+sig_pid="$SPAWN_PID"
 
 waited=0
 while [ ! -f "$STUB_STATE/build_started" ] && [ "$waited" -lt 20 ]; do
@@ -526,6 +563,60 @@ fi
 marker_after="$(cat "$STATE/LAST_FAILURE" 2>/dev/null)"
 check "marker unchanged after a signal-killed run" "$marker_after" "$marker_before"
 rm -f "$STUB_STATE/npm_build_slow"
+teardown
+
+echo "signal-killed run that held the lock sweeps its own rel.tmp"
+setup
+# Seed a genuine marker the same way the previous signal-test block does, so
+# we can also confirm it survives untouched here.
+touch "$STUB_STATE/npm_build_fails"
+run_rebuild
+rm -f "$STUB_STATE/npm_build_fails"
+marker_before="$(cat "$STATE/LAST_FAILURE" 2>/dev/null)"
+if [ -n "$marker_before" ]; then
+  ok "marker seeded before the held-lock signal test"
+else
+  bad "marker seeded before the held-lock signal test"
+fi
+
+# This is the regression the held_lock/skip_marker split exists to prevent:
+# a run that holds the lock and is killed by TERM must still sweep "$rel.tmp"
+# — unlike the earlier signal test above, which kills the run during the
+# build, before "$rel" is even assigned. Delay the chmod call that runs
+# against "$rel.tmp" (after cp -R has created it, before mv renames it into
+# place) so the TERM below lands squarely inside that window.
+touch "$STUB_STATE/chmod_slow"
+spawn_killable_rebuild "$ROOT/signal_run2.log"
+sig_pid="$SPAWN_PID"
+
+waited=0
+while [ ! -f "$STUB_STATE/chmod_started" ] && [ "$waited" -lt 20 ]; do
+  sleep 1
+  waited=$((waited + 1))
+done
+
+if [ -f "$STUB_STATE/chmod_started" ]; then
+  ok "rel.tmp exists (chmod reached) before signaling"
+  kill -TERM "$sig_pid" 2>/dev/null
+  wait "$sig_pid"
+  sig_st=$?
+  check "signal-killed run holding the lock exits 143" "$sig_st" "143"
+else
+  bad "rel.tmp exists (chmod reached) before signaling — timed out waiting for it to start"
+  kill -TERM "$sig_pid" 2>/dev/null
+  wait "$sig_pid" 2>/dev/null
+fi
+
+if [ -n "$(find "$WWW/releases" -mindepth 1 -maxdepth 1 -name '*.tmp')" ]; then
+  bad "no *.tmp leftover after a signal-killed run that held the lock"
+else
+  ok "no *.tmp leftover after a signal-killed run that held the lock"
+fi
+
+marker_after="$(cat "$STATE/LAST_FAILURE" 2>/dev/null)"
+check "marker unchanged after a signal-killed run that held the lock" \
+  "$marker_after" "$marker_before"
+rm -f "$STUB_STATE/chmod_slow"
 teardown
 
 printf '\n%s\n' "$([ "$fails" -eq 0 ] && echo "PASS" || echo "FAIL ($fails)")"

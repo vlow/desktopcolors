@@ -56,53 +56,87 @@ cd "$REPO_DIR"
 RUNLOG="$(mktemp)"
 exec > >(tee -a "$RUNLOG") 2>&1
 
-# Set by the lock-contention skip path below, and by the signal trap right
+# Set by the lock-contention skip path below, and by the signal traps right
 # after it. A skipped or signal-killed run must neither record a failure of
 # its own nor erase a marker left by a genuine earlier failure, so cleanup
 # leaves $MARKER completely alone whenever this is set — see cleanup() below.
 skip_marker=0
+# Set immediately after this run acquires the lock (flock -n succeeds,
+# below) — never by the signal traps. A run that never held the lock — lock
+# contention, or a signal that arrived before the lock was taken — created
+# none of current.tmp, "$rel.tmp" or the .counter.* scratch files, so it must
+# not remove them: those belong to whichever process actually holds the
+# lock. A run that did hold the lock owns those files regardless of how it
+# ends — success, failure, or a signal — and must sweep them; see cleanup()
+# below. This is deliberately a separate flag from skip_marker: holding the
+# lock and being a signal death are independent facts about a run.
+held_lock=0
 
 # Installed before the lock so it covers the whole run, not just the publish
-# step further down: killed/failed runs at any point must still sweep staging
-# leftovers and, unless skip_marker says otherwise, record or clear $MARKER.
+# step further down: a run that held the lock must sweep its staging
+# leftovers no matter how it ends, and unless skip_marker says otherwise must
+# record or clear $MARKER.
 cleanup() {
   local st=$?
-  # A run that never held the lock — lock contention, or killed by a signal
-  # before/during someone else's run — did not create current.tmp, "$rel.tmp"
-  # or the .counter.* scratch files, so it must not remove them: those belong
-  # to whichever process actually holds the lock. Only the run log is ours to
-  # clean up, and $MARKER is left completely untouched either way.
-  if [ "$skip_marker" -eq 1 ]; then
-    rm -f "$RUNLOG" || true
-    return
+  # Disarm the signal traps before doing any work. Without this, a second
+  # TERM/INT/HUP arriving mid-cleanup re-enters this same trap: the
+  # `> "$MARKER"` redirect a few lines down would be caught mid-write,
+  # leaving $MARKER truncated to empty, and $RUNLOG's removal below could
+  # never be reached, leaking it. From here on a second signal is ignored
+  # until this run exits on its own.
+  trap '' TERM INT HUP
+  # A run that held the lock owns current.tmp, "$rel.tmp" and the
+  # .counter.* scratch files regardless of how it ends — success, failure,
+  # or a signal — and must sweep them so a killed run never strands the
+  # staging tree under /var/www. A run that never held the lock — lock
+  # contention, or a signal that arrived before the lock was acquired — owns
+  # none of them; they belong to whichever process actually holds the lock,
+  # so this run must leave them alone.
+  if [ "$held_lock" -eq 1 ]; then
+    rm -rf "$WWW_DIR/current.tmp" || true
+    if [ -n "${rel:-}" ]; then
+      rm -rf "$rel.tmp" || true
+    fi
+    rm -f "$REPO_DIR"/counter/.counter.* 2>/dev/null || true
   fi
-  rm -rf "$WWW_DIR/current.tmp" || true
-  if [ -n "${rel:-}" ]; then
-    rm -rf "$rel.tmp" || true
+  # Contention and signal deaths both leave $MARKER completely untouched —
+  # neither writing a failure of their own nor clearing a genuine earlier
+  # one. Only a run that actually ran to completion (success or a real
+  # failure) may touch it.
+  if [ "$skip_marker" -eq 0 ]; then
+    if [ "$st" -ne 0 ]; then
+      {
+        printf 'FAILED %s exit=%s commit=%s\n' \
+          "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$st" \
+          "$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+        tail -20 "$RUNLOG"
+      } > "$MARKER" 2>/dev/null || true
+    else
+      rm -f "$MARKER" || true
+    fi
   fi
-  rm -f "$REPO_DIR"/counter/.counter.* 2>/dev/null || true
-  if [ "$st" -ne 0 ]; then
-    {
-      printf 'FAILED %s exit=%s commit=%s\n' \
-        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$st" \
-        "$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo unknown)"
-      tail -20 "$RUNLOG"
-    } > "$MARKER" 2>/dev/null || true
-  else
-    rm -f "$MARKER" || true
-  fi
+  # $RUNLOG is this run's own scratch file on every path — contention,
+  # signal, success, or failure — so it is always removed.
   rm -f "$RUNLOG" || true
 }
 trap cleanup EXIT
 # bash runs the EXIT trap for a signal death too (only SIGKILL bypasses it),
 # but $? inside that trap is 0 in that case even though the script itself
-# exits 143 — so without this, systemctl stop/a reboot/a timeout mid-build
-# would take cleanup's *success* branch and erase a marker recording a real
-# earlier failure. Route signal deaths into the same "leave $MARKER
-# completely alone" path already built for lock contention instead: an
-# operator-aborted run is not a build failure (systemd reports the signal
-# itself), so it must neither write a marker nor clear one.
-trap 'skip_marker=1; exit 143' TERM INT HUP
+# exits 128+signum — so without this, systemctl stop/a reboot/a timeout
+# mid-build would take cleanup's *success* branch and erase a marker
+# recording a real earlier failure. Route signal deaths into the same "leave
+# $MARKER completely alone" path already built for lock contention instead:
+# an operator-aborted run is not a build failure (systemd reports the signal
+# itself), so it must neither write a marker nor clear one. This says
+# nothing about held_lock: a signal-killed run that holds the lock still
+# owns its staging files and cleanup still sweeps them; see cleanup() above.
+#
+# Exit 128+signum per signal (143/130/129) rather than hardcoding 143 for
+# all three, so INT and HUP are reported to journald honestly instead of
+# every signal death showing up as a SIGTERM.
+trap 'skip_marker=1; exit 143' TERM
+trap 'skip_marker=1; exit 130' INT
+trap 'skip_marker=1; exit 129' HUP
 
 # Serialize before anything mutates the tree. A manual run overlapping the
 # hourly one would otherwise let the `git reset --hard` below rewrite files
@@ -117,7 +151,7 @@ exec 9>"$LOCKFILE"
 # would report success forever. Only status 1 gets the quiet skip; anything
 # else is a loud failure with the real status preserved.
 if flock -n 9; then
-  :
+  held_lock=1
 else
   flock_status=$?
   if [ "$flock_status" -eq 1 ]; then
