@@ -68,6 +68,10 @@ case "$1" in
   ci)  mkdir -p node_modules ;;
   run)
     if [ "$2" = "build" ]; then
+      if [ -f "$STUB_STATE/npm_build_slow" ]; then
+        touch "$STUB_STATE/build_started"
+        sleep 2
+      fi
       mkdir -p dist
       if [ -f "$STUB_STATE/npm_build_empty" ]; then
         : > dist/index.html
@@ -110,7 +114,23 @@ EOS
 #!/usr/bin/env bash
 exit 0
 EOS
-  chmod +x "$STUB"/* "$STUB_STATE/counter_payload"
+  # Delegates to the real chmod unless a test flips the trigger flag, in which
+  # case it fails — used to exercise the publish section's staging-directory
+  # failure path (after "$rel" is assigned, before "$rel.tmp" is renamed into
+  # place) without touching rebuild.sh itself.
+  cat > "$STUB/chmod" <<'EOS'
+#!/usr/bin/env bash
+if [ -f "$STUB_STATE/chmod_fails" ]; then
+  echo "stub chmod: forced failure" >&2
+  exit 1
+fi
+exec /bin/chmod "$@"
+EOS
+  # Absolute path: once $STUB/chmod (below) exists on PATH, a bare `chmod`
+  # here is ambiguous — bash's command hash can end up pointing at a prior
+  # block's now-torn-down $STUB dir instead of re-searching, aborting with
+  # "No such file or directory". Sidestep PATH/hash resolution entirely.
+  /bin/chmod +x "$STUB"/* "$STUB_STATE/counter_payload"
   export STUB_STATE
   export PATH="$STUB:$PATH"
 }
@@ -347,6 +367,36 @@ check "previous good release still serves" \
   "$(cat "$WWW/current/index.html" 2>/dev/null)" "SITE"
 teardown
 
+echo "staging failure after rel is assigned sweeps rel.tmp"
+setup
+run_rebuild
+good_rel="$(readlink "$WWW/current")"
+# Force the chmod inside the publish section to fail — this fires after
+# "$rel" is assigned and dist has been copied into "$rel.tmp", but before
+# "$rel.tmp" is renamed into place. Every existing failure injection (build
+# fails, empty build, hard flock failure) dies before "rel" is ever assigned,
+# so without this the trap's `rm -rf "$rel.tmp"` — the removal that stops a
+# killed run stranding the copied dist tree under /var/www — is unverified.
+commit_to_release package.json '{"name":"broken-staging"}'
+touch "$STUB_STATE/chmod_fails"
+run_rebuild; st=$?
+if [ "$st" -ne 0 ]; then
+  ok "staging failure after rel is assigned exits nonzero"
+else
+  bad "staging failure after rel is assigned exits nonzero — got 0"
+fi
+if [ -n "$(find "$WWW/releases" -mindepth 1 -maxdepth 1 -name '*.tmp')" ]; then
+  bad "no *.tmp leftover after a staging failure"
+else
+  ok "no *.tmp leftover after a staging failure"
+fi
+check "current still points at the previous good release" \
+  "$(readlink "$WWW/current")" "$good_rel"
+check "previous good release still serves" \
+  "$(cat "$WWW/current/index.html" 2>/dev/null)" "SITE"
+rm -f "$STUB_STATE/chmod_fails"
+teardown
+
 echo "failure marker"
 setup
 run_rebuild
@@ -361,6 +411,23 @@ if [ "$st" -ne 0 ]; then ok "failed run exits nonzero"; else bad "failed run exi
 if [ -s "$STATE/LAST_FAILURE" ]; then ok "marker written on failure"; else bad "marker written on failure"; fi
 check "marker names the failure" \
   "$(head -1 "$STATE/LAST_FAILURE" | cut -d' ' -f1)" "FAILED"
+# The header/tail-20-lines excerpt is the marker's entire diagnostic value —
+# a `cleanup` that wrote the single literal line "FAILED" would still pass
+# the check above, so also pin down the exit status, a real commit (not the
+# "unknown" fallback), and that the log excerpt actually arrived.
+marker_header="$(head -1 "$STATE/LAST_FAILURE")"
+check "marker header records the observed exit status" \
+  "$(printf '%s' "$marker_header" | grep -oE 'exit=[0-9]+')" "exit=$st"
+if printf '%s' "$marker_header" | grep -qE 'commit=[0-9a-f]{7,40}$'; then
+  ok "marker header names a sha-shaped commit, not 'unknown'"
+else
+  bad "marker header names a sha-shaped commit, not 'unknown' — got '$marker_header'"
+fi
+if grep -q '^\[rebuild\] building site$' "$STATE/LAST_FAILURE"; then
+  ok "marker body carries the run's [rebuild] log excerpt"
+else
+  bad "marker body carries the run's [rebuild] log excerpt"
+fi
 check "previous release still live" "$(readlink "$WWW/current")" "$first_release"
 check "previous release still serves" "$(cat "$WWW/current/index.html")" "SITE"
 if [ -e "$WWW/current.tmp" ]; then bad "no staging symlink left behind"; else ok "no staging symlink left behind"; fi
@@ -384,6 +451,81 @@ chmod +x "$STUB/flock"
 run_rebuild; st=$?
 check "skipped run exits 0" "$st" "0"
 if [ -s "$STATE/LAST_FAILURE" ]; then ok "marker survives a skipped run"; else bad "marker survives a skipped run"; fi
+teardown
+
+echo "lock contention from a clean state does not create a marker"
+setup
+if [ -e "$STATE/LAST_FAILURE" ]; then
+  bad "no marker before a contended run"
+else
+  ok "no marker before a contended run"
+fi
+cat > "$STUB/flock" <<'EOS'
+#!/usr/bin/env bash
+exit 1
+EOS
+chmod +x "$STUB/flock"
+run_rebuild; st=$?
+check "skipped run exits 0" "$st" "0"
+# The other contention block only proves an existing marker survives; nothing
+# yet proves a skip from a clean state doesn't fabricate one — the same
+# skip_marker plumbing that preserves a marker could just as easily leave a
+# stray empty one behind if cleanup's structure were wrong.
+if [ -e "$STATE/LAST_FAILURE" ]; then
+  bad "clean lock contention does not create a marker"
+else
+  ok "clean lock contention does not create a marker"
+fi
+teardown
+
+echo "signal-killed run leaves an existing marker intact"
+setup
+# Seed a genuine marker the same way the "failure marker" block does.
+touch "$STUB_STATE/npm_build_fails"
+run_rebuild
+rm -f "$STUB_STATE/npm_build_fails"
+marker_before="$(cat "$STATE/LAST_FAILURE" 2>/dev/null)"
+if [ -n "$marker_before" ]; then
+  ok "marker seeded before the signal test"
+else
+  bad "marker seeded before the signal test"
+fi
+
+# Run rebuild.sh directly (via `exec`, so $! is rebuild.sh's own pid rather
+# than a wrapping subshell's) with a build that blocks long enough to signal
+# it mid-run. The npm stub touches a sentinel the instant it starts blocking,
+# so we poll for that instead of guessing a fixed delay.
+touch "$STUB_STATE/npm_build_slow"
+(
+  cd "$REPO" || exit 1
+  export REPO_DIR="$REPO" WWW_DIR="$WWW" STATE_DIR="$STATE" \
+    COUNTER_BIN="$REPO/counter/counter" BRANCH=release KEEP=3 \
+    RESTART_CMD="sudo /usr/bin/systemctl restart counter.service"
+  exec bash "$REBUILD"
+) > "$ROOT/signal_run.log" 2>&1 &
+sig_pid=$!
+
+waited=0
+while [ ! -f "$STUB_STATE/build_started" ] && [ "$waited" -lt 20 ]; do
+  sleep 1
+  waited=$((waited + 1))
+done
+
+if [ -f "$STUB_STATE/build_started" ]; then
+  ok "build reached before signaling"
+  kill -TERM "$sig_pid" 2>/dev/null
+  wait "$sig_pid"
+  sig_st=$?
+  check "signal-killed run exits 143" "$sig_st" "143"
+else
+  bad "build reached before signaling — timed out waiting for it to start"
+  kill -TERM "$sig_pid" 2>/dev/null
+  wait "$sig_pid" 2>/dev/null
+fi
+
+marker_after="$(cat "$STATE/LAST_FAILURE" 2>/dev/null)"
+check "marker unchanged after a signal-killed run" "$marker_after" "$marker_before"
+rm -f "$STUB_STATE/npm_build_slow"
 teardown
 
 printf '\n%s\n' "$([ "$fails" -eq 0 ] && echo "PASS" || echo "FAIL ($fails)")"

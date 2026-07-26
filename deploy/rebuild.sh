@@ -56,9 +56,10 @@ cd "$REPO_DIR"
 RUNLOG="$(mktemp)"
 exec > >(tee -a "$RUNLOG") 2>&1
 
-# Set by the lock-contention skip path below. A skipped run must neither
-# record a failure of its own nor erase a marker left by a genuine earlier
-# failure, so cleanup leaves $MARKER completely alone whenever this is set.
+# Set by the lock-contention skip path below, and by the signal trap right
+# after it. A skipped or signal-killed run must neither record a failure of
+# its own nor erase a marker left by a genuine earlier failure, so cleanup
+# leaves $MARKER completely alone whenever this is set — see cleanup() below.
 skip_marker=0
 
 # Installed before the lock so it covers the whole run, not just the publish
@@ -66,26 +67,42 @@ skip_marker=0
 # leftovers and, unless skip_marker says otherwise, record or clear $MARKER.
 cleanup() {
   local st=$?
+  # A run that never held the lock — lock contention, or killed by a signal
+  # before/during someone else's run — did not create current.tmp, "$rel.tmp"
+  # or the .counter.* scratch files, so it must not remove them: those belong
+  # to whichever process actually holds the lock. Only the run log is ours to
+  # clean up, and $MARKER is left completely untouched either way.
+  if [ "$skip_marker" -eq 1 ]; then
+    rm -f "$RUNLOG" || true
+    return
+  fi
   rm -rf "$WWW_DIR/current.tmp" || true
   if [ -n "${rel:-}" ]; then
     rm -rf "$rel.tmp" || true
   fi
   rm -f "$REPO_DIR"/counter/.counter.* 2>/dev/null || true
-  if [ "$skip_marker" -eq 0 ]; then
-    if [ "$st" -ne 0 ]; then
-      {
-        printf 'FAILED %s exit=%s commit=%s\n' \
-          "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$st" \
-          "$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo unknown)"
-        tail -20 "$RUNLOG"
-      } > "$MARKER" 2>/dev/null || true
-    else
-      rm -f "$MARKER"
-    fi
+  if [ "$st" -ne 0 ]; then
+    {
+      printf 'FAILED %s exit=%s commit=%s\n' \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$st" \
+        "$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+      tail -20 "$RUNLOG"
+    } > "$MARKER" 2>/dev/null || true
+  else
+    rm -f "$MARKER" || true
   fi
-  rm -f "$RUNLOG"
+  rm -f "$RUNLOG" || true
 }
 trap cleanup EXIT
+# bash runs the EXIT trap for a signal death too (only SIGKILL bypasses it),
+# but $? inside that trap is 0 in that case even though the script itself
+# exits 143 — so without this, systemctl stop/a reboot/a timeout mid-build
+# would take cleanup's *success* branch and erase a marker recording a real
+# earlier failure. Route signal deaths into the same "leave $MARKER
+# completely alone" path already built for lock contention instead: an
+# operator-aborted run is not a build failure (systemd reports the signal
+# itself), so it must neither write a marker nor clear one.
+trap 'skip_marker=1; exit 143' TERM INT HUP
 
 # Serialize before anything mutates the tree. A manual run overlapping the
 # hourly one would otherwise let the `git reset --hard` below rewrite files
