@@ -57,6 +57,7 @@ Do not try to grow this into a full mock harness for the real build. The reason 
 **Interfaces:**
 - Consumes: nothing.
 - Produces: `deploy/rebuild.sh` honouring these environment overrides, which every later task and the test harness rely on — `REPO_DIR`, `WWW_DIR`, `STATE_DIR`, `DB_PATH`, `COUNTER_BIN`, `BRANCH`, `KEEP`, `LOCKFILE`, `MARKER`, `RESTART_CMD`. Also the shell function `hash_file <path> -> sha256 hex on stdout`.
+- Produces: `deploy/rebuild.test.sh` with the fixture helpers `setup`, `teardown`, `run_rebuild` and `commit_to_release`, plus `ok`/`bad`/`check`. Tasks 2 and 3 add test blocks that reuse all of these unchanged.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -225,6 +226,21 @@ commit_to_release package.json '{"name":"moved"}'
 run_rebuild
 check "checkout advanced to origin/release" \
   "$(cat "$REPO/package.json")" '{"name":"moved"}'
+teardown
+
+echo "dependency gating"
+setup
+run_rebuild
+check "first run installs deps" \
+  "$(grep -c '^ci' "$STUB_STATE/npm.log")" "1"
+commit_to_release package.json '{"name":"same-lock"}'
+run_rebuild
+check "unchanged lockfile skips npm ci" \
+  "$(grep -c '^ci' "$STUB_STATE/npm.log")" "1"
+commit_to_release package-lock.json 'lock-v2'
+run_rebuild
+check "changed lockfile runs npm ci" \
+  "$(grep -c '^ci' "$STUB_STATE/npm.log")" "2"
 teardown
 
 printf '\n%s\n' "$([ "$fails" -eq 0 ] && echo "PASS" || echo "FAIL ($fails)")"
@@ -581,28 +597,13 @@ else
   ok "no temp binaries left behind"
 fi
 teardown
-
-echo "dependency gating"
-setup
-run_rebuild
-check "first run installs deps" \
-  "$(grep -c '^ci' "$STUB_STATE/npm.log")" "1"
-commit_to_release package.json '{"name":"same-lock"}'
-run_rebuild
-check "unchanged lockfile skips npm ci" \
-  "$(grep -c '^ci' "$STUB_STATE/npm.log")" "1"
-commit_to_release package-lock.json 'lock-v2'
-run_rebuild
-check "changed lockfile runs npm ci" \
-  "$(grep -c '^ci' "$STUB_STATE/npm.log")" "2"
-teardown
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run: `bash deploy/rebuild.test.sh`
 
-Expected: FAIL on `counter binary installed` and all three restart assertions — nothing compiles the counter yet. The `dependency gating` block should already pass from Task 1; if it does not, fix the gate before adding the counter logic.
+Expected: FAIL on `counter binary installed` and all three restart assertions — nothing compiles the counter yet. Every block from Tasks 1 and 2 must still pass; if any regressed, fix that before adding the counter logic.
 
 - [ ] **Step 3: Add the counter block to `rebuild.sh`**
 
