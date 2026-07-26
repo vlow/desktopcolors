@@ -294,6 +294,48 @@ else
 fi
 teardown
 
+echo "preflight tool check"
+setup
+# A required tool missing from PATH must produce one named, actionable
+# failure instead of a bare exit 127 wherever that tool first gets used —
+# and it must route through the same failure-marker machinery as any other
+# failure. Isolate PATH for this one invocation rather than just deleting a
+# stub: the machine running this suite (or a CI image) may have real go/npm
+# installed elsewhere on PATH (e.g. Homebrew's /opt/homebrew/bin), and
+# run_rebuild's normal STUB:$PATH would still resolve to those, silently
+# passing the "tool is missing" case this test exists to catch.
+PREFLIGHT_STUB="$ROOT/preflight_stub"
+mkdir -p "$PREFLIGHT_STUB"
+cp "$STUB/flock" "$PREFLIGHT_STUB/flock"
+cp "$STUB/npm" "$PREFLIGHT_STUB/npm"
+# go deliberately left out of the stub — this is the actual production bug:
+# git and npm resolve fine, go does not.
+chmod +x "$PREFLIGHT_STUB"/*
+( cd "$REPO" && env -i \
+    PATH="$PREFLIGHT_STUB:/usr/bin:/bin" \
+    HOME="${HOME:-/tmp}" \
+    REPO_DIR="$REPO" WWW_DIR="$WWW" STATE_DIR="$STATE" \
+    COUNTER_BIN="$REPO/counter/counter" BRANCH=release KEEP=3 \
+    RESTART_CMD="sudo /usr/bin/systemctl restart counter.service" \
+    bash "$REBUILD" ) > "$ROOT/preflight.log" 2>&1
+st=$?
+if [ "$st" -ne 0 ]; then
+  ok "missing tool exits nonzero"
+else
+  bad "missing tool exits nonzero — got 0"
+fi
+if grep -q "required tool 'go' not found on PATH; see deploy/SETUP.md" "$ROOT/preflight.log"; then
+  ok "missing tool names the specific tool and points at SETUP.md"
+else
+  bad "missing tool names the specific tool and points at SETUP.md — got: $(cat "$ROOT/preflight.log")"
+fi
+if [ -s "$STATE/LAST_FAILURE" ]; then
+  ok "missing-tool preflight failure writes a marker"
+else
+  bad "missing-tool preflight failure writes a marker"
+fi
+teardown
+
 echo "stale mtime prune order"
 setup
 KEEP_OVERRIDE=2
@@ -641,6 +683,36 @@ if ls "$REPO"/counter/.counter.* >/dev/null 2>&1; then
   bad "no temp binaries left behind"
 else
   ok "no temp binaries left behind"
+fi
+teardown
+
+echo "counter build failure leaves no temp file and marks a failure"
+setup
+# The existing "no temp binaries left behind" assertion above only covers the
+# success path, where `mv -f` consumes the temp file anyway. This exercises
+# the path that actually depends on cleanup's `.counter.*` glob sweep: `go
+# build` fails, `set -e` kills the run right after mktemp created the temp
+# file and before anything moves or removes it on its own.
+cat > "$STUB/go" <<'EOS'
+#!/usr/bin/env bash
+echo "stub go: build failed on purpose" >&2
+exit 1
+EOS
+run_rebuild; st=$?
+if [ "$st" -ne 0 ]; then
+  ok "go build failure exits nonzero"
+else
+  bad "go build failure exits nonzero — got 0"
+fi
+if [ -s "$STATE/LAST_FAILURE" ]; then
+  ok "go build failure writes a marker"
+else
+  bad "go build failure writes a marker"
+fi
+if ls "$REPO"/counter/.counter.* >/dev/null 2>&1; then
+  bad "no .counter.* temp file left behind after a go build failure"
+else
+  ok "no .counter.* temp file left behind after a go build failure"
 fi
 teardown
 

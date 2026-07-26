@@ -13,10 +13,15 @@ Environment=WWW_DIR=/var/www/desktopcolors
 Environment=DB_PATH=/var/lib/desktopcolors/counter.db
 Environment=COUNTER_BIN=/opt/desktopcolors/counter/counter
 # go build and npm ci both fail without a writable cache. Set explicitly rather
-# than relying on systemd deriving HOME from the passwd entry.
+# than relying on systemd deriving HOME from the passwd entry. PATH is here
+# too: Go is installed to /usr/local/go and put on PATH by /etc/profile.d/go.sh,
+# but that is only sourced by login shells, and this unit runs bash as a
+# non-login shell — so without prepending /usr/local/go/bin, `go` resolves
+# nowhere against systemd's default service PATH and the build exits 127.
 Environment=HOME=/opt/desktopcolors
 Environment=GOCACHE=/opt/desktopcolors/.cache/go-build
 Environment=GOMODCACHE=/opt/desktopcolors/.cache/go-mod
+Environment=PATH=/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/usr/bin/env bash /opt/desktopcolors/deploy/rebuild.sh
 # Build + publish needs to write the release dir and the repo's node_modules/dist.
 # /var/lib/desktopcolors is included so `counter dump` can open the SQLite DB

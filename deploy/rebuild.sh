@@ -163,6 +163,24 @@ else
   exit "$flock_status"
 fi
 
+# Preflight: git, npm and go must all be resolvable on PATH before anything
+# below tries to use them. Both ways this script runs — the
+# counter-rebuild.service unit (systemd's default service PATH has no
+# /usr/local/go/bin) and the documented manual `sudo -u desktopcolors bash
+# ...` invocation in SETUP.md — are non-login shells, so
+# /etc/profile.d/go.sh, which only login shells source, never runs and `go`
+# can resolve nowhere. Without this check that's a bare exit 127 from deep
+# inside the build; check all three up front instead, so a missing tool
+# produces one message naming it. A /usr/local/bin/go symlink is the usual
+# fix on a host without a login-shell PATH, since /usr/local/bin is already
+# on the default non-login PATH; see deploy/SETUP.md for the full setup.
+for tool in git npm go; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    log "required tool '$tool' not found on PATH; see deploy/SETUP.md"
+    exit 1
+  fi
+done
+
 # 1. Move the checkout to the tip of the deploy branch. This is what makes a
 # GitHub push a deployment. scores.json, counter/counter, node_modules/ and
 # dist/ are all gitignored, so the reset cannot clobber them.
