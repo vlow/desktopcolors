@@ -47,6 +47,46 @@ hash_file() {
 
 cd "$REPO_DIR"
 
+# Mirror output to a run log so the EXIT trap below can quote its tail into
+# the failure marker.
+#
+# Known limitation: tee's writes race the trap on exit, so a run that dies
+# right at the very end can leave the marker's tail short its last line or
+# two. The full log is always in journalctl -u counter-rebuild.
+RUNLOG="$(mktemp)"
+exec > >(tee -a "$RUNLOG") 2>&1
+
+# Set by the lock-contention skip path below. A skipped run must neither
+# record a failure of its own nor erase a marker left by a genuine earlier
+# failure, so cleanup leaves $MARKER completely alone whenever this is set.
+skip_marker=0
+
+# Installed before the lock so it covers the whole run, not just the publish
+# step further down: killed/failed runs at any point must still sweep staging
+# leftovers and, unless skip_marker says otherwise, record or clear $MARKER.
+cleanup() {
+  local st=$?
+  rm -rf "$WWW_DIR/current.tmp" || true
+  if [ -n "${rel:-}" ]; then
+    rm -rf "$rel.tmp" || true
+  fi
+  rm -f "$REPO_DIR"/counter/.counter.* 2>/dev/null || true
+  if [ "$skip_marker" -eq 0 ]; then
+    if [ "$st" -ne 0 ]; then
+      {
+        printf 'FAILED %s exit=%s commit=%s\n' \
+          "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$st" \
+          "$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+        tail -20 "$RUNLOG"
+      } > "$MARKER" 2>/dev/null || true
+    else
+      rm -f "$MARKER"
+    fi
+  fi
+  rm -f "$RUNLOG"
+}
+trap cleanup EXIT
+
 # Serialize before anything mutates the tree. A manual run overlapping the
 # hourly one would otherwise let the `git reset --hard` below rewrite files
 # under an in-flight build. Skipping is exit 0, not a failure: hourly runs must
@@ -65,6 +105,7 @@ else
   flock_status=$?
   if [ "$flock_status" -eq 1 ]; then
     log "another run holds $LOCKFILE; skipping"
+    skip_marker=1
     exit 0
   fi
   log "flock failed unexpectedly (exit $flock_status) on $LOCKFILE"
@@ -118,7 +159,6 @@ fi
 ts="$(date -u +%Y%m%d%H%M%S)"
 rel="$WWW_DIR/releases/$ts"
 mkdir -p "$WWW_DIR/releases"
-trap 'rm -rf "$WWW_DIR/current.tmp" "$rel.tmp" || true' EXIT
 # Refuse rather than nest. If $rel already exists, `mv "$rel.tmp" "$rel"`
 # below would move the staging directory *inside* it instead of replacing it,
 # landing as "$rel/$ts.tmp" — publishing the *old* release's contents with a

@@ -224,6 +224,11 @@ if [ "$st" -ne 0 ]; then
 else
   bad "non-contention flock failure exits nonzero — got 0"
 fi
+if [ -s "$STATE/LAST_FAILURE" ]; then
+  ok "hard flock failure writes a marker"
+else
+  bad "hard flock failure writes a marker"
+fi
 teardown
 
 echo "stale mtime prune order"
@@ -340,6 +345,45 @@ check "current still points at the previous good release" \
   "$(readlink "$WWW/current")" "$good_rel"
 check "previous good release still serves" \
   "$(cat "$WWW/current/index.html" 2>/dev/null)" "SITE"
+teardown
+
+echo "failure marker"
+setup
+run_rebuild
+if [ -e "$STATE/LAST_FAILURE" ]; then bad "no marker after success"; else ok "no marker after success"; fi
+first_release="$(readlink "$WWW/current")"
+
+# Break the build and run again.
+touch "$STUB_STATE/npm_build_fails"
+commit_to_release package.json '{"name":"broken"}'
+run_rebuild; st=$?
+if [ "$st" -ne 0 ]; then ok "failed run exits nonzero"; else bad "failed run exits nonzero"; fi
+if [ -s "$STATE/LAST_FAILURE" ]; then ok "marker written on failure"; else bad "marker written on failure"; fi
+check "marker names the failure" \
+  "$(head -1 "$STATE/LAST_FAILURE" | cut -d' ' -f1)" "FAILED"
+check "previous release still live" "$(readlink "$WWW/current")" "$first_release"
+check "previous release still serves" "$(cat "$WWW/current/index.html")" "SITE"
+if [ -e "$WWW/current.tmp" ]; then bad "no staging symlink left behind"; else ok "no staging symlink left behind"; fi
+
+# Recover and confirm the marker is cleared.
+rm -f "$STUB_STATE/npm_build_fails"
+run_rebuild
+if [ -e "$STATE/LAST_FAILURE" ]; then bad "marker cleared on recovery"; else ok "marker cleared on recovery"; fi
+teardown
+
+echo "lock contention does not clear a marker"
+setup
+touch "$STUB_STATE/npm_build_fails"
+run_rebuild
+rm -f "$STUB_STATE/npm_build_fails"
+cat > "$STUB/flock" <<'EOS'
+#!/usr/bin/env bash
+exit 1
+EOS
+chmod +x "$STUB/flock"
+run_rebuild; st=$?
+check "skipped run exits 0" "$st" "0"
+if [ -s "$STATE/LAST_FAILURE" ]; then ok "marker survives a skipped run"; else bad "marker survives a skipped run"; fi
 teardown
 
 printf '\n%s\n' "$([ "$fails" -eq 0 ] && echo "PASS" || echo "FAIL ($fails)")"
