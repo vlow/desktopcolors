@@ -303,8 +303,11 @@ Four moving parts:
 1. A new `part` variant on the `ChromePart` discriminated union in
    `src/lib/chromeSpec.ts`.
 2. A matching component in `src/islands/DesktopPreview.tsx`.
-3. A `case` for it in the exhaustive `renderPart` switch — `astro check` fails until it
-   is there.
+3. A `case` for it in the `renderPart` switch. This is the one place in the chrome
+   system where a forgotten case is **silent**: `renderPart` returns `ComponentChildren`,
+   which admits `undefined`, so `astro check` does not fail — the part just renders
+   nothing. Check the preview in the browser. (A missing `CHROME_SPECS` entry, by
+   contrast, does fail `astro check` — see [Add a new style](#add-a-new-style-from-existing-primitives) above.)
 4. The authoring conventions: chrome sits on an unknown wallpaper, so derive translucent
    surfaces from `chromeSurfaces(onColor)` rather than picking opaque colors, size in
    `cu()` units so the chrome scales with the preview box, use `<div>` and `<svg>` only,
@@ -317,12 +320,14 @@ For the full detail — the data flow, every convention, and the checklist — s
 
 | command | what it catches |
 |---------|-----------------|
-| `npm run build` | **the only check that validates your JSON** — the content schema (bad hex, missing field, more than one `default`) and dangling `predecessor`/`successor` refs. Also proves every page still pre-renders. |
-| `npx astro check` | TypeScript errors — a missing `CHROME_SPECS` entry, a non-exhaustive `renderPart` switch. Passes clean on a broken JSON file, so it is not a substitute for the build. |
-| `npx vitest run` | the pure logic — color math, catalog derivation, chrome spec parsing. No test reads `src/content/os/*.json`. |
+| `npm run build` | **the authoritative check on your JSON** — the content schema (bad hex, missing field, more than one `default`) and dangling `predecessor`/`successor` refs. Also proves every page still pre-renders. |
+| `npx vitest run` | `src/content/os.test.ts` re-reads every file in `src/content/os/` and parses it, so most mistakes surface here first and fastest. It uses its own copy of the schema, which omits the `wikipedia`, `project`, and `type` rules — a pass here is encouraging, not conclusive. |
+| `npx astro check` | TypeScript only — notably a missing `CHROME_SPECS` entry. It does not read your JSON at all. |
 | `npm run dev` | your own eyes: open `/os/<slug>` and check the swatches and the preview on both light and dark colors. |
 
-If you only run one thing, run `npm run build`.
+Two commands read your JSON: `vitest` and the build. The build is authoritative — it uses
+the real schema — while vitest is faster and usually catches a mistake first, but from a
+hand-maintained duplicate of that schema. If you only run one thing, run `npm run build`.
 
 ### Reading a schema failure
 
@@ -351,8 +356,8 @@ every pull request, so a green local build predicts a green PR.
 
 ## Open the pull request
 
-Commit messages follow the repository's history — a conventional-commit prefix with a
-scope:
+Commit messages follow the repository's history — a conventional-commit prefix, usually
+with a scope:
 
 ```
 feat(os): add BeOS
@@ -360,7 +365,9 @@ fix(colors): correct the Windows 95 teal
 feat(design): add the nextstep chrome style
 ```
 
-Scopes in use: `os`, `colors`, `design`, `docs`.
+Types in use: `feat`, `fix`, `docs`, `chore`, `test`. Scopes in use: `os`, `colors`,
+`design`. `docs` is a type, never a scope — a documentation change is `docs: …`, not
+`docs(docs): …`.
 
 The description must contain the source citation for every color, per
 [Sourcing](#sourcing). For a new or changed chrome style, add a screenshot of the
