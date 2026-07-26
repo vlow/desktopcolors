@@ -125,9 +125,8 @@ Each entry in `colors` is `{ hex, name, note?, default? }`:
 
 - **`hex`** — lowercase `#rrggbb`. No shorthand, no named colors. The lowercase part is
   **build-checked**: the schema's pattern is `/^#[0-9a-f]{6}$/`, so `#6A859E` fails with
-  `must be lowercase #rrggbb`. Uppercase would be harmless at runtime — every hex is
-  lowercased before it reaches a view — so the rule exists purely to keep the source
-  files single-case and therefore greppable: `grep -r '#008080' src/content/os` finds
+  `must be lowercase #rrggbb`. This keeps the source
+  files single-case and therefore diff-/greppable: `grep -r '#ae8080' src/content/os` finds
   every use of a color without a case-insensitive flag.
 - **`name`** — a human name for the swatch. Where a family has light/dark variants,
   qualify it: `French Blue (Light)`, `Olive (Dark)`.
