@@ -5,9 +5,7 @@ import Base from "../layouts/Base.astro";
 // and bump it by hand when the wording changes (not the build date).
 const updated = "2026-07-26";
 const email = "hello@desktopcolors.com";
-// TODO(owner): name the hosting provider in the "Where it runs" clause — a
-// processor has to be identified (Art. 13(1)(e) GDPR). Everything else here is
-// derived from the code: see track.ts, counter/internal/store,
+// Everything here is derived from the code: see track.ts, counter/internal/store,
 // counter/internal/ratelimit (the in-memory bucketing described under "Server
 // logs and abuse prevention") and deploy/desktopcolors.nginx.conf — including
 // the retention set in deploy/desktopcolors.logrotate. Keep this page in step
@@ -25,13 +23,16 @@ const clauses = [
   },
   {
     title: "Popularity counts", dot: "#3a6ea5",
-    plain: "We tally which colors get copied and downloaded. Totals only — no way to tie one back to you.",
-    formal: "To rank colors and platforms by popularity we count three anonymous actions: copying a color, downloading a wallpaper, and opening a platform page. Each sends only the color value and the platform name — no identifier, no cookie, no profile. Counts are added straight into running totals; individual events are never stored, so they cannot be traced back to a visit or linked across sites.",
+    plain: "We tally which colors get copied and downloaded. Totals only — no way to tie one back to you. The flood protection on those tallies runs in memory, and nothing about it is written down.",
+    formal: [
+      "To rank colors and platforms by popularity we count three anonymous actions: copying a color, downloading a wallpaper, and opening a platform page. Each sends only the color value and the platform name — no identifier, no cookie, no profile. Counts are added straight into running totals; individual events are never stored, so they cannot be traced back to a visit or linked across sites.",
+      "To stop these tallies being flooded, we rate-limit them — without storing your address anywhere. Your address is first shortened to a network prefix (IPv4 to /24, IPv6 to /64), then combined with a random value and converted into a one-way hash, which serves purely as a counting slot held in memory. Nothing about this reaches disk: we replace the random value every day, which discards every slot, and the hash cannot be turned back into an address.",
+    ],
   },
   {
-    title: "Server logs and abuse prevention", dot: "#800000",
-    plain: "Standard web server logs. IPs are cut short in the normal log; the error log keeps them briefly so we can fix broken links. Flood protection runs in memory only — nothing about it is written down.",
-    formal: "Our web server keeps two logs. The access log records the time, the page requested, the response status, the referring page and your browser's user-agent, with your IP address truncated before it is written (IPv4 to /24, IPv6 to /64); requests to the counting endpoint are not logged at all. The error log records failed requests — chiefly broken links — and does include the full IP address, which we need in order to find and fix them. Access logs are deleted after 14 days, error logs after 7. Separately, to stop the popularity counter being flooded, we rate-limit it — without storing your address anywhere. Your address is first shortened to a network prefix (IPv4 to /24, IPv6 to /64), then combined with a random value and converted into a one-way hash, which serves purely as a counting slot held in memory. Nothing about this reaches disk: we replace the random value every day, which discards every slot, and the hash cannot be turned back into an address.",
+    title: "Server logs", dot: "#800000",
+    plain: "Standard web server logs. IPs are cut short in the normal log; the error log keeps them briefly so we can fix broken links.",
+    formal: "Our web server keeps two logs. The access log records the time, the page requested, the response status, the referring page and your browser's user-agent, with your IP address truncated before it is written (IPv4 to /24, IPv6 to /64); requests to the counting endpoint are not logged at all. The error log records failed requests — chiefly broken links — and does include the full IP address, which we need in order to find and fix them. Access logs are deleted after 14 days, error logs after 7.",
   },
   {
     title: "Why we're allowed to", dot: "#000080",
@@ -40,8 +41,8 @@ const clauses = [
   },
   {
     title: "Where it runs", dot: "#008000",
-    plain: "One rented server. Nothing is shared, sold, or embedded from anyone else.",
-    formal: "The site runs on a single rented virtual server; our hosting provider acts as a processor on our behalf. Log files and popularity totals stay on that server and are not shared with or sold to anyone. We embed no third-party content — no fonts, scripts, images or trackers load from other domains — so no data reaches a third party unless you click an outbound link, after which that site's own privacy policy applies.",
+    plain: "One rented server in Nuremberg, Germany. Nothing is shared, sold, or embedded from anyone else.",
+    formal: "The site runs on a single rented virtual server in Nuremberg, Germany, provided by netcup GmbH, which acts as a processor on our behalf. Log files and popularity totals stay on that server and are not shared with or sold to anyone. We embed no third-party content — no fonts, scripts, images or trackers load from other domains — so no data reaches a third party unless you click an outbound link, after which that site's own privacy policy applies.",
   },
   {
     title: "Your rights", dot: "#800080",
@@ -71,7 +72,10 @@ const clauses = [
                 <span style={`width: 12px; height: 12px; border-radius: 4px; background-color: ${c.dot}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`}></span>
                 <div style="font: 500 17px var(--font-ui); color: var(--ink);">{c.title}</div>
               </div>
-              <p style="font-size: 15px; line-height: 1.65; color: var(--muted); margin: 12px 0 0; max-width: 460px; text-wrap: pretty;">{c.formal}</p>
+              {/* `formal` is one paragraph in most clauses, several in a few. */}
+              {(Array.isArray(c.formal) ? c.formal : [c.formal]).map((para) => (
+                <p style="font-size: 15px; line-height: 1.65; color: var(--muted); margin: 12px 0 0; max-width: 460px; text-wrap: pretty;">{para}</p>
+              ))}
             </div>
             <div style={`background: #f6f7f7; border-left: 2px solid ${c.dot}; border-radius: 0 10px 10px 0; padding: 13px 16px;`}>
               <div style="font: 600 9px var(--font-mono); color: #8a847c; letter-spacing: 1.2px;">PLAIN ENGLISH</div>
