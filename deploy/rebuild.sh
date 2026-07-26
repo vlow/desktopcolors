@@ -41,10 +41,24 @@ cd "$REPO_DIR"
 # hourly one would otherwise let the `git reset --hard` below rewrite files
 # under an in-flight build. Skipping is exit 0, not a failure: hourly runs must
 # neither pile up behind a long manual run nor raise a false alarm.
+mkdir -p "$STATE_DIR"
 exec 9>"$LOCKFILE"
-if ! flock -n 9; then
-  log "another run holds $LOCKFILE; skipping"
-  exit 0
+# flock -n exits 1 specifically for "already locked" (man flock(1)). Any other
+# status — 127 if flock itself is missing, a bad-fd error, a malformed
+# invocation — is not contention, and treating it as such would log a benign
+# "skipping" and exit 0 while never having published anything: an hourly timer
+# would report success forever. Only status 1 gets the quiet skip; anything
+# else is a loud failure with the real status preserved.
+if flock -n 9; then
+  :
+else
+  flock_status=$?
+  if [ "$flock_status" -eq 1 ]; then
+    log "another run holds $LOCKFILE; skipping"
+    exit 0
+  fi
+  log "flock failed unexpectedly (exit $flock_status) on $LOCKFILE"
+  exit "$flock_status"
 fi
 
 # 1. Move the checkout to the tip of the deploy branch. This is what makes a
@@ -80,6 +94,15 @@ fi
 log "building site"
 npm run build
 
+# `set -e` only catches a nonzero `npm run build`; it says nothing about a
+# build that exits 0 but produced nothing or a truncated index.html. This is
+# the one check standing between a broken build and a published empty site,
+# so it fails loudly rather than letting the mv below publish it.
+if [ ! -s dist/index.html ]; then
+  log "dist/index.html missing or empty after build; refusing to publish"
+  exit 1
+fi
+
 # 5. Publish atomically: move dist into a new release, then flip the symlink.
 trap 'rm -f "$WWW_DIR/current.tmp"' EXIT
 ts="$(date -u +%Y%m%d%H%M%S)"
@@ -105,10 +128,35 @@ if ! mv -Tf "$WWW_DIR/current.tmp" "$WWW_DIR/current" 2>/dev/null; then
 fi
 log "published release $ts"
 
-# 6. Prune old releases, keeping the newest $KEEP.
-# shellcheck disable=SC2012
-ls -1dt "$WWW_DIR"/releases/*/ 2>/dev/null | tail -n "+$((KEEP + 1))" | while read -r old; do
+# 6. Prune old releases, keeping the newest $KEEP. Sort by directory name, not
+# mtime: releases are named "$ts" (%Y%m%d%H%M%S, publish time by construction),
+# and lexicographic order on that name is chronological. mtime order broke
+# when publish switched to `mv dist "$rel"`: a rename carries dist's mtime
+# rather than getting a fresh one at publish time, so sorting by mtime is now
+# incidental, not structural.
+#
+# Also never prune whatever "current" resolves to right now, as insurance
+# against unlinking the live tree even if name/mtime ordering is ever wrong.
+current_target="$(readlink "$WWW_DIR/current" 2>/dev/null || true)"
+case "$current_target" in
+  /*) ;;
+  ?*) current_target="$WWW_DIR/$current_target" ;;
+esac
+prune_failed=0
+while IFS= read -r old; do
+  old="${old%/}"
+  if [ -n "$current_target" ] && [ "$old" = "$current_target" ]; then
+    log "skipping prune of $old: current points at it"
+    continue
+  fi
   log "pruning $old"
-  rm -rf "$old"
-done
+  rm -rf "$old" || prune_failed=1
+done < <(printf '%s\n' "$WWW_DIR"/releases/*/ | sort -r | tail -n "+$((KEEP + 1))")
+# The publish above already succeeded; a stray rm -rf failure here (e.g.
+# EACCES) must not turn a live, correctly published release into a nonzero
+# script exit — a later task keys a failure marker off this exit status, and
+# that alarm must mean the publish failed, not that a prune hiccupped.
+if [ "$prune_failed" -ne 0 ]; then
+  log "one or more releases failed to prune; publish already succeeded, not failing the run"
+fi
 log "done"

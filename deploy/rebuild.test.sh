@@ -58,7 +58,16 @@ PAYLOAD
 printf '%s\n' "$*" >> "$STUB_STATE/npm.log"
 case "$1" in
   ci)  mkdir -p node_modules ;;
-  run) [ "$2" = "build" ] && { mkdir -p dist && printf 'SITE\n' > dist/index.html; } ;;
+  run)
+    if [ "$2" = "build" ]; then
+      mkdir -p dist
+      if [ -f "$STUB_STATE/npm_build_empty" ]; then
+        : > dist/index.html
+      else
+        printf 'SITE\n' > dist/index.html
+      fi
+    fi
+    ;;
 esac
 if [ -f "$STUB_STATE/npm_build_fails" ] && [ "$1" = "run" ]; then
   echo "stub npm: build failed on purpose" >&2
@@ -95,6 +104,11 @@ EOS
 }
 
 teardown() { [ -n "${ROOT:-}" ] && rm -rf "$ROOT"; }
+
+# Without -e, an unset-variable abort under `set -u` (or any other early exit)
+# would otherwise skip the per-block teardown call and leave the mktemp -d
+# fixture — real git clones included — behind on disk.
+trap teardown EXIT
 
 # Runs rebuild.sh with the fixture wired in. Captures output; returns its status.
 #
@@ -175,6 +189,78 @@ commit_to_release package-lock.json 'lock-v2'
 run_rebuild
 check "changed lockfile runs npm ci" \
   "$(grep -c '^ci' "$STUB_STATE/npm.log")" "2"
+teardown
+
+echo "flock hard failure"
+setup
+# A non-1 flock exit is not contention (man flock(1): status 1 is reserved for
+# "already locked"). 127 stands in for "flock is missing"/a malformed
+# invocation/a bad fd — anything else — and must be a loud failure, not the
+# quiet "another run holds the lock" skip-with-exit-0.
+cat > "$STUB/flock" <<'EOS'
+#!/usr/bin/env bash
+exit 127
+EOS
+run_rebuild; st=$?
+if [ "$st" -ne 0 ]; then
+  ok "non-contention flock failure exits nonzero"
+else
+  bad "non-contention flock failure exits nonzero — got 0"
+fi
+teardown
+
+echo "stale mtime prune order"
+setup
+KEEP_OVERRIDE=2
+run_rebuild
+rel1="$(readlink "$WWW/current")"
+commit_to_release package.json '{"name":"b"}'
+run_rebuild
+rel2="$(readlink "$WWW/current")"
+# rel2 is the second-newest release by name and must survive the next prune
+# (KEEP=2). Backdate it so mtime order and name order disagree about which of
+# rel1/rel2 is older — exactly what happens once `mv dist "$rel"` makes a
+# release inherit dist's build-time mtime instead of getting a fresh one at
+# publish time.
+touch -t 200001010000 "$rel2"
+commit_to_release package.json '{"name":"c"}'
+run_rebuild; st=$?
+check "exits 0 despite mtime/name disagreement" "$st" "0"
+if [ -d "$rel2" ]; then
+  ok "release kept per name order survives a stale mtime"
+else
+  bad "release kept per name order survives a stale mtime — $rel2 was pruned"
+fi
+if [ -d "$rel1" ]; then
+  bad "release due for pruning per name order was kept instead — $rel1 still present"
+else
+  ok "release due for pruning per name order was pruned"
+fi
+if [ -d "$(readlink "$WWW/current")" ]; then
+  ok "current release directory still exists"
+else
+  bad "current release directory still exists"
+fi
+check "current still serves" "$(cat "$WWW/current/index.html" 2>/dev/null)" "SITE"
+unset KEEP_OVERRIDE
+teardown
+
+echo "empty build guard"
+setup
+run_rebuild
+good_rel="$(readlink "$WWW/current")"
+commit_to_release package.json '{"name":"broken"}'
+touch "$STUB_STATE/npm_build_empty"
+run_rebuild; st=$?
+if [ "$st" -ne 0 ]; then
+  ok "empty build exits nonzero"
+else
+  bad "empty build exits nonzero — got 0"
+fi
+check "current still points at the previous good release" \
+  "$(readlink "$WWW/current")" "$good_rel"
+check "previous good release still serves" \
+  "$(cat "$WWW/current/index.html" 2>/dev/null)" "SITE"
 teardown
 
 printf '\n%s\n' "$([ "$fails" -eq 0 ] && echo "PASS" || echo "FAIL ($fails)")"
