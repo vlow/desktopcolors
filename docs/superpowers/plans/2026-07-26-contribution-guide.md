@@ -15,11 +15,11 @@
 - **Audience:** a contributor comfortable with git and GitHub but new to this repository. Never explain forking, branching, or what a pull request is.
 - **Self-contained:** a contributor completing a normal submission (a platform, with or without an existing chrome style) must never need to open `docs/`. The single exception is adding a new chrome *primitive*, which is summarized and linked out.
 - **Sourcing rule, stated verbatim in the guide:** "Your pull request must name where the color came from." Any credible source counts — a screenshot of a real or emulated install, a constant in a source, theme, or resource file, official documentation, or a reputable archive. No fixed citation format.
-- **Verified toolchain facts** (established by running each command against a deliberately broken file; do not restate the older, incorrect claims found in `docs/adding-os-data.md`):
-  - `npx astro check` catches TypeScript errors only — a missing `CHROME_SPECS` entry, a non-exhaustive `renderPart` switch. It **passes clean on an invalid OS JSON file.**
-  - `npx vitest run` covers pure logic. **No test reads `src/content/os/*.json`.**
-  - `npm run build` is the **only** command that validates OS data: the Zod schema in `src/content/config.ts` and the dangling-ref check in `src/lib/catalog.ts:91`.
-- **Commit convention:** the repository uses conventional commits with the scopes already in its history — `feat(os):`, `fix(colors):`, `docs:`, `chore(os):`, `feat(design):`.
+- **Verified toolchain facts.** Each was established by running the command against a deliberately broken file. Two of them contradict claims in `docs/adding-os-data.md`; that file is wrong and Task 3 corrects it.
+  - `npm run build` is the **authoritative** content check: the Zod schema in `src/content/config.ts` plus the dangling-ref throw in `src/lib/catalog.ts:91`.
+  - `npx vitest run` **also validates OS data**, via `src/content/os.test.ts`, which reads every file in `src/content/os/` and parses it against its own Zod schema — catching a bad hex, a bad `added` format, more than one `default`, and an unresolvable `predecessor`/`successor`. That schema is a **hand-maintained duplicate** of `config.ts` and omits the `wikipedia`, `project`, and `type` rules, so it is a fast first check rather than a substitute for the build.
+  - `npx astro check` is TypeScript only. It **passes clean with 0 errors on an invalid OS JSON file**, and it does **not** catch a missing `renderPart` case — `renderPart` (`src/islands/DesktopPreview.tsx:376`) returns `ComponentChildren`, which admits `undefined`. It *does* catch a missing `CHROME_SPECS` entry, because that record is typed `Record<DesktopStyle, ChromeSpec | null>`.
+- **Commit convention:** conventional commits. Types in use: `feat`, `fix`, `docs`, `chore`, `test`. Scopes in use: `os`, `colors`, `design`, `specs`, `plans`. `docs` is a **type**, not a scope (`docs: add TESTING.md`).
 - **Do not** add a `LICENSE` file, flip `package.json`'s `"private": true`, or change repository visibility. Those are named prerequisites in the spec and are explicitly out of scope.
 
 ## File Structure
@@ -209,8 +209,14 @@ And the `body` shapes: `{ kind: "gridIcons", icons: IconKind[], cols }`, `{ kind
 
 - [ ] **Step 7: Add chrome tier 3 — a new primitive (summary + link out)**
 
-Short. State plainly that **most contributions will not need this**, and that it is TypeScript and Preact work rather than content. Summarize the four moving parts — a `part` variant on the `ChromePart` discriminated union in `chromeSpec.ts`, a matching component in `DesktopPreview.tsx`, a `case` in the exhaustive `renderPart` switch, and the authoring conventions (translucent surfaces derived from `chromeSurfaces(onColor)` so chrome stays legible on any wallpaper, sizing in `cu()` units, `<div>`/`<svg>` only, `data-testid="chrome-<name>"`). Then link out for the full detail — from the repository
+Short. State plainly that **most contributions will not need this**, and that it is TypeScript and Preact work rather than content. Summarize the four moving parts — a `part` variant on the `ChromePart` discriminated union in `chromeSpec.ts`, a matching component in `DesktopPreview.tsx`, a `case` in the `renderPart` switch, and the authoring conventions (translucent surfaces derived from `chromeSurfaces(onColor)` so chrome stays legible on any wallpaper, sizing in `cu()` units, `<div>`/`<svg>` only, `data-testid="chrome-<name>"`). Then link out for the full detail — from the repository
 root the link is written `[docs/adding-a-preview-style.md](docs/adding-a-preview-style.md)`.
+
+**Warn explicitly that the compiler will not catch a forgotten `renderPart` case.**
+`renderPart` (`src/islands/DesktopPreview.tsx:376`) returns `ComponentChildren`, which
+admits `undefined`, so a `ChromePart` variant with no matching case type-checks cleanly and
+renders nothing. This is the one place in the chrome system where a mistake is silent, so
+the guide must say to check the preview in the browser.
 
 - [ ] **Step 8: Add the Verify section**
 
@@ -221,13 +227,13 @@ Heading must be exactly `## Verify`.
 ```markdown
 | command | what it catches |
 |---------|-----------------|
-| `npm run build` | **the only check that validates your JSON** — the content schema (bad hex, missing field, more than one `default`) and dangling `predecessor`/`successor` refs. Also proves every page still pre-renders. |
-| `npx astro check` | TypeScript errors — a missing `CHROME_SPECS` entry, a non-exhaustive `renderPart` switch. Passes clean on a broken JSON file, so it is not a substitute for the build. |
-| `npx vitest run` | the pure logic — color math, catalog derivation, chrome spec parsing. No test reads `src/content/os/*.json`. |
+| `npm run build` | **the authoritative check on your JSON** — the content schema (bad hex, missing field, more than one `default`) and dangling `predecessor`/`successor` refs. Also proves every page still pre-renders. |
+| `npx vitest run` | `src/content/os.test.ts` re-reads every file in `src/content/os/` and parses it, so most mistakes surface here first and fastest. It uses its own copy of the schema, which omits the `wikipedia`, `project`, and `type` rules — a pass here is encouraging, not conclusive. |
+| `npx astro check` | TypeScript only — notably a missing `CHROME_SPECS` entry. It does not read your JSON at all. |
 | `npm run dev` | your own eyes: open `/os/<slug>` and check the swatches and the preview on both light and dark colors. |
 ```
 
-If you only run one thing, run `npm run build`.
+If you only run one thing, run `npm run build` — it is the check CI treats as authoritative.
 
 Then the worked example of a schema failure. This is real captured output from a file whose `hex` was missing its `#`:
 
@@ -253,7 +259,7 @@ fix(colors): correct the Windows 95 teal
 feat(design): add the nextstep chrome style
 ```
 
-Scopes in use: `os`, `colors`, `design`, `docs`.
+Types in use: `feat`, `fix`, `docs`, `chore`, `test`. Scopes in use: `os`, `colors`, `design`. Note `docs` is a **type**, not a scope — a docs-only change is `docs: …`, not `docs(docs): …`.
 
 What the description must contain: the source citation (per [Sourcing](#sourcing)), and — for a new or changed chrome style — a screenshot of the preview on both a light and a dark color. Then the checklist, which the PR template mirrors:
 
@@ -385,16 +391,19 @@ Replace the whole `## Verify` section with:
 ## Verify
 
 ```bash
-npm run build       # the ONLY check that validates this file — schema + dangling refs
+npm run build       # authoritative: the content schema + dangling-ref check
+npx vitest run      # src/content/os.test.ts re-parses every OS file — fastest feedback
 npx astro check     # TypeScript only; passes clean on a broken JSON file
-npx vitest run      # unit tests (none of which read src/content/os/*.json)
 npm run dev         # eyeball /os/<slug> and the swatches
 ```
 
-`npm run build` is the only command that reads your JSON. The Zod schema in
-`src/content/config.ts` rejects a bad hex, a missing field, or more than one `default`;
-`buildCatalog` (`src/lib/catalog.ts:91`) throws on a dangling `predecessor`/`successor`.
-Neither `astro check` nor `vitest` touches the content collection.
+Two commands read your JSON, and they are not equivalent. `npm run build` is
+authoritative: the Zod schema in `src/content/config.ts` rejects a bad hex, a missing
+field, or more than one `default`, and `buildCatalog` (`src/lib/catalog.ts:91`) throws on
+a dangling `predecessor`/`successor`. `src/content/os.test.ts` re-validates the same files
+under vitest and usually fails first, but against a **hand-maintained duplicate** of the
+schema that omits the `wikipedia`, `project`, and `type` rules — keep it in sync when you
+change `config.ts`. `astro check` does not read the content collection at all.
 ````
 
 - [ ] **Step 3: Correct the matching checklist item in `docs/adding-os-data.md`**
@@ -408,7 +417,7 @@ Find (item 6):
 Replace with:
 
 ```markdown
-6. [ ] `npm run build` passes (the only check that validates the JSON); eyeballed via `npm run dev`.
+6. [ ] `npm run build` and `npx vitest run` pass (both validate the JSON; the build is authoritative); eyeballed via `npm run dev`.
 ```
 
 - [ ] **Step 4: Add the mirror note to `docs/adding-a-preview-style.md`**
@@ -436,7 +445,7 @@ Add a bullet to the "Start here" list, after the `adding-a-preview-style.md` ent
 
 - [ ] **Step 6: Verify the corrected claim is actually true**
 
-Prove the correction rather than trusting it. Create a deliberately broken file, confirm `astro check` passes and `build` fails, then delete it:
+Prove the correction rather than trusting it — an earlier draft of this plan asserted that no test reads the content directory, which was false and shipped into Task 1 before review caught it. Exercise **all three** commands against a deliberately broken file:
 
 ```bash
 cat > src/content/os/zzz-verify-check.json <<'EOF'
@@ -444,12 +453,13 @@ cat > src/content/os/zzz-verify-check.json <<'EOF'
   "tagline": "t", "description": "d",
   "colors": [{ "hex": "336698", "name": "Bad Hex" }] }
 EOF
-npx astro check; echo "astro check exit: $?"
-npm run build > /dev/null 2>&1; echo "build exit: $?"
+npx astro check > /dev/null 2>&1;                    echo "astro check exit: $?"
+npx vitest run src/content/os.test.ts > /dev/null 2>&1; echo "vitest exit:      $?"
+npm run build > /dev/null 2>&1;                      echo "build exit:       $?"
 rm -f src/content/os/zzz-verify-check.json
 ```
 
-Expected: `astro check exit: 0` (0 errors) and `build exit: 1`. If `astro check` reports an error instead, the correction is wrong — stop and re-derive the table.
+Expected: `astro check exit: 0`, `vitest exit: 1`, `build exit: 1`. If any differs, the table is wrong — stop, re-derive it, and report before continuing.
 
 - [ ] **Step 7: Confirm the working tree is clean of the probe file**
 

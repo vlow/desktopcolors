@@ -129,14 +129,36 @@ Three tiers, descending in frequency and difficulty:
 
 ### 5. Verify
 
-The four commands written out with **what each one actually catches**:
+The four commands written out with **what each one actually catches**. The table below
+was corrected during implementation after two claims in the original draft were found
+false; see "Toolchain facts" below for the evidence.
 
 | command | catches |
 |---------|---------|
-| `npx astro check` | schema violations, missing `CHROME_SPECS` entry, non-exhaustive `renderPart` |
-| `npx vitest run` | color math, catalog derivation, chrome assertions |
-| `npm run build` | every page still pre-renders |
+| `npm run build` | the authoritative content check — the Zod schema in `src/content/config.ts` plus the dangling-ref throw in `src/lib/catalog.ts:91`. Also proves every page pre-renders. |
+| `npx vitest run` | `src/content/os.test.ts` re-validates every OS JSON against a hand-maintained copy of the schema: bad hex, bad `added` format, more than one `default`, unresolvable `predecessor`/`successor`. Plus the pure logic (color math, catalog derivation, chrome specs). |
+| `npx astro check` | TypeScript only — notably a missing `CHROME_SPECS` entry. Does not read the content collection. |
 | `npm run dev` | eyeball `/os/<slug>` and the preview on light and dark colors |
+
+### Toolchain facts
+
+Each claim below was established by running the command against a deliberately broken
+file, not by reading the existing documentation — which is wrong on this point.
+
+- **`npx astro check` does not validate OS data.** An OS file with `"hex": "336698"`
+  (missing `#`) passes with 0 errors. `docs/adding-os-data.md:139` claims the opposite and
+  is corrected as part of this work.
+- **`npx vitest run` does validate OS data**, via `src/content/os.test.ts`, which
+  `readdirSync`s the content directory and parses every file against its own Zod schema.
+  That schema is a **hand-maintained duplicate** of `src/content/config.ts` and omits the
+  `wikipedia`, `project`, and `type` rules — so it is a fast first check, not a substitute
+  for the build.
+- **`npx astro check` does not catch a missing `renderPart` case.** `renderPart`
+  (`src/islands/DesktopPreview.tsx:376`) returns `ComponentChildren`, which admits
+  `undefined`, and the project extends `astro/tsconfigs/strict` rather than `strictest`.
+  A new `ChromePart` variant without a matching case renders nothing, silently. Only the
+  missing-`CHROME_SPECS`-entry half of that guarantee is real, because `CHROME_SPECS` is
+  typed `Record<DesktopStyle, ChromeSpec | null>`.
 
 Plus a worked example of reading a Zod content-schema failure, since that is the error a
 first-time contributor is most likely to hit and least likely to parse.
@@ -146,8 +168,10 @@ request, so a green local run predicts a green PR.
 
 ### 6. Open the PR
 
-- Commit convention matching the repository's history: `feat(os): add BeOS`, with the
-  scopes already in use (`os`, `colors`, `design`, `docs`).
+- Commit convention matching the repository's history: `feat(os): add BeOS`. The types in
+  use are `feat`, `fix`, `docs`, `chore`, and `test`; the scopes in use are `os`, `colors`,
+  `design`, `specs`, and `plans`. Note that `docs` appears as a *type* (`docs: add
+  TESTING.md`), never as a scope.
 - What the description must contain: the source citation, and a screenshot for a new or
   changed chrome style.
 - The submission checklist, mirrored by the PR template.
