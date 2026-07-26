@@ -48,7 +48,9 @@ popularity — is computed at build time by pure, unit-tested TypeScript in `src
 
 **Privacy.** Wallpapers are generated in the browser via `<canvas>` (the server never touches images). The
 counter keeps only aggregate scores; its rate limiter keys on `SHA-256(rotating-salt ‖ truncated-IP)` in
-memory only and never persists or logs anything IP-derived. nginx logs are IP-anonymized.
+memory only and never persists or logs anything IP-derived. The nginx access log is IP-anonymized and
+`/api/event` is not logged; the error log does keep full IPs to surface broken links, so it is retained
+only 7 days. All of it is disclosed in [`/privacy`](src/pages/privacy.astro).
 
 ## Repository layout
 

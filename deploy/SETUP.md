@@ -82,9 +82,37 @@ nginx -t && systemctl reload nginx
 curl -fsS https://desktopcolors.com/ | grep -q "desktop color archive" && echo "site OK"
 curl -fsS -o /dev/null -w '%{http_code}\n' -X POST https://desktopcolors.com/api/event \
   -H 'Content-Type: application/json' -d '{"kind":"osview","os":"windows-95"}'   # -> 204
-# confirm logs are anonymized (last IPv4 octet zeroed, /api not logged):
+# confirm the access log is anonymized (last IPv4 octet zeroed, /api not logged):
 tail -3 /var/log/nginx/desktopcolors.access.log
 ```
+
+## 9. Log retention
+
+The access log is IP-anonymized; the error log is **not** (nginx always writes
+the full client IP in error entries, and `log_format` cannot change that). We
+keep the error log because it is how broken links surface, so it is retained
+for 7 days only, against 14 for the access log.
+
+```bash
+cp deploy/desktopcolors.logrotate /etc/logrotate.d/desktopcolors
+chmod 0644 /etc/logrotate.d/desktopcolors
+
+# Debian's stock /etc/logrotate.d/nginx globs /var/log/nginx/*.log and will
+# collide with the two entries above. logrotate reports a duplicate and skips
+# the file — meaning retention silently would not apply. Check for it:
+logrotate -d /etc/logrotate.conf 2>&1 | grep -i "desktopcolors\|duplicate"
+```
+
+If a duplicate is reported, exclude our two files from the stock nginx entry
+(or delete it if this host serves nothing else). Re-run the dry run until it is
+clean, then verify a real rotation once:
+
+```bash
+logrotate -f /etc/logrotate.d/desktopcolors && ls -l /var/log/nginx/desktopcolors.*
+```
+
+Retention is stated publicly in the "Server logs" clause of
+`src/pages/privacy.astro`. Change one, change the other.
 
 ## Updating later
 
@@ -100,5 +128,7 @@ sudo -u desktopcolors bash deploy/rebuild.sh   # republish now (or wait for the 
 - Popularity refreshes at most hourly (the rebuild timer). Scores are baked
   into the static HTML at build time — the site never queries the counter at
   request time.
-- The counter stores only aggregate scores (no IPs). nginx logs are
-  IP-anonymized and `/api/event` is not logged at all.
+- The counter stores only aggregate scores (no IPs), and `/api/event` is not
+  logged at all. The nginx **access** log is IP-anonymized; the **error** log
+  is not, and is kept 7 days (§ 9). That is the only place a full IP touches
+  disk, and it is disclosed in `/privacy`.
