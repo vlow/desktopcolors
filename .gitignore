@@ -7,6 +7,7 @@ counter/counter
 *.db-wal
 *.db-shm
 scores.json
+.deploy-lock-hash
 test-results/
 playwright-report/
 /playwright/.cache/
