@@ -76,10 +76,23 @@ swatch rail, preview, and color-values panels need for *any* color. The heavy da
   `uses`) for **all** colors, in the same order as `os.colors`.
 - `osMeta` — the normalization lookup table (§2).
 
-The initially-selected color's heavy detail intentionally appears in **both** the
-inline `initialDetail` and `view.json`'s `details[initialIdx]`. This one-color
-duplication keeps the island's loaded `details` array uniform and avoids a
-merge-on-load special case; the cost is negligible.
+The initially-selected color's heavy detail appears in **both** the inline
+`initialDetail` and `view.json`'s `details[initialIdx]`. This overlap is
+**structurally forced, not an optimization we chose** — it falls out of two
+independent constraints:
+
+- `view.json` is one shared file per OS, fetched by all of that OS's hex pages.
+  Every color is the initial color for exactly one page and a switch-target for
+  the others, so there is no single "initial color" to omit — `view.json` must
+  be complete or switching breaks on other pages.
+- Each page must inline its own initial color for SSR / no-JS first paint (see
+  the `initialDetail` note above).
+
+The only way to remove the inline copy would be to drop SSR of the initial
+color's heavy panels (a skeleton on first paint for everyone), which is rejected
+— it regresses FCP/LCP and the SEO value of that rendered content. The cost of
+the overlap is small and unavoidable: ~3–5KB of normalized initial-color detail
+per page × 681 pages ≈ 2–3MB across `dist/` — the price of SSR.
 
 ### 2. Normalization
 
