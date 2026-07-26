@@ -251,6 +251,42 @@ check "current still serves" "$(cat "$WWW/current/index.html" 2>/dev/null)" "SIT
 unset KEEP_OVERRIDE
 teardown
 
+echo "stale tmp leftover not counted as a release"
+setup
+KEEP_OVERRIDE=2
+run_rebuild
+rel1="$(readlink "$WWW/current")"
+commit_to_release package.json '{"name":"b"}'
+run_rebuild
+rel2="$(readlink "$WWW/current")"
+# Simulate a killed earlier run: a "<timestamp>.tmp" staging leftover that
+# never got renamed into place. Its name (digits plus a ".tmp" suffix) sorts
+# above every real release, so before the fix it would occupy one of the
+# KEEP=2 slots and push a genuine release out to be pruned instead.
+mkdir -p "$WWW/releases/99999999999999.tmp"
+commit_to_release package.json '{"name":"c"}'
+run_rebuild; st=$?
+rel3="$(readlink "$WWW/current")"
+check "exits 0 with a stale .tmp leftover present" "$st" "0"
+if [ -d "$rel2" ]; then
+  ok "second-newest release survives despite the stale .tmp leftover"
+else
+  bad "second-newest release survives despite the stale .tmp leftover — $rel2 was pruned"
+fi
+if [ -d "$rel3" ]; then
+  ok "newest release survives despite the stale .tmp leftover"
+else
+  bad "newest release survives despite the stale .tmp leftover — $rel3 was pruned"
+fi
+if [ -d "$rel1" ]; then
+  bad "release due for pruning per name order was kept instead — $rel1 still present"
+else
+  ok "release due for pruning per name order was pruned despite the stale .tmp leftover"
+fi
+check "current still serves" "$(cat "$WWW/current/index.html" 2>/dev/null)" "SITE"
+unset KEEP_OVERRIDE
+teardown
+
 echo "empty build guard"
 setup
 run_rebuild

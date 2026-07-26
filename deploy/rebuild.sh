@@ -108,50 +108,37 @@ fi
 ts="$(date -u +%Y%m%d%H%M%S)"
 rel="$WWW_DIR/releases/$ts"
 mkdir -p "$WWW_DIR/releases"
-trap 'rm -f "$WWW_DIR/current.tmp"; rm -rf "$rel.tmp"' EXIT
-# Refuse rather than nest. Copying dist onto an existing directory would land
-# it *inside* that directory, publishing "$rel/dist" and an empty release — a
-# silent, total outage. Names are second-granular and builds take far longer
-# than a second, so this should be unreachable; it is here because the failure
-# it prevents is invisible until the site 404s.
+trap 'rm -rf "$WWW_DIR/current.tmp" "$rel.tmp" || true' EXIT
+# Refuse rather than nest. If $rel already exists, `mv "$rel.tmp" "$rel"`
+# below would move the staging directory *inside* it instead of replacing it,
+# landing as "$rel/$ts.tmp" — publishing the *old* release's contents with a
+# permanently orphaned staging tree nested inside. Names are second-granular
+# and builds take far longer than a second, so this should be unreachable; it
+# is here because that failure is invisible until someone finds the orphaned
+# nested directory.
 if [ -e "$rel" ]; then
   log "release directory $rel already exists; refusing to publish"
   exit 1
 fi
-# Copy, never rename, dist into the release. SELinux on the production host
-# labels a file by type transition from its parent directory *at creation
-# time*. `mv` within a filesystem is a rename: it moves a directory entry and
-# preserves the source's existing context, so a `dist/` built under
-# /opt/desktopcolors would keep /opt's label after landing under
-# /var/www/desktopcolors/releases. nginx runs as httpd_t and can only read
-# httpd_sys_content_t, so it would then be denied the *entire* release with
-# permissions and symlinks all looking correct — a silent 403 on everything.
-# `cp -R` creates new files, which inherit the destination's default context
-# by type transition, so the label is right by construction: no relabeling,
-# no elevated privilege.
+# Copy, never rename, dist into the release. SELinux labels a file by type
+# transition from its parent directory *at creation time*; `mv` is a rename
+# and would carry /opt's label into /var/www, where nginx (httpd_t, read-only
+# on httpd_sys_content_t) would then silently 403 the entire release. `cp -R`
+# creates new files, which inherit the destination's label by construction.
 #
 # Never use `cp -a`, `cp -p`, `--preserve=all`, `--preserve=context` or `-Z`
-# here. `-a` implies `--preserve=all`, which includes the SELinux context —
-# that would preserve exactly the wrong label and silently recreate the bug
-# this change exists to fix.
+# here: `-a` implies `--preserve=all`, which would preserve exactly the wrong
+# label and silently recreate the bug this change exists to fix.
 #
-# Copy into a staging directory ("$rel.tmp") rather than straight into "$rel",
-# for two reasons: the release directory then appears atomically instead of
-# being observably half-built, and an interrupted copy leaves a ".tmp"
-# directory — not a valid release name — rather than a partial release
-# occupying one of the KEEP retention slots. Deliberately no `mkdir -p
-# "$rel.tmp"` beforehand: `cp -R` creates it, so pre-creating it would make
-# the copy nest inside it instead of becoming it. `rm -rf` any stale leftover
-# first, in case a previous run was killed before its own trap could run.
-#
-# A built dist is ~72 MB, so paying for the copy instead of the rename costs
-# little; correct SELinux labelling is worth far more than those bytes saved.
-# This rename (staging directory to release directory) is safe for SELinux:
-# both paths are already under /var/www, so the contexts involved are already
-# correct — only the dist-into-/var/www boundary above needs a copy.
+# Stage into "$rel.tmp" (cp -R creates it) so the release appears atomically
+# in one rename; remove any stale leftover from a killed previous run first.
 rm -rf "$rel.tmp"
-cp -R dist "$rel.tmp"
-mv "$rel.tmp" "$rel"
+# Pin the umask: cp without -p masks new-file modes with the ambient umask,
+# unlike the old `mv` which carried modes verbatim — a UMask=0077 unit or a
+# wrapping `umask 077` would land the release at 600/700 under nginx, the
+# same silent 403 through a different door.
+( umask 022; cp -R dist "$rel.tmp" )
+mv "$rel.tmp" "$rel" # SELinux-safe: both paths are already under /var/www
 ln -sfn "$rel" "$WWW_DIR/current.tmp"
 # mv -Tf is GNU (the host); -hf is the BSD/macOS equivalent. Both replace the
 # symlink atomically rather than following it into its target directory.
@@ -160,16 +147,14 @@ if ! mv -Tf "$WWW_DIR/current.tmp" "$WWW_DIR/current" 2>/dev/null; then
 fi
 log "published release $ts"
 
-# 6. Prune old releases, keeping the newest $KEEP. Sort by directory name, not
-# mtime: releases are named "$ts" (%Y%m%d%H%M%S, publish time by construction),
-# and lexicographic order on that name is chronological. mtime order broke
-# when publish moved dist into place with a plain `mv dist "$rel"`: a rename
-# carries the source's mtime rather than getting a fresh one at publish time.
-# Publish now goes through `cp -R` into a staging directory before the rename
-# (see above), so the release directory's mtime happens to be fresh again —
-# but that is incidental to the SELinux fix, not something this step relies
-# on, so sorting stays on the name, which is structural by construction
-# either way.
+# 6. Prune old releases, keeping the newest $KEEP. Names are publish-time
+# "$ts" (%Y%m%d%H%M%S), so lexicographic order is chronological by
+# construction, independent of mtime.
+#
+# Only consider release-shaped names (14 digits): a killed run's leftover
+# "$ts.tmp" directory, or any other stray directory under releases/, would
+# otherwise sort into the listing below and occupy one of the KEEP slots
+# meant for real releases.
 #
 # Also never prune whatever "current" resolves to right now, as insurance
 # against unlinking the live tree even if name/mtime ordering is ever wrong.
@@ -179,6 +164,17 @@ case "$current_target" in
   ?*) current_target="$WWW_DIR/$current_target" ;;
 esac
 prune_failed=0
+# Filter to release-shaped names *before* sorting, in a plain loop rather than
+# inside the process substitution below: older bash's `case` support inside
+# `<( )` is unreliable, so keep pattern matching outside it.
+release_dirs=""
+for d in "$WWW_DIR"/releases/*/; do
+  base="${d%/}"
+  base="${base##*/}"
+  case "$base" in
+    [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]) release_dirs="$release_dirs$d"$'\n' ;;
+  esac
+done
 while IFS= read -r old; do
   old="${old%/}"
   if [ -n "$current_target" ] && [ "$old" = "$current_target" ]; then
@@ -187,7 +183,7 @@ while IFS= read -r old; do
   fi
   log "pruning $old"
   rm -rf "$old" || prune_failed=1
-done < <(printf '%s\n' "$WWW_DIR"/releases/*/ | sort -r | tail -n "+$((KEEP + 1))")
+done < <(printf '%s' "$release_dirs" | sort -r | tail -n "+$((KEEP + 1))")
 # The publish above already succeeded; a stray rm -rf failure here (e.g.
 # EACCES) must not turn a live, correctly published release into a nonzero
 # script exit — a later task keys a failure marker off this exit status, and
