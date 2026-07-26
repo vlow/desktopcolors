@@ -1,45 +1,46 @@
 # desktopcolors.com — log retention.
-# Install to /etc/logrotate.d/desktopcolors.
+# Install to /etc/logrotate.d/desktopcolors, mode 0644.
 #
 # The two logs are rotated on different schedules because they carry different
-# data. The access log is IP-anonymized by the `anon` log_format (see
+# data. The access log is IP-anonymized by the `dc_anon` log_format (see
 # desktopcolors.nginx.conf), so a longer window is harmless. The error log is
 # NOT anonymized — nginx always writes the full client IP in error entries and
 # log_format does not apply to it — so it is kept only as long as it takes to
 # notice and fix a broken link. Both windows are stated in /privacy; if you
 # change one here, change it there too.
 #
-# NOTE: Debian/Ubuntu ship /etc/logrotate.d/nginx globbing /var/log/nginx/*.log,
-# which would also match these two files — logrotate errors on a duplicate
-# entry and skips the file, so retention would silently not apply. Exclude them
-# there, or confirm with `logrotate -d /etc/logrotate.conf` (see SETUP.md § 9).
+# NOTE: the stock /etc/logrotate.d/nginx globs /var/log/nginx/*.log. logrotate
+# errors on a duplicate entry and skips the file, so retention would silently
+# not apply. The usual fix is to exclude our files there — but on this shared
+# host that file is off-limits, so our logs live in a subdirectory instead,
+# which *.log does not match. Confirm with the dry run in SETUP.md § 9.
 
 # Anonymized: time, path, status, referer, user-agent, IP truncated to /24.
-/var/log/nginx/desktopcolors.access.log {
+/var/log/nginx/desktopcolors/access.log {
     daily
     rotate 14
     missingok
     notifempty
     compress
     delaycompress
-    create 0640 www-data adm
+    create 0640 nginx adm
     sharedscripts
     postrotate
-        [ -f /var/run/nginx.pid ] && kill -USR1 "$(cat /var/run/nginx.pid)"
+        [ -f /run/nginx.pid ] && kill -USR1 "$(cat /run/nginx.pid)"
     endscript
 }
 
 # Contains full client IPs. Kept 7 days, purely to diagnose broken links.
-/var/log/nginx/desktopcolors.error.log {
+/var/log/nginx/desktopcolors/error.log {
     daily
     rotate 7
     missingok
     notifempty
     compress
     delaycompress
-    create 0640 www-data adm
+    create 0640 nginx adm
     sharedscripts
     postrotate
-        [ -f /var/run/nginx.pid ] && kill -USR1 "$(cat /var/run/nginx.pid)"
+        [ -f /run/nginx.pid ] && kill -USR1 "$(cat /run/nginx.pid)"
     endscript
 }
