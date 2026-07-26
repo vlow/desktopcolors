@@ -33,8 +33,20 @@ function sawEvent(bodies: string[], expected: Record<string, string>): boolean {
 /**
  * Wait until every Preact island on the page has hydrated. Astro renders
  * `<astro-island ssr>` and drops the `ssr` attribute once the component is
- * mounted, so this is a deterministic gate — clicking an island control before
- * it hydrates silently does nothing.
+ * mounted, so this is a deterministic gate.
+ *
+ * Every test that clicks or types into an island MUST await this first.
+ * `page.goto()` resolves on `load`, and Playwright's actionability checks
+ * (visible / enabled / stable) cannot see whether Preact has attached its event
+ * listeners — so an interaction that lands before mount is silently dropped with
+ * no error, and the test fails later at a confusing, unrelated-looking assertion.
+ *
+ * Measured hydration latency under this suite's 4 parallel workers: ~124ms
+ * (median) on the production build the config serves, ~265ms against `astro dev`
+ * (61 unbundled module requests per page instead of 8). Tests reach their first
+ * interaction around 280–420ms, so the dev margin is a coin flip and the
+ * production margin is real but not generous — hence the explicit gate rather
+ * than relying on either being fast enough.
  */
 async function islandsHydrated(page: import("@playwright/test").Page): Promise<void> {
   await page.waitForFunction(() => !document.querySelector("astro-island[ssr]"));
@@ -47,9 +59,16 @@ test("home lists platforms and search filters", async ({ page }) => {
   // "Windows 95"; a non-exact match also hits Windows NT 4.0's tagline
   // ("...the Windows 95 shell...").
   await expect(page.getByText("Windows 95", { exact: true })).toBeVisible();
+
+  await islandsHydrated(page);
   await page.getByPlaceholder(/Search platforms/).fill("amiga");
-  // The "amiga" filter legitimately shows both Amiga Workbench cards (1.x and
-  // 2.0), so assert the specific card title rather than the ambiguous substring.
+
+  // Assert the filtered set by card count first, so a silently-dropped fill fails
+  // here — at the interaction that broke — rather than two assertions later.
+  // "an Amiga card is visible" cannot do that job: both Amiga Workbench cards
+  // (1.x and 2.0) are in the unfiltered list too, so it holds either way.
+  await expect(page.getByTestId("os-name")).toHaveCount(2); // 22 platforms unfiltered
+  // exact: true again — see above.
   await expect(page.getByText("Amiga Workbench 1.x", { exact: true })).toBeVisible();
   await expect(page.getByText("Windows 95", { exact: true })).toHaveCount(0);
 });
@@ -83,6 +102,9 @@ test("a per-color page selects that color from the first paint, not the default"
 
   // Selecting a different color updates the URL so it can be copied/shared.
   // Target the list row by its stable per-color test id (Teal = #008080).
+  // The gate goes here rather than after goto() so the assertions above can still
+  // sample the server-rendered DOM — checking the baked-in color is this test's job.
+  await islandsHydrated(page);
   await page.getByTestId("color-row-008080").click();
   await expect(page).toHaveURL(/\/os\/windows-95\/008080$/);
 });
@@ -116,6 +138,7 @@ test("copying a color value fires a copy beacon", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   const events = await captureEvents(page);
   await page.goto("/os/windows-95");
+  await islandsHydrated(page);
   await page.getByTestId("copy-hex").click();
   await expect(page.getByText("Copied ✓")).toBeVisible();
   await expect
@@ -126,6 +149,7 @@ test("copying a color value fires a copy beacon", async ({ page, context }) => {
 test("download sheet generates a wallpaper and fires a download beacon", async ({ page }) => {
   const events = await captureEvents(page);
   await page.goto("/os/windows-95");
+  await islandsHydrated(page);
   await page.getByRole("button", { name: /Download/ }).click();
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "1920×1080" }).click();
