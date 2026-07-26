@@ -146,6 +146,21 @@ test("copying a color value fires a copy beacon", async ({ page, context }) => {
     .toBe(true);
 });
 
+test("serves a per-OS view.json with normalized detail", async ({ request }) => {
+  const res = await request.get("/os/windows-95/view.json");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("application/json");
+  const json = await res.json();
+  expect(Array.isArray(json.details)).toBe(true);
+  expect(json.details.length).toBeGreaterThan(1);
+  expect(typeof json.osMeta).toBe("object");
+  // wire platforms carry only slug + isDefault
+  const somePlatform = json.details.flatMap((d: any) => d.uses)[0];
+  expect(Object.keys(somePlatform).sort()).toEqual(["isDefault", "slug"]);
+  // and osMeta resolves that slug
+  expect(json.osMeta[somePlatform.slug]).toHaveProperty("name");
+});
+
 test("download sheet generates a wallpaper and fires a download beacon", async ({ page }) => {
   const events = await captureEvents(page);
   await page.goto("/os/windows-95");
