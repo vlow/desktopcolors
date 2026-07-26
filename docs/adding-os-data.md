@@ -11,6 +11,11 @@ This is the full guide (for humans and LLM agents). For the quick version see
 [README → Adding a new OS](../README.md#adding-a-new-os); for the desktop preview chrome
 (`desktopStyle`) see [`adding-a-preview-style.md`](adding-a-preview-style.md).
 
+> **Mirrored in [`CONTRIBUTING.md`](../CONTRIBUTING.md).** That guide is the
+> contributor-facing copy of this material and is deliberately self-contained. **If you
+> change the field rules, the color conventions, or the dithering workflow here, update
+> `CONTRIBUTING.md` in the same change.**
+
 ## The file shape
 
 ```json
@@ -136,11 +141,19 @@ produce the same `#rrggbb`, apply the collapse rule.
 ## Verify
 
 ```bash
-npx astro check     # type-checks; the Zod content schema rejects a bad file
-npx vitest run      # unit tests
-npm run build       # every page still pre-renders
+npm run build       # authoritative: the content schema + dangling-ref check
+npx vitest run      # src/content/os.test.ts re-parses every OS file — fastest feedback
+npx astro check     # TypeScript only; passes clean on a broken JSON file
 npm run dev         # eyeball /os/<slug> and the swatches
 ```
+
+Two commands read your JSON, and they are not equivalent. `npm run build` is
+authoritative: the Zod schema in `src/content/config.ts` rejects a bad hex, a missing
+field, or more than one `default`, and `buildCatalog` (`src/lib/catalog.ts:91`) throws on
+a dangling `predecessor`/`successor`. `src/content/os.test.ts` re-validates the same files
+under vitest and usually fails first, but against a **hand-maintained duplicate** of the
+schema that omits the `wikipedia`, `project`, and `type` rules — keep it in sync when you
+change `config.ts`. `astro check` does not read the content collection at all.
 
 ## Checklist
 
@@ -149,4 +162,4 @@ npm run dev         # eyeball /os/<slug> and the swatches
 3. [ ] Reused an existing `family`/`type` value unless genuinely new.
 4. [ ] `desktopStyle` set (or left `modern`) — see [`adding-a-preview-style.md`](adding-a-preview-style.md).
 5. [ ] For any dithered desktop: added the blended entry(ies) + partials, **recomputed** both averages, and applied the collapse rule if they matched.
-6. [ ] `npx astro check` and `npx vitest run` pass; eyeballed via `npm run dev`.
+6. [ ] `npm run build` and `npx vitest run` pass (both validate the JSON; the build is authoritative); eyeballed via `npm run dev`.

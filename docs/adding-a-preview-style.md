@@ -13,6 +13,11 @@ The chrome a preview draws is chosen by the OS's **`desktopStyle`**, and is defi
 > The desktop style affects **only the on-screen preview**. The downloadable wallpaper
 > is a plain solid-color PNG and never reads the style.
 
+> **Partly mirrored in [`CONTRIBUTING.md`](../CONTRIBUTING.md).** That guide carries a
+> contributor-facing copy of the style table, the primitive vocabulary, and the
+> "add a new style" steps; it links here for adding a new *primitive*. **If you change
+> any of those, update `CONTRIBUTING.md` in the same change.**
+
 ## How it fits together (data flow)
 
 ```
