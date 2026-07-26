@@ -63,7 +63,7 @@ src/
   pages/                 # routes: index, colors, about, setup, os/[slug]
   styles/tokens.css      # design tokens
 counter/                 # Go module: cmd (serve|dump) + internal/{scoring,store,ratelimit,server}
-deploy/                  # rebuild.sh, nginx conf, systemd units, SETUP.md (deployment runbook)
+deploy/                  # rebuild.sh + its test, nginx conf, systemd units, sudoers, SETUP.md
 e2e/                     # Playwright cross-stack smoke test
 docs/                    # adding-a-preview-style.md guide; superpowers/ = design spec + implementation plans
 .github/workflows/ci.yml # CI: astro check + vitest + build, go vet + test, Playwright e2e
@@ -115,7 +115,9 @@ cd counter && ./counter dump --db /tmp/counter.db --out ../scores.json && cd ..
 npm run build   # loadScores() reads ./scores.json and bakes it in
 ```
 
-The full `dump → build → atomic-swap` production pipeline is `deploy/rebuild.sh`.
+The full `fetch → dump → build → atomic-swap` production pipeline is
+`deploy/rebuild.sh`, which deploys the `release` branch — see
+[`deploy/SETUP.md`](deploy/SETUP.md).
 
 ## Test everything
 

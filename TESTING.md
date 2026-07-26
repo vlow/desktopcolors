@@ -73,6 +73,15 @@ Rules of thumb:
   overflow, hydration, navigation, downloads, beacons.
 - **Data shape is not a test's job.** `src/content/config.ts` is the Zod schema
   gate — a malformed OS entry must fail the build, not a test.
+- **`deploy/` is outside these four suites.** `deploy/rebuild.test.sh` (run it
+  with `bash deploy/rebuild.test.sh`) covers only the deploy script's
+  orchestration — reset to the deploy branch, dependency gating, atomic publish,
+  failure marker, prune — against a fixture repo with `npm`, `go`, `sudo`,
+  `systemctl` and `flock` stubbed. It exists because two of that script's
+  failure modes are invisible in review and expensive in production: publishing
+  an empty release, and a failure marker that is never written or never cleared.
+  Everything else about deployment — nginx, SELinux, logrotate, sudo, locking —
+  is verified on the host by [`deploy/SETUP.md`](deploy/SETUP.md), not here.
 
 ## Testing decisions
 
