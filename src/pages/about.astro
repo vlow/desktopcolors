@@ -1,15 +1,17 @@
 ---
 import Base from "../layouts/Base.astro";
 
+// Every swatch below must be a real color from src/content/os/*.json — hex and
+// name kept verbatim so the tooltip matches what the archive actually ships.
 const heroSwatches = [
   { hex: "#008080", name: "Teal — Windows 95" },
-  { hex: "#3a6ea5", name: "NT Blue" },
-  { hex: "#004e98", name: "XP Blue" },
-  { hex: "#0055aa", name: "Amiga Workbench Blue" },
-  { hex: "#9aabb9", name: "CDE Dusty Blue" },
-  { hex: "#9999cc", name: "Mac OS 8 Lavender" },
-  { hex: "#33aabb", name: "BeOS Cyan" },
-  { hex: "#c0c0c0", name: "Silver" },
+  { hex: "#3a6ea5", name: "Redmond Blue — Windows 2000" },
+  { hex: "#004e98", name: "Deep Sky — ReactOS 0.4.x" },
+  { hex: "#0055aa", name: "Workbench Blue — Amiga Workbench 1.x" },
+  { hex: "#adadad", name: "Dove Gray — Solaris 9" },
+  { hex: "#b3b3da", name: "French Blue (Light) — Mac OS 8" },
+  { hex: "#55bff0", name: "Baby Blue — SerenityOS" },
+  { hex: "#c0c0c0", name: "Silver — Windows 3.1" },
 ];
 ---
 <Base title="About — desktopcolors.com" description="A small archive of the colors we booted into — and why it exists." active="about">
