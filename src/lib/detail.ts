@@ -29,6 +29,33 @@ export interface OsDetailView {
   eraPeers: EraPeerView[];
 }
 
+export type PlatformRef = { slug: string; isDefault: boolean };
+export type OsMeta = { name: string; year: number; family: string };
+export type OsMetaTable = Record<string, OsMeta>;
+
+export interface ColorDetail {
+  ral: RalMatch;
+  ralDesign: RalMatch;
+  extraFormats: CopyRow[];
+  similar: SimilarView[];
+  uses: Platform[];
+}
+
+export interface SimilarViewWire extends Omit<SimilarView, "platforms"> {
+  platforms: PlatformRef[];
+}
+export interface ColorDetailWire {
+  ral: RalMatch;
+  ralDesign: RalMatch;
+  extraFormats: CopyRow[];
+  similar: SimilarViewWire[];
+  uses: PlatformRef[];
+}
+export interface OsViewJson {
+  osMeta: OsMetaTable;
+  details: ColorDetailWire[];
+}
+
 export function dedupeSimilarByHex(list: SimilarColor[]): SimilarColor[] {
   const seen = new Set<string>();
   const out: SimilarColor[] = [];
@@ -99,4 +126,42 @@ export function buildOsDetail(entries: OsEntry[], catalog: Catalog, slug: string
   }));
 
   return { os, colors, eraPeers: peers };
+}
+
+export function pickColorDetail(dc: DetailColor): ColorDetail {
+  return {
+    ral: dc.ral, ralDesign: dc.ralDesign, extraFormats: dc.extraFormats,
+    similar: dc.similar, uses: dc.uses,
+  };
+}
+
+const refOf = (p: Platform): PlatformRef => ({ slug: p.slug, isDefault: p.isDefault });
+
+export function normalizeDetails(details: ColorDetail[]): OsViewJson {
+  const osMeta: OsMetaTable = {};
+  const note = (p: Platform) => {
+    osMeta[p.slug] ??= { name: p.name, year: p.year, family: p.family };
+  };
+  const wire: ColorDetailWire[] = details.map((d) => {
+    d.uses.forEach(note);
+    d.similar.forEach((s) => s.platforms.forEach(note));
+    return {
+      ral: d.ral, ralDesign: d.ralDesign, extraFormats: d.extraFormats,
+      similar: d.similar.map((s) => ({ ...s, platforms: s.platforms.map(refOf) })),
+      uses: d.uses.map(refOf),
+    };
+  });
+  return { osMeta, details: wire };
+}
+
+export function denormalizeDetails(json: OsViewJson): ColorDetail[] {
+  const hydrate = (ref: PlatformRef): Platform => {
+    const m = json.osMeta[ref.slug];
+    return { slug: ref.slug, name: m.name, year: m.year, family: m.family, isDefault: ref.isDefault };
+  };
+  return json.details.map((d) => ({
+    ral: d.ral, ralDesign: d.ralDesign, extraFormats: d.extraFormats,
+    similar: d.similar.map((s) => ({ ...s, platforms: s.platforms.map(hydrate) })),
+    uses: d.uses.map(hydrate),
+  }));
 }

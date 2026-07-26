@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { buildOsDetail, dedupeSimilarByHex } from "./detail";
+import {
+  buildOsDetail, dedupeSimilarByHex,
+  pickColorDetail, normalizeDetails, denormalizeDetails,
+} from "./detail";
 import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
 import type { OsEntry } from "./derive";
@@ -81,5 +84,33 @@ describe("buildOsDetail", () => {
   });
   it("throws on unknown slug", () => {
     expect(() => buildOsDetail(entries, catalog, "nope")).toThrow(/nope/);
+  });
+});
+
+describe("normalizeDetails / denormalizeDetails", () => {
+  const view = buildOsDetail(entries, catalog, "win-95");
+  const details = view.colors.map(pickColorDetail);
+
+  it("round-trips detail through the normalized wire form", () => {
+    const json = normalizeDetails(details);
+    expect(denormalizeDetails(json)).toEqual(details);
+  });
+
+  it("collapses each referenced OS's metadata into osMeta exactly once", () => {
+    const { osMeta } = normalizeDetails(details);
+    // cde supplies the teal known-use + era peer metadata
+    expect(osMeta["cde"]).toEqual({ name: "CDE", year: 1993, family: "Fam" });
+    // every platform slug referenced by any detail must be present
+    for (const d of details) {
+      for (const p of d.uses) expect(osMeta[p.slug]).toBeDefined();
+      for (const s of d.similar) for (const p of s.platforms) expect(osMeta[p.slug]).toBeDefined();
+    }
+  });
+
+  it("reduces wire platforms to slug + isDefault only", () => {
+    const { details: wire } = normalizeDetails(details);
+    for (const d of wire) {
+      for (const p of d.uses) expect(Object.keys(p).sort()).toEqual(["isDefault", "slug"]);
+    }
   });
 });
