@@ -130,6 +130,11 @@ cd counter && go vet ./... && go test ./...   # counter unit tests
 
 CI (`.github/workflows/ci.yml`) runs all of the above on every push/PR.
 
+Which layer a given test belongs in — and what each layer is blind to (jsdom
+computes no layout; Playwright must wait for island hydration) — is documented for
+humans and LLM agents in **[`TESTING.md`](TESTING.md)**. Read it before writing
+tests, and add to it when a bug gets past the suite.
+
 ## Adding a new OS
 
 1. Drop a JSON file in `src/content/os/`, e.g. `beos.json`:

@@ -251,3 +251,8 @@ npm run test:e2e # Playwright: builds + drives the site, asserts beacons fire + 
 
 Every `lib/*.ts` and most `islands/*.tsx` have a `*.test.ts(x)` beside them — the pure
 layering is what makes that coverage cheap.
+
+For **which layer to use and what each one cannot see** — jsdom has no layout engine, so
+every responsive/overflow rule in `tokens.css` needs a real-viewport Playwright check;
+E2E interactions must wait for island hydration first — see
+[`TESTING.md`](../TESTING.md).

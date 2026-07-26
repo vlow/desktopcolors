@@ -11,6 +11,10 @@ entry point for understanding the codebase:
 - [`DESIGN.md`](DESIGN.md) — the UX/purpose behind shared design elements: which
   element to use when. Read it (and add to it) when adding a page, a section, or
   a new shared UI element.
+- [`TESTING.md`](TESTING.md) — which test layer proves what, and the traps this
+  suite has already been burned by (layout is invisible to jsdom; islands must be
+  hydrated before you drive them). Read it (and add to it) when writing or
+  changing tests, or when a bug slipped past the suite.
 - [`docs/architecture-frontend.md`](docs/architecture-frontend.md) — the Astro
   static site + Preact islands (pages, content, build).
 - [`docs/architecture-edge.md`](docs/architecture-edge.md) — the `counter` Go
