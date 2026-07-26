@@ -37,9 +37,12 @@ considered and dropped.
 Two conditions must hold before the guide is useful to the public. Neither is part of
 this work.
 
-1. **No `LICENSE` file exists**, and `package.json` sets `"private": true`. Without a
-   license an outside contributor has no legal basis to submit and the project has none
-   to ship their work.
+1. ~~**No `LICENSE` file exists.**~~ **Resolved 2026-07-26:** the project is licensed
+   AGPL-3.0-or-later (`LICENSE`, verbatim from gnu.org; `package.json` carries the SPDX
+   id). `CONTRIBUTING.md` states that contributions are under the same terms, with no CLA
+   and no copyright assignment. Note that `package.json`'s `"private": true` was never
+   part of this blocker — it only prevents an accidental `npm publish` and says nothing
+   about the source license; it stays.
 2. **`vlow/desktopcolors` is private on GitHub.** The footer link and PR template are
    inert until it is public — the same blocker as the existing
    `TODO(owner): point at the public repo once it exists` on `Footer.astro:18`.

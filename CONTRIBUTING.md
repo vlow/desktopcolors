@@ -484,3 +484,20 @@ Then run through this — the pull request template mirrors it:
 - [ ] Any dithered desktop has its blended entry(ies) plus partials, with **recomputed** averages and the collapse rule applied.
 - [ ] `npm run build` passes.
 - [ ] The PR description names the source of every color.
+
+## License
+
+This project is licensed under the **GNU Affero General Public License v3.0 or later**
+([`LICENSE`](LICENSE)). By opening a pull request you agree that your contribution is
+licensed under the same terms. There is no CLA and no copyright assignment — you keep
+your copyright.
+
+Two consequences worth knowing before you contribute:
+
+- The AGPL's network clause (section 13) means anyone who runs a modified version of this
+  site as a network service has to offer their users the modified source. That is
+  deliberate; it is the reason for AGPL rather than GPL.
+- Color values themselves are facts and are not copyrightable. What the license covers is
+  the code, the prose, and the compilation — the selection, arrangement, and annotation of
+  the archive. Do not paste descriptions or notes copied from another site: cite the source
+  and write the text yourself.

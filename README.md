@@ -187,3 +187,12 @@ units, nginx + Let's Encrypt, first publish, and end-to-end verification).
 The design spec and the four implementation plans live in
 [`docs/superpowers/`](docs/superpowers/) — start with the
 [design spec](docs/superpowers/specs/2026-07-17-desktopcolors-design.md).
+
+## License
+
+[GNU Affero General Public License v3.0 or later](LICENSE). Because of the AGPL's network
+clause, anyone running a modified version of this site as a network service must offer
+their users the modified source.
+
+(`package.json` sets `"private": true`; that only stops an accidental `npm publish` and
+says nothing about the source license.)
