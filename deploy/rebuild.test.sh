@@ -15,6 +15,14 @@ fails=0
 ok()  { printf '  ok   %s\n' "$*"; }
 bad() { printf '  FAIL %s\n' "$*"; fails=$((fails + 1)); }
 check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 — expected '$3', got '$2'"; fi; }
+# Portable "other" bit checks via `find -perm`, since GNU-only `stat -c` is
+# off the table and this needs to hold on macOS too: `-perm -004`/`-perm -001`
+# match when *all* listed bits are set, here the world-read and world-execute
+# bits respectively. A trailing slash on a symlink argument (the "current/"
+# callers below) dereferences it, so this reports the target directory's own
+# bits rather than the symlink's (which are meaningless — always rwxrwxrwx).
+world_readable() { [ -n "$(find "$1" -maxdepth 0 -perm -004 2>/dev/null)" ]; }
+world_executable() { [ -n "$(find "$1" -maxdepth 0 -perm -001 2>/dev/null)" ]; }
 
 # --- fixture -----------------------------------------------------------------
 # Lays out an origin repo with a `release` branch, a clone to deploy from, the
@@ -65,6 +73,10 @@ case "$1" in
         : > dist/index.html
       else
         printf 'SITE\n' > dist/index.html
+      fi
+      if [ -f "$STUB_STATE/npm_build_restrictive" ]; then
+        chmod 700 dist
+        chmod 600 dist/index.html
       fi
     fi
     ;;
@@ -284,7 +296,32 @@ else
   ok "release due for pruning per name order was pruned despite the stale .tmp leftover"
 fi
 check "current still serves" "$(cat "$WWW/current/index.html" 2>/dev/null)" "SITE"
+# A killed run's ".tmp" leftover isn't just excluded from the KEEP count — a
+# subsequent successful run must actually reclaim the disk it occupies rather
+# than stranding it under /var/www forever.
+if [ -n "$(find "$WWW/releases" -mindepth 1 -maxdepth 1 -name '*.tmp')" ]; then
+  bad "stale .tmp leftover from a killed run is swept by the next successful run"
+else
+  ok "stale .tmp leftover from a killed run is swept by the next successful run"
+fi
 unset KEEP_OVERRIDE
+teardown
+
+echo "restrictive dist permissions"
+setup
+touch "$STUB_STATE/npm_build_restrictive"
+run_rebuild; st=$?
+check "exits 0 despite a restrictive dist/ mode" "$st" "0"
+if world_readable "$WWW/current/index.html"; then
+  ok "published index.html is world-readable regardless of dist/'s mode"
+else
+  bad "published index.html is world-readable regardless of dist/'s mode"
+fi
+if world_executable "$WWW/current/"; then
+  ok "published release directory is world-executable regardless of dist/'s mode"
+else
+  bad "published release directory is world-executable regardless of dist/'s mode"
+fi
 teardown
 
 echo "empty build guard"

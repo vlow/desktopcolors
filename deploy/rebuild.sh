@@ -11,6 +11,8 @@
 # server-side state would be silently undone at the next hourly run.
 set -euo pipefail
 
+log() { printf '[rebuild] %s\n' "$*"; }
+
 REPO_DIR="${REPO_DIR:-/opt/desktopcolors}"
 WWW_DIR="${WWW_DIR:-/var/www/desktopcolors}"
 STATE_DIR="${STATE_DIR:-/var/lib/desktopcolors}"
@@ -18,12 +20,20 @@ DB_PATH="${DB_PATH:-$STATE_DIR/counter.db}"
 COUNTER_BIN="${COUNTER_BIN:-$REPO_DIR/counter/counter}"
 BRANCH="${BRANCH:-release}"
 KEEP="${KEEP:-3}"
+# A non-numeric KEEP (empty, "abc", ...) would make $((KEEP + 1)) abort the
+# process-substitution subshell under `set -u` below, so the prune loop reads
+# zero lines and the script exits 0 with retention silently switched off — no
+# alarm, no log. Reject it here instead, loudly and early.
+case "$KEEP" in
+  ''|*[!0-9]*)
+    log "KEEP must be a non-negative integer, got '$KEEP'"
+    exit 1
+    ;;
+esac
 LOCKFILE="${LOCKFILE:-$STATE_DIR/rebuild.lock}"
 MARKER="${MARKER:-$STATE_DIR/LAST_FAILURE}"
 RESTART_CMD="${RESTART_CMD:-sudo /usr/bin/systemctl restart counter.service}"
 LOCK_HASH_FILE="$REPO_DIR/.deploy-lock-hash"
-
-log() { printf '[rebuild] %s\n' "$*"; }
 
 # GNU coreutils on the host, BSD on a developer's macOS. Kept portable so
 # deploy/rebuild.test.sh can run the real script locally.
@@ -130,14 +140,22 @@ fi
 # here: `-a` implies `--preserve=all`, which would preserve exactly the wrong
 # label and silently recreate the bug this change exists to fix.
 #
-# Stage into "$rel.tmp" (cp -R creates it) so the release appears atomically
-# in one rename; remove any stale leftover from a killed previous run first.
-rm -rf "$rel.tmp"
-# Pin the umask: cp without -p masks new-file modes with the ambient umask,
-# unlike the old `mv` which carried modes verbatim — a UMask=0077 unit or a
-# wrapping `umask 077` would land the release at 600/700 under nginx, the
-# same silent 403 through a different door.
-( umask 022; cp -R dist "$rel.tmp" )
+# Stage into "$rel.tmp" (cp -R creates it — if it already existed, cp -R would
+# nest dist *inside* it instead of becoming it) so the release appears
+# atomically in one rename; sweep any stale leftovers from killed previous
+# runs first (see the prune-time sweep below for why this covers more than
+# just "$rel.tmp").
+rm -rf "$WWW_DIR"/releases/*.tmp
+cp -R dist "$rel.tmp"
+# nginx must be able to read every published file and traverse every
+# published directory, regardless of what mode dist/ was built with (a
+# restrictive ambient umask, a UMask= systemd setting, whatever). Set that
+# explicitly rather than relying on a umask, which can only clear bits it
+# never had a chance to set in the first place — it cannot fix a dist/ that
+# was already written 600/700. `a+rX` adds read for everyone and adds execute
+# only where it's already set for someone (i.e. directories, plus files that
+# were already executable), which is exactly the web-root requirement.
+chmod -R a+rX "$rel.tmp"
 mv "$rel.tmp" "$rel" # SELinux-safe: both paths are already under /var/www
 ln -sfn "$rel" "$WWW_DIR/current.tmp"
 # mv -Tf is GNU (the host); -hf is the BSD/macOS equivalent. Both replace the
@@ -158,15 +176,19 @@ log "published release $ts"
 #
 # Also never prune whatever "current" resolves to right now, as insurance
 # against unlinking the live tree even if name/mtime ordering is ever wrong.
-current_target="$(readlink "$WWW_DIR/current" 2>/dev/null || true)"
-case "$current_target" in
-  /*) ;;
-  ?*) current_target="$WWW_DIR/$current_target" ;;
-esac
+# Compared by inode (`-ef`), not by string: a manual rollback such as
+# `ln -sfn releases/<ts>/ current` (trailing slash) or a relative
+# `./releases/<ts>` target produces a string that a readlink/case comparison
+# would never match, even though it resolves to the same directory. `-ef`
+# compares device and inode through symlinks, needs no path normalization,
+# and is correctly false when "current" does not exist yet (first run).
 prune_failed=0
 # Filter to release-shaped names *before* sorting, in a plain loop rather than
-# inside the process substitution below: older bash's `case` support inside
-# `<( )` is unreliable, so keep pattern matching outside it.
+# inside the process substitution below: on bash 3.2 (the system bash on
+# macOS), a `case` pattern's `)` inside a `<( ... )` process substitution is a
+# syntax error — and an unbalanced `)` inside a comment there passes `bash -n`
+# but fails at runtime with a `/dev/fd/...: No such file or directory` error.
+# Keep pattern matching outside the process substitution to avoid both.
 release_dirs=""
 for d in "$WWW_DIR"/releases/*/; do
   base="${d%/}"
@@ -177,7 +199,7 @@ for d in "$WWW_DIR"/releases/*/; do
 done
 while IFS= read -r old; do
   old="${old%/}"
-  if [ -n "$current_target" ] && [ "$old" = "$current_target" ]; then
+  if [ "$old" -ef "$WWW_DIR/current" ]; then
     log "skipping prune of $old: current points at it"
     continue
   fi
