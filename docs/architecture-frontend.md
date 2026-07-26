@@ -163,6 +163,17 @@ per color** (via `colorPath` from `lib/links.ts`). The selected color is baked i
 at build time, so there is no client-side flash / reorder. This is why color selection is a
 path segment, not a `?hex=` query.
 
+**Per-OS detail data (`/os/<slug>/view.json`).** OS detail pages inline only the
+lightweight `os.colors` (swatch list + preview/values), `eraPeers`, and the heavy detail
+(`similar`, extended formats, known-uses) for the *initially* selected color — required
+inline so the server-rendered first paint is complete. Every color's heavy detail is
+emitted once per OS as a normalized `view.json` (repeated platform metadata collapsed into
+a `slug → meta` table, see `src/lib/detail.ts`), which the `OsDetail` island prefetches on
+idle and denormalizes to power instant client-side color switching. This replaced an
+earlier design that embedded the full per-OS detail in every hex page's hydration props
+(~670KB/page; ~370MB `dist/`) — after the split, a representative hex page is ~110KB and
+`dist/` is ~72MB.
+
 ### `islands/` — the interactive components (browser)
 
 One island per interactive surface. They are Preact, receive the full build-computed dataset
