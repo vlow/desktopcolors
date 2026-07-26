@@ -15,9 +15,9 @@ const siteLinks = [
 ];
 const projectLinks = [
   { label: "About", href: "/about" },
-  // TODO(owner): point at the public repo once it exists.
+  // TODO(owner): both GitHub links 404 until the repo is public.
   { label: "Source on GitHub", href: git.repoUrl ?? "#" },
-  { label: "Suggest a platform", href: "mailto:hello@desktopcolors.com?subject=Suggest%20a%20platform" },
+  { label: "Add a platform", href: git.repoUrl ? `${git.repoUrl}/blob/main/CONTRIBUTING.md` : "#" },
 ];
 const legalLinks = [
   { label: "Privacy Notice", href: "/privacy" },

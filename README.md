@@ -170,6 +170,13 @@ existing style, just set `"desktopStyle"` in its JSON. To add a **new** style, a
 (`src/lib/chromeSpec.ts`) — a missing entry fails the build. See the full guide, written for humans and LLM
 agents, in **[`docs/adding-a-preview-style.md`](docs/adding-a-preview-style.md)**.
 
+## Contributing
+
+Adding a platform or a desktop chrome style from outside the project? Start with
+**[`CONTRIBUTING.md`](CONTRIBUTING.md)** — a self-contained walkthrough from the JSON file
+to the pull request, including the sourcing rule and the dithered-colors workflow. The two
+`docs/` guides above remain the maintainer reference.
+
 ## Deploy
 
 See **[`deploy/SETUP.md`](deploy/SETUP.md)** for the full runbook (Go/Node install, service user, systemd
