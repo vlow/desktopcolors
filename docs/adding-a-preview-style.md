@@ -112,7 +112,7 @@ Add it to `DESKTOP_STYLES` in **`src/lib/desktopStyle.ts`** — the only place t
 declared:
 
 ```ts
-export const DESKTOP_STYLES = ["modern","win9x","win31","platinum","beos","amiga","kde","cde","gem","generic","nextstep"] as const;
+export const DESKTOP_STYLES = ["modern","win9x","win31","platinum","beos","amiga","kde","cde","gem","bleskos","generic","nextstep"] as const;
 ```
 
 ### 2. Add its chrome spec
@@ -138,8 +138,12 @@ If your style needs chrome that no primitive draws yet:
 1. Add a `part` variant to the `ChromePart` discriminated union in `chromeSpec.ts`.
 2. Add a matching component in `DesktopPreview.tsx` (translucent, `data-testid="chrome-<name>"`, sized in `cu()` units) and a `case` in `renderPart`.
 
-The `renderPart` switch is exhaustive over the union, so `astro check` fails until the
-new `part` has a `case`.
+**A missing `case` here is silent, not compiler-enforced.** `renderPart`
+(`DesktopPreview.tsx:376`) returns `ComponentChildren`, which admits `undefined`, and
+this project extends `astro/tsconfigs/strict` rather than `strictest` — so a new
+`ChromePart` variant without a matching `case` type-checks clean and simply renders
+nothing. `astro check` will **not** catch it. Check the preview in the browser. (A
+missing `CHROME_SPECS` entry, by contrast, **is** compiler-enforced — see step 2 above.)
 
 ### 4. Use it
 
@@ -162,8 +166,12 @@ Chrome sits on an unknown wallpaper color — it must stay legible on **any** ba
 
 ## Add a test line
 
-`src/islands/DesktopPreview.test.tsx` iterates `DESKTOP_STYLES` (so a new style is
-covered automatically) and asserts exact chrome per style. Add one assertion:
+`src/islands/DesktopPreview.test.tsx` has two relevant tests, and they check different
+things. `"every style renders chrome"` iterates `DESKTOP_STYLES`, so a new style *is*
+covered there automatically — but it only asserts that *some* chrome renders
+(`spec.length > 0`), not which chrome. `"draws the expected chrome per style"` is the
+test that pins the exact chrome, and it is a **hand-written list**, one line per style —
+adding a style to `DESKTOP_STYLES` does not add a line here for you. Add it yourself:
 
 ```ts
 expect(chromeFor("nextstep")).toEqual(["chrome-deskicons", "chrome-dock"]);
@@ -175,7 +183,7 @@ covering your new spec automatically.
 ## Verify
 
 ```bash
-npx astro check     # exhaustive Record + renderPart switch type-check
+npx astro check     # exhaustive CHROME_SPECS Record type-check only — NOT renderPart, see step 3
 npx vitest run      # unit tests incl. chromeSpec + DesktopPreview
 npm run build       # every page still pre-renders
 npm run dev         # eyeball it (below)

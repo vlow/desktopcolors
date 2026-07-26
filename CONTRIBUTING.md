@@ -16,6 +16,12 @@ There are two things you can contribute, and you may do either or both:
 Everything below is self-contained: you should not need to read any other file in the
 repository to land a contribution.
 
+<!-- Maintainers: this file mirrors docs/adding-os-data.md and
+     docs/adding-a-preview-style.md. Update all three in the same change — see CLAUDE.md. -->
+*Maintaining this file rather than contributing to it? It mirrors
+`docs/adding-os-data.md` and `docs/adding-a-preview-style.md` — keep shared material in
+sync across all three.*
+
 ## Sourcing
 
 **Your pull request must name where the color came from.**
@@ -120,9 +126,13 @@ Each entry in `colors` is `{ hex, name, note?, default? }`:
 - **`hex`** — lowercase `#rrggbb`. No shorthand, no named colors. **Nothing in the
   toolchain enforces the lowercase part** — the schema's pattern is
   `/^#[0-9a-fA-F]{6}$/`, so `#6A859E` builds and tests green. It is a review-enforced
-  convention: the site lowercases hexes when it merges colors across platforms but
-  prints yours verbatim on the platform page, so an uppercase value shows up as an
-  inconsistency on the rendered site rather than as a build error. Check it yourself.
+  convention, and the reason is stronger than "it looks inconsistent": every hex is
+  lowercased before it reaches *any* view. `toColorView` (`src/lib/catalog.ts`) and the
+  merge path (`src/lib/derive.ts`) both call `.toLowerCase()` on the way in, platform
+  pages included — so an uppercase value doesn't just pass the build, it renders
+  identically to a lowercase one everywhere on the site. Nothing downstream will ever
+  surface it. The pull request diff is the only place it can ever be caught — which is
+  exactly why the checklist below says "read them — no command checks case."
 - **`name`** — a human name for the swatch. Where a family has light/dark variants,
   qualify it: `French Blue (Light)`, `Olive (Dark)`.
 - **`note`** — optional, terse: where the color is used, which theme it belongs to,
@@ -370,7 +380,7 @@ For the full detail — the data flow, every convention, and the checklist — s
 | `npm run build` | **the authoritative check on your JSON** — the content schema (malformed hex, missing field, bad `added` format, unknown `desktopStyle`, non-URL `wikipedia`/`project.url`, more than one `default`) and dangling `predecessor`/`successor` refs. Also proves every page still pre-renders. It does **not** check hex *case* — see [Colors](#colors). |
 | `npx vitest run` | `src/content/os.test.ts` re-reads every file in `src/content/os/` and parses it, so most mistakes surface here first and fastest. It uses its own copy of the schema, which omits the `wikipedia`, `project`, and `type` rules — a pass here is encouraging, not conclusive. |
 | `npx astro check` | TypeScript only — notably a missing `CHROME_SPECS` entry. It does not read your JSON at all. |
-| `npm run dev` | your own eyes: open `/os/<slug>` and check the swatches and the preview on both light and dark colors. |
+| `npm run dev` | your own eyes: open `http://localhost:4321/os/<slug>` and check the swatches and the preview on both light and dark colors. |
 
 Two commands read your JSON: `vitest` and the build. The build is authoritative — it uses
 the real schema — while vitest is faster and usually catches a mistake first, but from a
@@ -432,10 +442,13 @@ CI (`.github/workflows/ci.yml`) runs three jobs on every pull request: `site`
 content work), and `e2e` (`npm run test:e2e`, Playwright against a real build). Passing
 `npm run build` locally clears the job that content changes normally break. The one way a
 platform file reaches `e2e` is through the assertions that count search results — for
-instance `e2e/smoke.spec.ts` types "amiga" and expects exactly two cards, so a new
-platform whose name or tagline contains an existing search term can turn CI red while
-your local build is green. If your platform is a variant of one already in the catalog,
-run `npm run test:e2e` before opening the PR.
+instance `e2e/smoke.spec.ts` types "amiga" and expects exactly two cards. The search
+match surface is wider than name and tagline: `PlatformControls.tsx:53-57` also matches
+`family`, `defaultHex`, and every alt color's `name` and `hex` — so a platform with
+`"family": "Amiga"` breaks that count assertion even if its own `name` and `tagline`
+never mention Amiga. If your platform shares a name, family, tagline, or any color's
+name or hex with something already in the catalog, run `npm run test:e2e` before opening
+the PR.
 
 ## Open the pull request
 
@@ -448,9 +461,11 @@ fix(colors): correct the Windows 95 teal
 feat(design): add the nextstep chrome style
 ```
 
-Types in use: `feat`, `fix`, `docs`, `chore`, `test`. Scopes in use: `os`, `colors`,
-`design`. `docs` is a type, never a scope — a documentation change is `docs: …`, not
-`docs(docs): …`.
+`feat(os): add BeOS` above is a legal, invented example, not one pulled from history —
+real OS-scoped commits skew `fix(os)`/`chore(os)`/`data(os)`. Types in use include
+`feat`, `fix`, `docs`, `chore`, `test`, and `refactor`, plus a handful of others; this
+list is representative, not exhaustive. Scopes in use: `os`, `colors`, `design`. `docs`
+is a type, never a scope — a documentation change is `docs: …`, not `docs(docs): …`.
 
 The description must contain the source citation for every color, per
 [Sourcing](#sourcing). For a new or changed chrome style, add a screenshot of the

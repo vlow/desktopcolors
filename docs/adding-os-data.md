@@ -29,11 +29,11 @@ This is the full guide (for humans and LLM agents). For the quick version see
   "predecessor": "some-slug",
   "successor": "some-slug",
   "desktopStyle": "beos",
-  "type": "Proprietary",
-  "wikipedia": "https://en.wikipedia.org/wiki/BeOS",
   "colors": [
     { "hex": "#336698", "name": "Steel Blue", "note": "The BeOS desktop blue.", "default": true }
-  ]
+  ],
+  "type": "Proprietary",
+  "wikipedia": "https://en.wikipedia.org/wiki/BeOS"
 }
 ```
 

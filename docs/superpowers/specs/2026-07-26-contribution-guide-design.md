@@ -168,10 +168,13 @@ request, so a green local run predicts a green PR.
 
 ### 6. Open the PR
 
-- Commit convention matching the repository's history: `feat(os): add BeOS`. The types in
-  use are `feat`, `fix`, `docs`, `chore`, and `test`; the scopes in use are `os`, `colors`,
-  `design`, `specs`, and `plans`. Note that `docs` appears as a *type* (`docs: add
-  TESTING.md`), never as a scope.
+- Commit convention matching the repository's history: `feat(os): add BeOS` — a legal,
+  invented example, not one pulled from history (no `feat(os)` commit has actually
+  landed; real OS-scoped commits skew `fix(os)`/`chore(os)`/`data(os)`). Types in use
+  include `feat`, `fix`, `docs`, `chore`, `test`, and `refactor`, plus a handful of
+  others — stated as representative, not exhaustive. Scopes in use are `os`, `colors`,
+  and `design`. Note that `docs` appears as a *type* (`docs: add TESTING.md`), never as a
+  scope.
 - What the description must contain: the source citation, and a screenshot for a new or
   changed chrome style.
 - The submission checklist, mirrored by the PR template.

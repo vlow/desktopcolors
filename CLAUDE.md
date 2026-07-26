@@ -29,9 +29,11 @@ entry point for understanding the codebase:
   to follow (for humans and LLM agents) when adding or changing chrome.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — the contributor-facing guide. It is deliberately
   **self-contained**: it duplicates the field reference, the dithering workflow, and the
-  chrome style/primitive tables from the two guides above. **Any change to those topics in
-  `docs/adding-os-data.md` or `docs/adding-a-preview-style.md` must be applied to
-  `CONTRIBUTING.md` in the same change**, or the copies drift.
+  chrome style/primitive tables from the two guides above. The mirror is **bidirectional**:
+  any change to those topics in `docs/adding-os-data.md` or `docs/adding-a-preview-style.md`
+  must be applied to `CONTRIBUTING.md` in the same change, and any change to that shared
+  material made in `CONTRIBUTING.md` must be applied back to whichever of the two it
+  mirrors — in either direction, or the copies drift.
 
 ## Styling conventions
 
