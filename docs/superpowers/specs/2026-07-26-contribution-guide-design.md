@@ -172,9 +172,12 @@ request, so a green local run predicts a green PR.
   invented example, not one pulled from history (no `feat(os)` commit has actually
   landed; real OS-scoped commits skew `fix(os)`/`chore(os)`/`data(os)`). Types in use
   include `feat`, `fix`, `docs`, `chore`, `test`, and `refactor`, plus a handful of
-  others — stated as representative, not exhaustive. Scopes in use are `os`, `colors`,
-  and `design`. Note that `docs` appears as a *type* (`docs: add TESTING.md`), never as a
-  scope.
+  others — stated as representative, not exhaustive. Scopes are per-area and open-ended:
+  history carries roughly 25, the most common being `design`, `explorer`, `islands`,
+  `lib`, `os`, and `colors`. An earlier draft of this spec named only `os`, `colors`, and
+  `design`, which final review refuted — `explorer`, `islands`, and `lib` are all more
+  frequent than `os`. Note that `docs` appears as a *type* (`docs: add TESTING.md`), never
+  as a scope.
 - What the description must contain: the source citation, and a screenshot for a new or
   changed chrome style.
 - The submission checklist, mirrored by the PR template.

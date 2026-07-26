@@ -363,7 +363,9 @@ Four moving parts:
 3. A `case` for it in the `renderPart` switch. This is the one place in the chrome
    system where a forgotten case is **silent**: `renderPart` returns `ComponentChildren`,
    which admits `undefined`, so `astro check` does not fail — the part just renders
-   nothing. Check the preview in the browser. (A missing `CHROME_SPECS` entry, by
+   nothing. The per-style assertion you add in step 5 below will catch it, but nothing
+   in the type system will; check the preview in the browser too. (A missing
+   `CHROME_SPECS` entry, by
    contrast, does fail `astro check` — see [Add a new style](#add-a-new-style-from-existing-primitives) above.)
 4. The authoring conventions: chrome sits on an unknown wallpaper, so derive translucent
    surfaces from `chromeSurfaces(onColor)` rather than picking opaque colors, size in
@@ -446,9 +448,9 @@ instance `e2e/smoke.spec.ts` types "amiga" and expects exactly two cards. The se
 match surface is wider than name and tagline: `PlatformControls.tsx:53-57` also matches
 `family`, `defaultHex`, and every alt color's `name` and `hex` — so a platform with
 `"family": "Amiga"` breaks that count assertion even if its own `name` and `tagline`
-never mention Amiga. If your platform shares a name, family, tagline, or any color's
-name or hex with something already in the catalog, run `npm run test:e2e` before opening
-the PR.
+never mention Amiga. If your platform shares a name, family, tagline, default hex, or any
+non-default color's name or hex with something already in the catalog, run
+`npm run test:e2e` before opening the PR.
 
 ## Open the pull request
 
@@ -464,8 +466,11 @@ feat(design): add the nextstep chrome style
 `feat(os): add BeOS` above is a legal, invented example, not one pulled from history —
 real OS-scoped commits skew `fix(os)`/`chore(os)`/`data(os)`. Types in use include
 `feat`, `fix`, `docs`, `chore`, `test`, and `refactor`, plus a handful of others; this
-list is representative, not exhaustive. Scopes in use: `os`, `colors`, `design`. `docs`
-is a type, never a scope — a documentation change is `docs: …`, not `docs(docs): …`.
+list is representative, not exhaustive. Scopes are per-area and open-ended — history
+carries about 25 of them, `design`, `explorer`, `islands`, `lib`, `os`, and `colors`
+among the most common — so name the area you touched rather than hunting for an approved
+value. `docs` is a type, never a scope — a documentation change is `docs: …`, not
+`docs(docs): …`.
 
 The description must contain the source citation for every color, per
 [Sourcing](#sourcing). For a new or changed chrome style, add a screenshot of the
