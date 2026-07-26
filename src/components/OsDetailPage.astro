@@ -1,16 +1,22 @@
 ---
 import Base from "../layouts/Base.astro";
 import { OsDetail } from "../islands/OsDetail";
-import type { OsDetailView } from "../lib/detail";
+import type { OsDetailBootstrap } from "../lib/detail";
 
-interface Props { view: OsDetailView; initialHex?: string | null }
-
-const { view, initialHex = null } = Astro.props;
-const { os } = view;
+interface Props { bootstrap: OsDetailBootstrap }
+const { bootstrap } = Astro.props;
+const os = bootstrap.os;
 ---
 <Base
   title={`${os.name} desktop colors — desktopcolors.com`}
   description={`${os.name} (${os.year}) desktop background colors: ${os.defaultHex} and ${os.colorCount - 1} more, with previews and downloadable wallpapers.`}
 >
-  <OsDetail view={view} initialHex={initialHex} client:load />
+  <OsDetail
+    os={os}
+    eraPeers={bootstrap.eraPeers}
+    initialHex={bootstrap.initialHex}
+    detailsByHex={bootstrap.detailsByHex}
+    viewUrl={bootstrap.viewUrl}
+    client:load
+  />
 </Base>

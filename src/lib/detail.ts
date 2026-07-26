@@ -2,6 +2,8 @@ import { closestRal, closestRalDesign, onColor, hexToHsl, hexToRgb, rgbToLab, la
 import { similarColors, eraPeers, type OsEntry, type SimilarColor, type EraPeer } from "./derive";
 import { buildPlatformsByHex, type Platform } from "./colorCatalog";
 import type { Catalog, OsView, ColorView } from "./catalog";
+
+export type { OsView };
 import type { DesktopStyle } from "./desktopStyle";
 
 export interface RalMatch { code: string; name: string; hex: string }

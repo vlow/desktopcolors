@@ -1,7 +1,7 @@
 ---
 import OsDetailPage from "../../components/OsDetailPage.astro";
 import { loadCatalog } from "../../lib/loadCatalog";
-import { loadOsDetail } from "../../lib/osDetail";
+import { loadOsBootstrap } from "../../lib/osDetail";
 
 export async function getStaticPaths() {
   const catalog = await loadCatalog();
@@ -9,6 +9,6 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
-const view = await loadOsDetail(slug!);
+const bootstrap = await loadOsBootstrap(slug!, null);
 ---
-<OsDetailPage view={view} />
+<OsDetailPage bootstrap={bootstrap} />

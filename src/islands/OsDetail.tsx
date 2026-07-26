@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import type { OsDetailView, DetailColor, SimilarView } from "../lib/detail";
+import type { OsView, EraPeerView, ColorDetail, SimilarView, OsViewJson } from "../lib/detail";
+import { denormalizeDetails } from "../lib/detail";
 import { DesktopPreview } from "./DesktopPreview";
 import { FullscreenPreview } from "./FullscreenPreview";
 import { DownloadSheet } from "./DownloadSheet";
@@ -7,8 +8,15 @@ import { ColorInfobox, type InfoboxColor } from "./ColorInfobox";
 import { track } from "../lib/track";
 import { colorPath } from "../lib/links";
 import { KnownUsesTimeline } from "./KnownUsesTimeline";
+import { DetailSkeleton } from "./DetailSkeleton";
 
-interface Props { view: OsDetailView; initialHex?: string | null }
+interface Props {
+  os: OsView;
+  eraPeers: EraPeerView[];
+  initialHex?: string | null;
+  detailsByHex: Record<string, ColorDetail>;
+  viewUrl?: string | null;
+}
 
 type CopyKey = string;
 
@@ -28,8 +36,8 @@ export function centerScrollTop(
   return Math.max(0, Math.min(ideal, scrollHeight - clientHeight));
 }
 
-export function OsDetail({ view, initialHex }: Props) {
-  const { os, colors, eraPeers } = view;
+export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Props) {
+  const colors = os.colors; // ColorView[] — the lightweight swatch list
 
   // The selected color comes from the server-provided `initialHex` — it is baked
   // into the URL path (/os/<slug>/<hex>), so server and client render identically
@@ -56,8 +64,31 @@ export function OsDetail({ view, initialHex }: Props) {
   const [simExp, setSimExp] = useState<string | null>(null);
   const [simFull, setSimFull] = useState(false);
   const [simSheet, setSimSheet] = useState<SimilarView | null>(null);
+  const [details, setDetails] = useState<Record<string, ColorDetail>>(detailsByHex);
 
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
+
+  // Prefetch the full per-OS detail once, on idle. Until it lands, only the
+  // initially-selected color (seeded inline) has heavy detail; others show a
+  // skeleton. The inline seed stays authoritative (`...prev` wins).
+  useEffect(() => {
+    if (!viewUrl) return;
+    let alive = true;
+    const load = () =>
+      fetch(viewUrl)
+        .then((r) => r.json())
+        .then((json: OsViewJson) => {
+          if (!alive) return;
+          const dn = denormalizeDetails(json);
+          const map: Record<string, ColorDetail> = {};
+          colors.forEach((col, i) => { if (dn[i]) map[col.hex.toLowerCase()] = dn[i]; });
+          setDetails((prev) => ({ ...map, ...prev }));
+        })
+        .catch(() => { /* initial color stays functional; others keep skeleton */ });
+    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
+    if (ric) ric(load); else window.setTimeout(load, 0);
+    return () => { alive = false; };
+  }, [viewUrl]);
 
   // On first paint, center the initially-selected swatch in the "All colors"
   // list. A deep link (/os/<slug>/<hex>) or a mid-list default (Windows 95's
@@ -75,7 +106,9 @@ export function OsDetail({ view, initialHex }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const c: DetailColor = colors[sel] ?? colors[0];
+  const summary = colors[sel] ?? colors[0];
+  const detail = details[summary.hex.toLowerCase()]; // undefined until fetched
+  const sim = detail?.similar ?? [];
 
   // Collapse any expanded similar-color panel when the selected color changes —
   // it refers to a different color's "similar" list once `sel` moves.
@@ -88,13 +121,13 @@ export function OsDetail({ view, initialHex }: Props) {
   useEffect(() => {
     if (!didMount.current) { didMount.current = true; return; }
     try {
-      window.history.replaceState(window.history.state, "", colorPath(os.slug, c.hex));
+      window.history.replaceState(window.history.state, "", colorPath(os.slug, summary.hex));
     } catch { /* ignore */ }
   }, [sel]);
 
   const copy = (key: CopyKey, text: string) => {
     try { navigator.clipboard?.writeText(text)?.catch(() => {}); } catch { /* ignore */ }
-    track({ kind: "copy", hex: c.hex, os: os.slug });
+    track({ kind: "copy", hex: summary.hex, os: os.slug });
     setCopied(key);
     window.setTimeout(() => setCopied(null), 1300);
   };
@@ -105,11 +138,11 @@ export function OsDetail({ view, initialHex }: Props) {
   // preview. `simExp` is the single source of truth for the current similar
   // color, so advancing it also makes the expanded panel below follow along.
   const stepSim = (d: number) => {
-    const n = c.similar.length;
+    const n = (detail?.similar ?? []).length;
     if (n === 0) return;
-    const i = c.similar.findIndex((x) => x.hex === simExp);
+    const i = (detail?.similar ?? []).findIndex((x) => x.hex === simExp);
     const next = ((i < 0 ? 0 : i) + d + n) % n;
-    setSimExp(c.similar[next].hex);
+    setSimExp((detail?.similar ?? [])[next].hex);
   };
 
   const copyRow = (key: CopyKey, label: string, value: string, toCopy: string, swatch?: string) => (
@@ -167,10 +200,10 @@ export function OsDetail({ view, initialHex }: Props) {
           <div style="height: 28px; background: #f0eeec; border-bottom: 1px solid var(--field-border); display: flex; align-items: center; gap: 9px; padding: 0 12px; flex: none;">
             <span style="width: 13px; height: 10px; border-radius: 2px; background: #cbc7c1;" />
             <span style="font: 500 11px var(--font-ui); color: #78716c;">Preview</span>
-            <span style="margin-left: auto; font: 400 11px var(--font-mono); color: var(--faint);">{c.hex}</span>
+            <span style="margin-left: auto; font: 400 11px var(--font-mono); color: var(--faint);">{summary.hex}</span>
           </div>
           <div style="position: relative; flex: 1; min-height: 0;">
-            <DesktopPreview hex={c.hex} onColor={c.onColor} style={os.desktopStyle} />
+            <DesktopPreview hex={summary.hex} onColor={summary.onColor} style={os.desktopStyle} />
             <button onClick={() => setFull(true)} style="position: absolute; top: 12px; right: 12px; z-index: 2; cursor: pointer; background: rgba(255,255,255,0.92); border: none; border-radius: 9px; padding: 8px 12px; font: 500 12px var(--font-ui);">⤢ Expand</button>
           </div>
         </div>
@@ -196,29 +229,35 @@ export function OsDetail({ view, initialHex }: Props) {
 
       <div style="border: 1px solid var(--card-border); border-radius: 12px; background: var(--panel); padding: 18px 20px; margin-top: 20px;">
         <div class="dc-detail-selrow" style="display: flex; align-items: center; gap: 14px;">
-          <div style={`width: 48px; height: 48px; border-radius: 10px; background-color: ${c.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
+          <div style={`width: 48px; height: 48px; border-radius: 10px; background-color: ${summary.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
           <div style="flex: 1;">
             <div style="display: inline-flex; align-items: center; gap: 9px;">
-              <span style="font: 500 20px var(--font-ui);">{c.name}</span>
-              {c.isDefault && <span style="background: var(--accent-tint); color: var(--accent-strong); font: 600 9px var(--font-ui); letter-spacing: 0.5px; padding: 4px 8px; border-radius: 999px;">DEFAULT</span>}
+              <span style="font: 500 20px var(--font-ui);">{summary.name}</span>
+              {summary.isDefault && <span style="background: var(--accent-tint); color: var(--accent-strong); font: 600 9px var(--font-ui); letter-spacing: 0.5px; padding: 4px 8px; border-radius: 999px;">DEFAULT</span>}
             </div>
-            <div style="font: 400 12px var(--font-mono); color: var(--muted); margin-top: 2px;">{c.note}</div>
+            <div style="font: 400 12px var(--font-mono); color: var(--muted); margin-top: 2px;">{summary.note}</div>
           </div>
           <button class="dc-detail-dl" onClick={() => setSheet(true)} style="border: none; cursor: pointer; background: var(--ink); color: #fff; font: 500 13px var(--font-ui); padding: 11px 17px; border-radius: 10px;">↓ Download</button>
         </div>
 
         <div class="dc-detail-meta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
-          <KnownUsesTimeline hex={c.hex} uses={c.uses} currentSlug={os.slug} />
+          {detail ? (
+            <KnownUsesTimeline hex={summary.hex} uses={detail.uses} currentSlug={os.slug} />
+          ) : (
+            <DetailSkeleton label="known uses" />
+          )}
           <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden;">
             <div style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px; padding: 9px 14px 5px;">COLOR VALUES · CLICK TO COPY</div>
-            {copyRow("hex", "HEX", c.hex, c.hex)}
-            {copyRow("rgb", "RGB", c.rgb, `rgb(${c.rgb})`)}
-            {copyRow("hsl", "HSL", c.hsl, c.hsl)}
-            {copyRow("cmyk", "CMYK", c.cmyk, `cmyk(${c.cmyk.replace(/ /g, ", ")})`)}
-            {codesExpanded && c.extraFormats.map((r) => copyRow(r.key, r.label, r.value, r.copy, r.swatch))}
-            <a onClick={() => setCodesExpanded((v) => !v)} style="display: block; border-top: 1px solid var(--hairline); padding: 9px 14px; font: 500 11px var(--font-mono); color: var(--accent-strong); cursor: pointer;">
-              {codesExpanded ? "Show fewer formats" : `View all ${4 + c.extraFormats.length} formats →`}
-            </a>
+            {copyRow("hex", "HEX", summary.hex, summary.hex)}
+            {copyRow("rgb", "RGB", summary.rgb, `rgb(${summary.rgb})`)}
+            {copyRow("hsl", "HSL", summary.hsl, summary.hsl)}
+            {copyRow("cmyk", "CMYK", summary.cmyk, `cmyk(${summary.cmyk.replace(/ /g, ", ")})`)}
+            {detail && codesExpanded && detail.extraFormats.map((r) => copyRow(r.key, r.label, r.value, r.copy, r.swatch))}
+            {detail && (
+              <a onClick={() => setCodesExpanded((v) => !v)} style="display: block; border-top: 1px solid var(--hairline); padding: 9px 14px; font: 500 11px var(--font-mono); color: var(--accent-strong); cursor: pointer;">
+                {codesExpanded ? "Show fewer formats" : `View all ${4 + detail.extraFormats.length} formats →`}
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -226,14 +265,16 @@ export function OsDetail({ view, initialHex }: Props) {
       <div style="border-top: 1px solid var(--hairline); margin-top: 34px; padding-top: 26px;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 18px;">
           <h2 style="font: 500 20px var(--font-ui); margin: 0;">Similar colors elsewhere</h2>
-          <span style="font: 400 12px var(--font-mono); color: var(--faint);">closest to {c.name} · {c.hex}</span>
+          <span style="font: 400 12px var(--font-mono); color: var(--faint);">closest to {summary.name} · {summary.hex}</span>
         </div>
-        {c.similar.length === 0 ? (
+        {!detail ? (
+          <DetailSkeleton label="similar colors" />
+        ) : sim.length === 0 ? (
           <div style="font: 400 13px var(--font-mono); color: var(--faint);">No close matches on other platforms.</div>
         ) : (
           <>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px;">
-              {c.similar.map((s) => (
+              {sim.map((s) => (
                 <a key={s.hex + s.primarySlug} onClick={() => setSimExp((x) => (x === s.hex ? null : s.hex))}
                   style={`cursor: pointer; border: 1px solid var(--card-border); border-radius: 13px; overflow: hidden; background: var(--panel); display: block; ${simExp === s.hex ? "outline: 2px solid var(--accent);" : ""}`}>
                   <div style={`position: relative; height: 76px; background-color: ${s.hex};`}>
@@ -247,7 +288,7 @@ export function OsDetail({ view, initialHex }: Props) {
               ))}
             </div>
             {simExp && (() => {
-              const s = c.similar.find((x) => x.hex === simExp);
+              const s = sim.find((x) => x.hex === simExp);
               if (!s) return null;
               const infoColor: InfoboxColor = { hex: s.hex, name: s.name, onColor: s.onColor, h: s.h, s: s.s, l: s.l, primarySlug: s.primarySlug };
               return (
@@ -282,24 +323,24 @@ export function OsDetail({ view, initialHex }: Props) {
         </div>
       </div>
 
-      {sheet && <DownloadSheet osSlug={os.slug} color={{ hex: c.hex, name: c.name }} onClose={() => setSheet(false)} />}
+      {sheet && <DownloadSheet osSlug={os.slug} color={{ hex: summary.hex, name: summary.name }} onClose={() => setSheet(false)} />}
       {full && (
         <FullscreenPreview
-          hex={c.hex} onColor={c.onColor} style={os.desktopStyle}
-          label={`${os.name} · ${c.name} · ${c.hex}`}
+          hex={summary.hex} onColor={summary.onColor} style={os.desktopStyle}
+          label={`${os.name} · ${summary.name} · ${summary.hex}`}
           pos={sel + 1} total={colors.length}
           onClose={() => setFull(false)} onPrev={() => step(-1)} onNext={() => step(1)}
         />
       )}
       {simFull && (() => {
-        const idx = c.similar.findIndex((x) => x.hex === simExp);
-        const cur = idx >= 0 ? c.similar[idx] : null;
+        const idx = sim.findIndex((x) => x.hex === simExp);
+        const cur = idx >= 0 ? sim[idx] : null;
         if (!cur) return null;
         return (
           <FullscreenPreview
             hex={cur.hex} onColor={cur.onColor} style={cur.style}
             label={`${cur.name} · ${cur.hex}`}
-            pos={idx + 1} total={c.similar.length}
+            pos={idx + 1} total={sim.length}
             onClose={() => setSimFull(false)} onPrev={() => stepSim(-1)} onNext={() => stepSim(1)}
           />
         );

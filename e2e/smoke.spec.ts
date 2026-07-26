@@ -109,6 +109,26 @@ test("a per-color page selects that color from the first paint, not the default"
   await expect(page).toHaveURL(/\/os\/windows-95\/008080$/);
 });
 
+test("a non-initial color lazy-loads its detail from view.json", async ({ page }) => {
+  // Delay the per-OS detail so the skeleton is observable before it resolves.
+  await page.route("**/os/windows-95/view.json", async (route) => {
+    await new Promise((r) => setTimeout(r, 800));
+    await route.continue();
+  });
+  await page.goto("/os/windows-95/008080"); // Teal (default/initial): its detail is inline
+  await expect(page.getByRole("heading", { name: "Windows 95" })).toBeVisible();
+  await islandsHydrated(page);
+
+  // Select Navy — not the initial color, so its heavy detail must come from the fetch.
+  await page.getByTestId("color-row-000080").click();
+  await expect(page.getByText("0, 0, 128")).toBeVisible();        // light fields: instant
+  await expect(page.getByTestId("heavy-skeleton").first()).toBeVisible(); // heavy: skeleton first
+
+  // Once view.json resolves, the skeleton is replaced by the real timeline.
+  await expect(page.getByText("KNOWN USES")).toBeVisible();
+  await expect(page.getByTestId("heavy-skeleton")).toHaveCount(0);
+});
+
 test("the ungrouped colors view fits a phone viewport", async ({ page }) => {
   // Layout regression guard. The unit tests run in jsdom, which has no layout
   // engine — the mobile rules for .dc-rank-row were dead for a long time (their
