@@ -97,7 +97,7 @@ npm run build
 # `set -e` only catches a nonzero `npm run build`; it says nothing about a
 # build that exits 0 but produced nothing or a truncated index.html. This is
 # the one check standing between a broken build and a published empty site,
-# so it fails loudly rather than letting the mv below publish it.
+# so it fails loudly rather than letting the copy below publish it.
 if [ ! -s dist/index.html ]; then
   log "dist/index.html missing or empty after build; refusing to publish"
   exit 1
