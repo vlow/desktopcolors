@@ -58,6 +58,10 @@ This is the full guide (for humans and LLM agents). For the quick version see
 Each color is `{ hex, name, note?, default? }`:
 
 - **`hex`** — `#rrggbb`, lowercase. Convert from RGB by hand or with the snippet below.
+  Lowercase is **build-checked** (`/^#[0-9a-f]{6}$/` in `src/content/config.ts`, mirrored
+  in `src/content/os.test.ts`): uppercase is harmless at runtime, since every hex is
+  lowercased in `toColorView`/`mergeColorsByHex` before it reaches a view, but rejecting
+  it keeps the content files single-case and greppable by color code.
 - **`name`** — a human name for the swatch. For a family with light/dark variants,
   qualify it: `French Blue (Light)`, `Olive (Dark)`.
 - **`note`** — optional; a short factual sentence (where the color is used, which theme
@@ -158,7 +162,7 @@ change `config.ts`. `astro check` does not read the content collection at all.
 ## Checklist
 
 1. [ ] Created/edited `src/content/os/<slug>.json` with all required fields.
-2. [ ] `hex` values are lowercase `#rrggbb`; at most one color is `default`.
+2. [ ] `hex` values are lowercase `#rrggbb` (build-enforced); at most one color is `default`.
 3. [ ] Reused an existing `family`/`type` value unless genuinely new.
 4. [ ] `desktopStyle` set (or left `modern`) — see [`adding-a-preview-style.md`](adding-a-preview-style.md).
 5. [ ] For any dithered desktop: added the blended entry(ies) + partials, **recomputed** both averages, and applied the collapse rule if they matched.

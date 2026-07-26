@@ -1,7 +1,10 @@
 import { defineCollection, z } from "astro:content";
 import { DESKTOP_STYLES } from "../lib/desktopStyle";
 
-const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "must be #rrggbb");
+// Lowercase-only on purpose: uppercase is functionally harmless (every hex is
+// lowercased in toColorView/mergeColorsByHex before it reaches a view), but keeping
+// the source files single-case makes them greppable by color code.
+const hex = z.string().regex(/^#[0-9a-f]{6}$/, "must be lowercase #rrggbb");
 
 const desktopStyle = z.enum(DESKTOP_STYLES);
 

@@ -3,7 +3,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { z } from "zod";
 import { DESKTOP_STYLES } from "../lib/desktopStyle";
 
-const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+// Mirrors src/content/config.ts — lowercase-only, so the files stay greppable.
+const hex = z.string().regex(/^#[0-9a-f]{6}$/);
 const osColor = z.object({
   hex,
   name: z.string().min(1),

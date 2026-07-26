@@ -23,7 +23,7 @@ pixel, say which screenshot. If you read a constant, link the file.
 
 ## Checklist
 
-- [ ] The file is `src/content/os/<slug>.json`, `hex` values are lowercase `#rrggbb` (read them — no command checks case), and at most one color is `default`.
+- [ ] The file is `src/content/os/<slug>.json`, `hex` values are lowercase `#rrggbb`, and at most one color is `default`.
 - [ ] `family` and `type` reuse existing values unless genuinely new.
 - [ ] Any dithered desktop has its blended entry(ies) plus partials, with **recomputed** averages and the collapse rule applied.
 - [ ] `npm run build` passes.

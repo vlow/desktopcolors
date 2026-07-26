@@ -123,16 +123,12 @@ Two things the schema does **not** enforce, so match the worked example by hand:
 
 Each entry in `colors` is `{ hex, name, note?, default? }`:
 
-- **`hex`** — lowercase `#rrggbb`. No shorthand, no named colors. **Nothing in the
-  toolchain enforces the lowercase part** — the schema's pattern is
-  `/^#[0-9a-fA-F]{6}$/`, so `#6A859E` builds and tests green. It is a review-enforced
-  convention, and the reason is stronger than "it looks inconsistent": every hex is
-  lowercased before it reaches *any* view. `toColorView` (`src/lib/catalog.ts`) and the
-  merge path (`src/lib/derive.ts`) both call `.toLowerCase()` on the way in, platform
-  pages included — so an uppercase value doesn't just pass the build, it renders
-  identically to a lowercase one everywhere on the site. Nothing downstream will ever
-  surface it. The pull request diff is the only place it can ever be caught — which is
-  exactly why the checklist below says "read them — no command checks case."
+- **`hex`** — lowercase `#rrggbb`. No shorthand, no named colors. The lowercase part is
+  **build-checked**: the schema's pattern is `/^#[0-9a-f]{6}$/`, so `#6A859E` fails with
+  `must be lowercase #rrggbb`. Uppercase would be harmless at runtime — every hex is
+  lowercased before it reaches a view — so the rule exists purely to keep the source
+  files single-case and therefore greppable: `grep -r '#008080' src/content/os` finds
+  every use of a color without a case-insensitive flag.
 - **`name`** — a human name for the swatch. Where a family has light/dark variants,
   qualify it: `French Blue (Light)`, `Olive (Dark)`.
 - **`note`** — optional, terse: where the color is used, which theme it belongs to,
@@ -399,7 +395,7 @@ A file whose `hex` was missing its `#` fails the build like this:
 
 ```
 [InvalidContentEntryFrontmatterError] [astro:content-imports] os → zzz-temp-broken frontmatter does not match collection schema.
-must be #rrggbb
+must be lowercase #rrggbb
 file: /…/src/content/os/zzz-temp-broken.json?astroDataCollectionEntry=true:0:0
 ```
 
@@ -412,7 +408,7 @@ the schema carry a hand-written message, and those print bare, with no field pat
 
 | message | what it means |
 |---------|---------------|
-| `must be #rrggbb` | some `hex` is malformed |
+| `must be lowercase #rrggbb` | some `hex` is malformed or uppercase |
 | `must be YYYY-MM-DD` | `added` is the wrong shape |
 | `at most one color may be marked default` | two or more colors have `"default": true` |
 
@@ -427,8 +423,9 @@ desktopStyle: Invalid enum value. Expected 'modern' | 'win9x' | … , received '
 ```
 
 `colors.2` is the third entry in your `colors` array, zero-indexed. Only the three bare
-messages above leave you checking entries by hand — and for `must be #rrggbb` that means
-re-reading each `hex` for a missing `#`, a wrong length, or a stray character.
+messages above leave you checking entries by hand — and for `must be lowercase #rrggbb`
+that means re-reading each `hex` for a missing `#`, a wrong length, an uppercase letter,
+or a stray character.
 
 A dangling `predecessor`/`successor` is the sibling case. It is not a schema message but
 a thrown error, and it lands later — during "generating static routes", after the schema
@@ -479,7 +476,7 @@ preview on both a light and a dark color.
 
 Then run through this — the pull request template mirrors it:
 
-- [ ] The file is `src/content/os/<slug>.json`, `hex` values are lowercase `#rrggbb` (read them — no command checks case), and at most one color is `default`.
+- [ ] The file is `src/content/os/<slug>.json`, `hex` values are lowercase `#rrggbb`, and at most one color is `default`.
 - [ ] `family` and `type` reuse existing values unless genuinely new.
 - [ ] Any dithered desktop has its blended entry(ies) plus partials, with **recomputed** averages and the collapse rule applied.
 - [ ] `npm run build` passes.
