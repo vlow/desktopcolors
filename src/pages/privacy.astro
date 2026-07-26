@@ -3,28 +3,47 @@ import Base from "../layouts/Base.astro";
 
 // The "last updated" date is the date this notice last changed — keep it static
 // and bump it by hand when the wording changes (not the build date).
-const updated = "2026-07-19";
+const updated = "2026-07-26";
 const email = "hello@desktopcolors.com";
+// TODO(owner): name the hosting provider in the "Where it runs" clause — a
+// processor has to be identified (Art. 13(1)(e) GDPR). Everything else here is
+// derived from the code: see track.ts, counter/internal/store, and
+// deploy/desktopcolors.nginx.conf. Keep this page in step with those.
 const clauses = [
   {
     title: "What we collect", dot: "#008080",
-    plain: "Barely anything. You can browse and download without an account.",
-    formal: "We do not require accounts and do not ask for personal information to browse the archive or download wallpapers.",
+    plain: "Barely anything. No account, and your wallpaper never leaves your device.",
+    formal: "We do not require accounts and do not ask for personal information to browse the archive or download wallpapers. Wallpapers are generated entirely in your browser and are never uploaded to, or stored on, our server.",
   },
   {
-    title: "Analytics", dot: "#3a6ea5",
-    plain: "Anonymous, aggregate counts only — no cross-site tracking.",
-    formal: "We use privacy-respecting, cookieless analytics that record aggregate page views without tracking individuals across sites.",
+    title: "Cookies and local storage", dot: "#808000",
+    plain: "None at all. What you picked lives in the URL, nowhere else.",
+    formal: "We set no cookies of any kind — no analytics, third-party, or advertising cookies — and we store nothing in your browser's local storage. Your current view and selected color are kept in the page URL only, so nothing about your visit persists once you close the tab.",
   },
   {
-    title: "Cookies", dot: "#808000",
-    plain: "One local preference, for your chosen view and last color.",
-    formal: "A single local preference stores your chosen view and most recent color. No third-party or advertising cookies are set.",
+    title: "Popularity counts", dot: "#3a6ea5",
+    plain: "We tally which colors get copied and downloaded. Totals only — no way to tie one back to you.",
+    formal: "To rank colors and platforms by popularity we count three anonymous actions: copying a color, downloading a wallpaper, and opening a platform page. Each sends only the color value and the platform name — no identifier, no cookie, no profile. Counts are added straight into running totals; individual events are never stored, so they cannot be traced back to a visit or linked across sites.",
+  },
+  {
+    title: "Server logs", dot: "#800000",
+    plain: "Standard web server logs. IPs are cut short in the normal log; the error log keeps them briefly so we can fix broken links.",
+    formal: "Our web server keeps two logs. The access log records the time, the page requested, the response status, the referring page and your browser's user-agent, with your IP address truncated before it is written (IPv4 to /24, IPv6 to /64); requests to the counting endpoint are not logged at all. The error log records failed requests — chiefly broken links — and does include the full IP address, which we need in order to find and fix them. Access logs are deleted after 14 days, error logs after 7.",
+  },
+  {
+    title: "Why we're allowed to", dot: "#000080",
+    plain: "Legitimate interest — keeping the site running and fixing what's broken.",
+    formal: "We process the above on the basis of our legitimate interest in operating, securing and repairing the site (Art. 6(1)(f) GDPR). There is no other purpose: nothing here is used for advertising, profiling, or automated decision-making.",
+  },
+  {
+    title: "Where it runs", dot: "#008000",
+    plain: "One rented server. Nothing is shared, sold, or embedded from anyone else.",
+    formal: "The site runs on a single rented virtual server; our hosting provider acts as a processor on our behalf. Log files and popularity totals stay on that server and are not shared with or sold to anyone. We embed no third-party content — no fonts, scripts, images or trackers load from other domains — so no data reaches a third party unless you click an outbound link, after which that site's own privacy policy applies.",
   },
   {
     title: "Your rights", dot: "#800080",
-    plain: "There's essentially nothing to delete — but ask us anytime.",
-    formal: "As we hold no personal records, there is little to export or erase. You may contact us at any time with questions under applicable law (GDPR/CCPA).",
+    plain: "There's essentially nothing to delete — but ask us anytime, or complain to a regulator.",
+    formal: "You have the right to access, rectify, erase, restrict and object to the processing of your personal data, and the right to data portability (Art. 15–21 GDPR). Because we hold no accounts and no records that identify you, there is in practice almost nothing to export or erase. You may contact us at any time, and you have the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR).",
   },
 ];
 ---
@@ -63,7 +82,7 @@ const clauses = [
       <div style="margin-top: 22px; padding: 22px 24px; border: 1px dashed #cfcac4; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
         <div>
           <div style="font: 700 17px var(--font-ui); letter-spacing: -0.3px;">Questions about your data?</div>
-          <div style="font-size: 14px; color: #78716c; margin-top: 4px;">There's very little of it, but you can always ask.</div>
+          <div style="font-size: 14px; color: #78716c; margin-top: 4px;">There's very little of it, but you can always ask. The controller is named in full on the <a href="/imprint" style="color: var(--accent-strong); border-bottom: 1px solid currentColor;">Imprint</a>.</div>
         </div>
         <a class="dc-privacy-contact" href={`mailto:${email}`} style="background: var(--ink); color: #fff; font: 500 14px var(--font-ui); padding: 12px 18px; border-radius: 10px;">{email}</a>
       </div>
