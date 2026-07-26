@@ -114,9 +114,9 @@ trap teardown EXIT
 #
 # The sleep is load-bearing: release directories are named to the second, and
 # with stubbed builds several runs would otherwise land in the same second, so
-# `mv dist "$rel"` would hit an existing directory. Production runs hourly and
-# cannot collide, but the harness would — and it would mask the nesting bug this
-# very test exists to catch.
+# publish would hit an existing "$rel" and nest dist inside it. Production runs
+# hourly and cannot collide, but the harness would — and it would mask the
+# nesting bug this very test exists to catch.
 run_rebuild() {
   sleep 1
   ( cd "$REPO" && env \
@@ -153,6 +153,11 @@ else
 fi
 if [ -e "$WWW/current.tmp" ]; then bad "staging symlink cleaned up"; else ok "staging symlink cleaned up"; fi
 check "release count" "$(find "$WWW/releases" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')" "1"
+if [ -n "$(find "$WWW/releases" -mindepth 1 -maxdepth 1 -name '*.tmp')" ]; then
+  bad "staging directory cleaned up"
+else
+  ok "staging directory cleaned up"
+fi
 teardown
 
 echo "prune"
@@ -219,9 +224,10 @@ run_rebuild
 rel2="$(readlink "$WWW/current")"
 # rel2 is the second-newest release by name and must survive the next prune
 # (KEEP=2). Backdate it so mtime order and name order disagree about which of
-# rel1/rel2 is older — exactly what happens once `mv dist "$rel"` makes a
-# release inherit dist's build-time mtime instead of getting a fresh one at
-# publish time.
+# rel1/rel2 is older — a regression test for the disagreement a plain
+# `mv dist "$rel"` used to cause (it inherited dist's build-time mtime instead
+# of getting a fresh one at publish time). Forced here by hand because the
+# current copy-based publish no longer produces that staleness on its own.
 touch -t 200001010000 "$rel2"
 commit_to_release package.json '{"name":"c"}'
 run_rebuild; st=$?

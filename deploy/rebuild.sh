@@ -103,23 +103,55 @@ if [ ! -s dist/index.html ]; then
   exit 1
 fi
 
-# 5. Publish atomically: move dist into a new release, then flip the symlink.
-trap 'rm -f "$WWW_DIR/current.tmp"' EXIT
+# 5. Publish atomically: copy dist into a new release via a staging directory,
+# rename the staging directory into place, then flip the symlink.
 ts="$(date -u +%Y%m%d%H%M%S)"
 rel="$WWW_DIR/releases/$ts"
 mkdir -p "$WWW_DIR/releases"
-# Refuse rather than nest. `mv` onto an existing directory would move dist
-# *inside* it, publishing "$rel/dist" and an empty release — a silent, total
-# outage. Names are second-granular and builds take far longer than a second, so
-# this should be unreachable; it is here because the failure it prevents is
-# invisible until the site 404s.
+trap 'rm -f "$WWW_DIR/current.tmp"; rm -rf "$rel.tmp"' EXIT
+# Refuse rather than nest. Copying dist onto an existing directory would land
+# it *inside* that directory, publishing "$rel/dist" and an empty release — a
+# silent, total outage. Names are second-granular and builds take far longer
+# than a second, so this should be unreachable; it is here because the failure
+# it prevents is invisible until the site 404s.
 if [ -e "$rel" ]; then
   log "release directory $rel already exists; refusing to publish"
   exit 1
 fi
-# Deliberately no `mkdir -p "$rel"`: see above. The rename also avoids copying
-# the whole tree.
-mv dist "$rel"
+# Copy, never rename, dist into the release. SELinux on the production host
+# labels a file by type transition from its parent directory *at creation
+# time*. `mv` within a filesystem is a rename: it moves a directory entry and
+# preserves the source's existing context, so a `dist/` built under
+# /opt/desktopcolors would keep /opt's label after landing under
+# /var/www/desktopcolors/releases. nginx runs as httpd_t and can only read
+# httpd_sys_content_t, so it would then be denied the *entire* release with
+# permissions and symlinks all looking correct — a silent 403 on everything.
+# `cp -R` creates new files, which inherit the destination's default context
+# by type transition, so the label is right by construction: no relabeling,
+# no elevated privilege.
+#
+# Never use `cp -a`, `cp -p`, `--preserve=all`, `--preserve=context` or `-Z`
+# here. `-a` implies `--preserve=all`, which includes the SELinux context —
+# that would preserve exactly the wrong label and silently recreate the bug
+# this change exists to fix.
+#
+# Copy into a staging directory ("$rel.tmp") rather than straight into "$rel",
+# for two reasons: the release directory then appears atomically instead of
+# being observably half-built, and an interrupted copy leaves a ".tmp"
+# directory — not a valid release name — rather than a partial release
+# occupying one of the KEEP retention slots. Deliberately no `mkdir -p
+# "$rel.tmp"` beforehand: `cp -R` creates it, so pre-creating it would make
+# the copy nest inside it instead of becoming it. `rm -rf` any stale leftover
+# first, in case a previous run was killed before its own trap could run.
+#
+# A built dist is ~72 MB, so paying for the copy instead of the rename costs
+# little; correct SELinux labelling is worth far more than those bytes saved.
+# This rename (staging directory to release directory) is safe for SELinux:
+# both paths are already under /var/www, so the contexts involved are already
+# correct — only the dist-into-/var/www boundary above needs a copy.
+rm -rf "$rel.tmp"
+cp -R dist "$rel.tmp"
+mv "$rel.tmp" "$rel"
 ln -sfn "$rel" "$WWW_DIR/current.tmp"
 # mv -Tf is GNU (the host); -hf is the BSD/macOS equivalent. Both replace the
 # symlink atomically rather than following it into its target directory.
@@ -131,9 +163,13 @@ log "published release $ts"
 # 6. Prune old releases, keeping the newest $KEEP. Sort by directory name, not
 # mtime: releases are named "$ts" (%Y%m%d%H%M%S, publish time by construction),
 # and lexicographic order on that name is chronological. mtime order broke
-# when publish switched to `mv dist "$rel"`: a rename carries dist's mtime
-# rather than getting a fresh one at publish time, so sorting by mtime is now
-# incidental, not structural.
+# when publish moved dist into place with a plain `mv dist "$rel"`: a rename
+# carries the source's mtime rather than getting a fresh one at publish time.
+# Publish now goes through `cp -R` into a staging directory before the rename
+# (see above), so the release directory's mtime happens to be fresh again —
+# but that is incidental to the SELinux fix, not something this step relies
+# on, so sorting stays on the name, which is structural by construction
+# either way.
 #
 # Also never prune whatever "current" resolves to right now, as insurance
 # against unlinking the live tree even if name/mtime ordering is ever wrong.
