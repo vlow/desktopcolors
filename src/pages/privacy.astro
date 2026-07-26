@@ -7,8 +7,11 @@ const updated = "2026-07-26";
 const email = "hello@desktopcolors.com";
 // TODO(owner): name the hosting provider in the "Where it runs" clause — a
 // processor has to be identified (Art. 13(1)(e) GDPR). Everything else here is
-// derived from the code: see track.ts, counter/internal/store, and
-// deploy/desktopcolors.nginx.conf. Keep this page in step with those.
+// derived from the code: see track.ts, counter/internal/store,
+// counter/internal/ratelimit (the in-memory bucketing described under "Server
+// logs and abuse prevention") and deploy/desktopcolors.nginx.conf — including
+// the retention set in deploy/desktopcolors.logrotate. Keep this page in step
+// with all of them.
 const clauses = [
   {
     title: "What we collect", dot: "#008080",
@@ -26,9 +29,9 @@ const clauses = [
     formal: "To rank colors and platforms by popularity we count three anonymous actions: copying a color, downloading a wallpaper, and opening a platform page. Each sends only the color value and the platform name — no identifier, no cookie, no profile. Counts are added straight into running totals; individual events are never stored, so they cannot be traced back to a visit or linked across sites.",
   },
   {
-    title: "Server logs", dot: "#800000",
-    plain: "Standard web server logs. IPs are cut short in the normal log; the error log keeps them briefly so we can fix broken links.",
-    formal: "Our web server keeps two logs. The access log records the time, the page requested, the response status, the referring page and your browser's user-agent, with your IP address truncated before it is written (IPv4 to /24, IPv6 to /64); requests to the counting endpoint are not logged at all. The error log records failed requests — chiefly broken links — and does include the full IP address, which we need in order to find and fix them. Access logs are deleted after 14 days, error logs after 7.",
+    title: "Server logs and abuse prevention", dot: "#800000",
+    plain: "Standard web server logs. IPs are cut short in the normal log; the error log keeps them briefly so we can fix broken links. Flood protection runs in memory only — nothing about it is written down.",
+    formal: "Our web server keeps two logs. The access log records the time, the page requested, the response status, the referring page and your browser's user-agent, with your IP address truncated before it is written (IPv4 to /24, IPv6 to /64); requests to the counting endpoint are not logged at all. The error log records failed requests — chiefly broken links — and does include the full IP address, which we need in order to find and fix them. Access logs are deleted after 14 days, error logs after 7. Separately, to stop the popularity counter being flooded, we rate-limit it — without storing your address anywhere. Your address is first shortened to a network prefix (IPv4 to /24, IPv6 to /64), then combined with a random value and converted into a one-way hash, which serves purely as a counting slot held in memory. Nothing about this reaches disk: we replace the random value every day, which discards every slot, and the hash cannot be turned back into an address.",
   },
   {
     title: "Why we're allowed to", dot: "#000080",
