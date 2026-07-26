@@ -165,3 +165,29 @@ export function denormalizeDetails(json: OsViewJson): ColorDetail[] {
     uses: d.uses.map(hydrate),
   }));
 }
+
+export interface OsDetailBootstrap {
+  os: OsView;
+  eraPeers: EraPeerView[];
+  initialHex: string | null;
+  detailsByHex: Record<string, ColorDetail>;
+  viewUrl: string;
+}
+
+export function bootstrapFromView(view: OsDetailView, initialHex: string | null): OsDetailBootstrap {
+  const idx = initialHex
+    ? view.colors.findIndex((c) => c.hex.toLowerCase() === initialHex.toLowerCase())
+    : -1;
+  const chosen = idx >= 0 ? view.colors[idx] : (view.colors.find((c) => c.isDefault) ?? view.colors[0]);
+  return {
+    os: view.os,
+    eraPeers: view.eraPeers,
+    initialHex,
+    detailsByHex: { [chosen.hex.toLowerCase()]: pickColorDetail(chosen) },
+    viewUrl: `/os/${view.os.slug}/view.json`,
+  };
+}
+
+export function osViewJsonFromView(view: OsDetailView): OsViewJson {
+  return normalizeDetails(view.colors.map(pickColorDetail));
+}

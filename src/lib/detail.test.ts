@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   buildOsDetail, dedupeSimilarByHex,
   pickColorDetail, normalizeDetails, denormalizeDetails,
+  bootstrapFromView, osViewJsonFromView,
 } from "./detail";
 import { buildCatalog } from "./catalog";
 import { parseScores } from "./scores";
@@ -112,5 +113,32 @@ describe("normalizeDetails / denormalizeDetails", () => {
     for (const d of wire) {
       for (const p of d.uses) expect(Object.keys(p).sort()).toEqual(["isDefault", "slug"]);
     }
+  });
+});
+
+describe("bootstrapFromView", () => {
+  const view = buildOsDetail(entries, catalog, "win-95");
+
+  it("inlines only the initial color's detail, keyed by lowercase hex", () => {
+    const b = bootstrapFromView(view, "#000080"); // Navy
+    expect(Object.keys(b.detailsByHex)).toEqual(["#000080"]);
+    expect(b.detailsByHex["#000080"].ral.code).toMatch(/^RAL /);
+    expect(b.viewUrl).toBe("/os/win-95/view.json");
+    expect(b.os.slug).toBe("win-95");
+  });
+
+  it("falls back to the default color when no hex is given", () => {
+    const b = bootstrapFromView(view, null);
+    // Teal (#008080) is the default in the fixture
+    expect(Object.keys(b.detailsByHex)).toEqual(["#008080"]);
+  });
+});
+
+describe("osViewJsonFromView", () => {
+  it("emits one wire detail per color, aligned to os.colors order", () => {
+    const view = buildOsDetail(entries, catalog, "win-95");
+    const json = osViewJsonFromView(view);
+    expect(json.details.length).toBe(view.os.colors.length);
+    expect(json.details.length).toBe(2);
   });
 });

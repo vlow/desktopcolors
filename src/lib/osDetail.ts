@@ -1,6 +1,6 @@
 import { loadCatalog } from "./loadCatalog";
 import { loadEntries } from "./entries";
-import { buildOsDetail, type OsDetailView } from "./detail";
+import { buildOsDetail, bootstrapFromView, osViewJsonFromView, type OsDetailView, type OsDetailBootstrap, type OsViewJson } from "./detail";
 
 // Memoized per-slug detail view. `buildOsDetail` produces the same view for all
 // of an OS's colors (it does not depend on the selected hex), yet the
@@ -17,4 +17,12 @@ export async function loadOsDetail(slug: string): Promise<OsDetailView> {
   const view = buildOsDetail(entries, catalog, slug);
   detailCache.set(slug, view);
   return view;
+}
+
+export async function loadOsBootstrap(slug: string, initialHex: string | null): Promise<OsDetailBootstrap> {
+  return bootstrapFromView(await loadOsDetail(slug), initialHex);
+}
+
+export async function loadOsViewJson(slug: string): Promise<OsViewJson> {
+  return osViewJsonFromView(await loadOsDetail(slug));
 }
