@@ -363,8 +363,9 @@ Four moving parts:
 3. A `case` for it in the `renderPart` switch. This is the one place in the chrome
    system where a forgotten case is **silent**: `renderPart` returns `ComponentChildren`,
    which admits `undefined`, so `astro check` does not fail — the part just renders
-   nothing. The per-style assertion you add in step 5 below will catch it, but nothing
-   in the type system will; check the preview in the browser too. (A missing
+   nothing. The `"draws the expected chrome per style"` assertion described under
+   [Add a new style](#add-a-new-style-from-existing-primitives) will catch it, but
+   nothing in the type system will; check the preview in the browser too. (A missing
    `CHROME_SPECS` entry, by
    contrast, does fail `astro check` — see [Add a new style](#add-a-new-style-from-existing-primitives) above.)
 4. The authoring conventions: chrome sits on an unknown wallpaper, so derive translucent
