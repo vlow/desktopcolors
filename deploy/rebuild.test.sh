@@ -619,5 +619,30 @@ check "marker unchanged after a signal-killed run that held the lock" \
 rm -f "$STUB_STATE/chmod_slow"
 teardown
 
+echo "counter rebuild"
+setup
+run_rebuild
+if [ -x "$REPO/counter/counter" ]; then ok "counter binary installed"; else bad "counter binary installed"; fi
+check "first run restarts the counter" \
+  "$(grep -c 'restart counter.service' "$STUB_STATE/systemctl.log" 2>/dev/null || echo 0)" "1"
+
+# Unchanged Go source must not cause a restart.
+commit_to_release package.json '{"name":"nogo"}'
+run_rebuild
+check "unchanged counter does not restart" \
+  "$(grep -c 'restart counter.service' "$STUB_STATE/systemctl.log")" "1"
+
+# A changed binary must.
+printf '# changed\n' >> "$STUB_STATE/counter_payload"
+run_rebuild
+check "changed counter restarts" \
+  "$(grep -c 'restart counter.service' "$STUB_STATE/systemctl.log")" "2"
+if ls "$REPO"/counter/.counter.* >/dev/null 2>&1; then
+  bad "no temp binaries left behind"
+else
+  ok "no temp binaries left behind"
+fi
+teardown
+
 printf '\n%s\n' "$([ "$fails" -eq 0 ] && echo "PASS" || echo "FAIL ($fails)")"
 [ "$fails" -eq 0 ]

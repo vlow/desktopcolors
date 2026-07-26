@@ -183,7 +183,30 @@ else
   log "dependencies unchanged; skipping npm ci"
 fi
 
-# 3. Dump current popularity scores for the build to bake in. A missing DB is
+# 3. Rebuild the counter, and restart it only if the compiled bytes changed.
+# Without this, a Go fix pushed to the deploy branch would report a successful
+# deploy while the service kept running the old binary, with nothing reporting
+# the discrepancy.
+tmpbin="$(mktemp "$REPO_DIR/counter/.counter.XXXXXX")"
+log "building counter"
+(cd counter && CGO_ENABLED=0 go build -o "$tmpbin" .)
+if cmp -s "$tmpbin" "$COUNTER_BIN"; then
+  log "counter unchanged"
+  rm -f "$tmpbin"
+else
+  chmod 0755 "$tmpbin"
+  # `mv`, never `install`/`cp`: Linux returns ETXTBSY when writing to the binary
+  # of a running process, while a rename only swaps the directory entry and
+  # leaves the running inode alone. The temp file is a sibling for the same
+  # reason — a cross-filesystem mv degrades to copy-then-unlink and hits
+  # ETXTBSY again.
+  mv -f "$tmpbin" "$COUNTER_BIN"
+  log "counter changed; restarting service"
+  read -ra restart_argv <<< "$RESTART_CMD"
+  "${restart_argv[@]}"
+fi
+
+# 4. Dump current popularity scores for the build to bake in. A missing DB is
 # fine on first run: the site reads all-zero scores.
 if [ -x "$COUNTER_BIN" ]; then
   "$COUNTER_BIN" dump --db "$DB_PATH" --out "$REPO_DIR/scores.json" \
@@ -192,7 +215,7 @@ else
   log "no counter binary at $COUNTER_BIN; building with the existing/empty scores.json"
 fi
 
-# 4. Build.
+# 5. Build.
 log "building site"
 npm run build
 
@@ -205,7 +228,7 @@ if [ ! -s dist/index.html ]; then
   exit 1
 fi
 
-# 5. Publish atomically: copy dist into a new release via a staging directory,
+# 6. Publish atomically: copy dist into a new release via a staging directory,
 # rename the staging directory into place, then flip the symlink.
 ts="$(date -u +%Y%m%d%H%M%S)"
 rel="$WWW_DIR/releases/$ts"
@@ -256,7 +279,7 @@ if ! mv -Tf "$WWW_DIR/current.tmp" "$WWW_DIR/current" 2>/dev/null; then
 fi
 log "published release $ts"
 
-# 6. Prune old releases, keeping the newest $KEEP. Names are publish-time
+# 7. Prune old releases, keeping the newest $KEEP. Names are publish-time
 # "$ts" (%Y%m%d%H%M%S), so lexicographic order is chronological by
 # construction, independent of mtime.
 #

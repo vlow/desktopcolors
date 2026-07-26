@@ -1,0 +1,12 @@
+# desktopcolors.com — the one privileged action the deploy needs.
+# Install to /etc/sudoers.d/desktopcolors, mode 0440, owner root:root.
+# Validate before installing:  visudo -cf deploy/desktopcolors.sudoers
+#
+# deploy/rebuild.sh runs as the unprivileged `desktopcolors` user and must
+# restart the counter after recompiling its binary. This grants exactly that
+# one command with a literal argument, and nothing else.
+#
+# Do NOT add NoNewPrivileges=true to counter-rebuild.service: it blocks the
+# setuid transition sudo needs and this restart fails. counter.service does set
+# it, correctly — it never calls sudo.
+desktopcolors ALL=(root) NOPASSWD: /usr/bin/systemctl restart counter.service

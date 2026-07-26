@@ -12,6 +12,11 @@ Environment=REPO_DIR=/opt/desktopcolors
 Environment=WWW_DIR=/var/www/desktopcolors
 Environment=DB_PATH=/var/lib/desktopcolors/counter.db
 Environment=COUNTER_BIN=/opt/desktopcolors/counter/counter
+# go build and npm ci both fail without a writable cache. Set explicitly rather
+# than relying on systemd deriving HOME from the passwd entry.
+Environment=HOME=/opt/desktopcolors
+Environment=GOCACHE=/opt/desktopcolors/.cache/go-build
+Environment=GOMODCACHE=/opt/desktopcolors/.cache/go-mod
 ExecStart=/usr/bin/env bash /opt/desktopcolors/deploy/rebuild.sh
 # Build + publish needs to write the release dir and the repo's node_modules/dist.
 # /var/lib/desktopcolors is included so `counter dump` can open the SQLite DB
