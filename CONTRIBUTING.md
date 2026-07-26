@@ -89,28 +89,52 @@ A complete file, `src/content/os/haiku.json`:
 |-------|----------|-------|
 | `name` | yes | display name, non-empty |
 | `year` | yes | integer release year |
-| `added` | yes | `YYYY-MM-DD` — the date the entry joins the catalog. Never bump it later; it drives the "newest" sort. |
-| `family` | yes | groups the platform. Reuse an existing value (`Windows`, `Mac OS`, `Amiga`, `Desktop Env.`, …) unless genuinely new. |
+| `added` | yes | `YYYY-MM-DD` — the day you write the file, not the day the PR merges. Never bump it later; it drives the "newest" sort. |
+| `family` | yes | groups the platform. Reuse an existing value unless genuinely new — the full set in use today is `Amiga`, `BeOS`, `BleskOS`, `Desktop Env.`, `GEM`, `Haiku`, `Mac OS`, `ReactOS`, `SerenityOS`, `Solaris`, `Windows`. |
 | `tagline` | yes | one evocative line |
 | `description` | yes | one or two sentences of real context |
 | `colors` | yes | at least one entry; **at most one** may be `"default": true` |
 | `slug` | no | defaults to the filename; lowercase letters, digits, hyphens |
 | `predecessor`, `successor` | no | slug refs to other entries. A dangling ref fails the build. |
 | `desktopStyle` | no | defaults to `modern` — see [Desktop chrome](#desktop-chrome) |
-| `type` | no | `Proprietary` or `Open Source` — reuse existing values |
-| `wikipedia` | no | URL |
-| `project` | no | `{ "name", "url" }` for the project's own site |
+| `type` | no | `Proprietary` or `Open Source` — those are the only two values in use |
+| `wikipedia` | no | URL. Must parse as a URL, so include the scheme. |
+| `project` | no | `{ "name", "url" }` for the project's own site. `url` must parse as a URL. |
+
+Two things the schema does **not** enforce, so match the worked example by hand:
+
+- **Key order.** Every file in the collection uses the order shown above — `name`,
+  `year`, `added`, `family`, `tagline`, `description`, the slug refs, `desktopStyle`,
+  `colors`, then `type`, `project`, `wikipedia`. JSON key order is meaningless to the
+  parser; keep it anyway so the files diff against each other.
+- **Reciprocal links.** `predecessor` and `successor` are two independent one-way
+  fields. Writing `"predecessor": "beos"` in your file gives *your* page a link back to
+  BeOS; it does **not** give BeOS a forward link to you. If you want both, add
+  `"successor": "<your-slug>"` to `beos.json` in the same PR. Nothing checks for the
+  missing half, and several entries may name the same predecessor.
 
 ### Colors
 
 Each entry in `colors` is `{ hex, name, note?, default? }`:
 
-- **`hex`** — lowercase `#rrggbb`. No shorthand, no uppercase, no named colors.
+- **`hex`** — lowercase `#rrggbb`. No shorthand, no named colors. **Nothing in the
+  toolchain enforces the lowercase part** — the schema's pattern is
+  `/^#[0-9a-fA-F]{6}$/`, so `#6A859E` builds and tests green. It is a review-enforced
+  convention: the site lowercases hexes when it merges colors across platforms but
+  prints yours verbatim on the platform page, so an uppercase value shows up as an
+  inconsistency on the rendered site rather than as a build error. Check it yourself.
 - **`name`** — a human name for the swatch. Where a family has light/dark variants,
   qualify it: `French Blue (Light)`, `Olive (Dark)`.
 - **`note`** — optional, terse: where the color is used, which theme it belongs to,
-  how confident you are.
+  how confident you are. **Plain text, not Markdown** — it is rendered as a text node,
+  so backticks and `*` would show up literally. One or two sentences; there is no
+  length limit, but the existing notes stay under about three lines.
 - **`default`** — marks the out-of-the-box desktop color. **At most one per file.**
+
+Array order is display order: the `colors` array is listed top to bottom on
+`/os/<slug>` exactly as you write it, unsorted. Keep related entries adjacent. Order
+does not decide which swatch is *selected* when the page opens — that is the `default`
+entry wherever it sits in the array — so you are free to order for readability.
 
 Converting RGB to hex:
 
@@ -134,7 +158,11 @@ Live examples to copy the phrasing from:
 
 #### The four-entry shape
 
-For a dither of two source colors **A** and **B**, add these entries, in this order:
+For a dither of two source colors **A** and **B**, add these entries, **contiguously and
+in this order**. `<Name>` is a name for the *blended* shade the pattern fakes; in the
+four-entry shape it conventionally starts with "Dithered" — `Dithered Green` in Windows
+1.0, `Dithered Blue` in FreeGEM. Both blended entries share that one `<Name>` and differ
+only in the parenthetical.
 
 1. **`<Name> (Averaged)`** — the conventional pixel average: the per-channel arithmetic
    mean in sRGB, weighted by each color's share of the pattern, rounded to 8-bit. The
@@ -144,7 +172,9 @@ For a dither of two source colors **A** and **B**, add these entries, in this or
    airier than the pixel average.
 3. **partial A** — one source color, named by its actual color (`Phosphor Green`,
    `Stone Gray`), with a note giving its share of the pattern.
-4. **partial B** — the other source color, same treatment.
+4. **partial B** — the other source color, same treatment. When both sources are the
+   same hue and a distinct color name would be a lie, qualify instead:
+   `Gray (Light Partial)` / `Gray (Dark Partial)`, as Mac OS 8 does.
 
 Cross-reference the hexes in the notes: each blended entry names the other averaging
 method's result, and each partial names the pattern it fills.
@@ -171,7 +201,17 @@ entries — and note that both averaging methods agree at 8-bit precision.
 Mac OS 8's gray dither is the canonical case: `#a5a5a5` + `#969696` at 1:1 gives a simple
 average of `157.5` and a linear-light average of `157.7`, both rounding to `#9e9e9e`.
 Grays barely span a gamma gap, so the methods converge; a wide mix like gray + blue does
-not.
+not. It lands in the file as exactly these three, contiguous:
+
+```json
+{ "hex": "#9e9e9e", "name": "Gray (Dithered)" },
+{ "hex": "#a5a5a5", "name": "Gray (Light Partial)" },
+{ "hex": "#969696", "name": "Gray (Dark Partial)" }
+```
+
+Note the naming: in the collapsed form `<Name>` is the plain hue (`Gray`), not the
+`Dithered <Hue>` used for the four-entry pair — the word "Dithered" has moved into the
+parenthetical, so repeating it would read `Dithered Gray (Dithered)`.
 
 #### Computing the averages
 
@@ -256,12 +296,19 @@ You cannot silently skip this step: `CHROME_SPECS` is typed
 `Record<DesktopStyle, ChromeSpec | null>`, so `npx astro check` fails until every style
 has an entry. Use `null` only for a bespoke-rendered style — today just `modern`.
 
-**3. Add one assertion** to `src/islands/DesktopPreview.test.tsx`, which iterates
-`DESKTOP_STYLES`:
+**3. Add one assertion** to the `"draws the expected chrome per style"` test in
+`src/islands/DesktopPreview.test.tsx` — a hand-written list of one line per style, in
+`DESKTOP_STYLES` order. The strings are the `data-testid`s the chrome renders, which are
+`chrome-` plus the primitive's name lowercased and unhyphenated:
 
 ```ts
 expect(chromeFor("nextstep")).toEqual(["chrome-deskicons", "chrome-dock"]);
 ```
+
+Add the line even though nothing forces you to. The neighbouring test
+`"every style renders chrome"` *does* iterate `DESKTOP_STYLES`, but it only asserts that
+each style renders *some* chrome — so a style with a `CHROME_SPECS` entry and no
+per-style assertion passes `vitest` silently, and the exact chrome goes unpinned.
 
 Then set `"desktopStyle": "nextstep"` on the platforms that use it.
 
@@ -320,7 +367,7 @@ For the full detail — the data flow, every convention, and the checklist — s
 
 | command | what it catches |
 |---------|-----------------|
-| `npm run build` | **the authoritative check on your JSON** — the content schema (bad hex, missing field, more than one `default`) and dangling `predecessor`/`successor` refs. Also proves every page still pre-renders. |
+| `npm run build` | **the authoritative check on your JSON** — the content schema (malformed hex, missing field, bad `added` format, unknown `desktopStyle`, non-URL `wikipedia`/`project.url`, more than one `default`) and dangling `predecessor`/`successor` refs. Also proves every page still pre-renders. It does **not** check hex *case* — see [Colors](#colors). |
 | `npx vitest run` | `src/content/os.test.ts` re-reads every file in `src/content/os/` and parses it, so most mistakes surface here first and fastest. It uses its own copy of the schema, which omits the `wikipedia`, `project`, and `type` rules — a pass here is encouraging, not conclusive. |
 | `npx astro check` | TypeScript only — notably a missing `CHROME_SPECS` entry. It does not read your JSON at all. |
 | `npm run dev` | your own eyes: open `/os/<slug>` and check the swatches and the preview on both light and dark colors. |
@@ -328,6 +375,10 @@ For the full detail — the data flow, every convention, and the checklist — s
 Two commands read your JSON: `vitest` and the build. The build is authoritative — it uses
 the real schema — while vitest is faster and usually catches a mistake first, but from a
 hand-maintained duplicate of that schema. If you only run one thing, run `npm run build`.
+
+A local build prints `[scores] scores.json not found — defaulting all scores to 0`. That
+is expected: popularity scores come from the `counter` service at deploy time, and the
+build succeeds without them.
 
 ### Reading a schema failure
 
@@ -339,20 +390,52 @@ must be #rrggbb
 file: /…/src/content/os/zzz-temp-broken.json?astroDataCollectionEntry=true:0:0
 ```
 
-The entry name after `os →` is your file. The bare line under it — `must be #rrggbb` —
-is the schema's message. The reported location is always `:0:0`, and **the message does
-not say which field or array index failed**, so when a file has several colors you have
-to check each `hex` by hand.
+The entry name after `os →` is your file. The line under it is the schema's message. The
+reported location is always `:0:0` — Astro cannot map a JSON error back to a line — so
+the message itself is all you get.
+
+**Whether that message names the offending field depends on the rule.** Three rules in
+the schema carry a hand-written message, and those print bare, with no field path:
+
+| message | what it means |
+|---------|---------------|
+| `must be #rrggbb` | some `hex` is malformed |
+| `must be YYYY-MM-DD` | `added` is the wrong shape |
+| `at most one color may be marked default` | two or more colors have `"default": true` |
+
+Every other rule prints `path: message`, and the path includes the array index — so you
+do **not** have to hunt:
+
+```
+tagline: Required
+colors.2.name: String must contain at least 1 character(s)
+project.url: Invalid url
+desktopStyle: Invalid enum value. Expected 'modern' | 'win9x' | … , received 'nextstep'
+```
+
+`colors.2` is the third entry in your `colors` array, zero-indexed. Only the three bare
+messages above leave you checking entries by hand — and for `must be #rrggbb` that means
+re-reading each `hex` for a missing `#`, a wrong length, or a stray character.
 
 A dangling `predecessor`/`successor` is the sibling case. It is not a schema message but
-a thrown error while the catalog is built:
+a thrown error, and it lands later — during "generating static routes", after the schema
+has already passed:
 
 ```
-Unresolved predecessor "…" referenced by "…"
+Unresolved predecessor "does-not-exist" referenced by "zzz-walkthrough"
 ```
 
-CI (`.github/workflows/ci.yml`) runs `npm run check`, `npm test`, and `npm run build` on
-every pull request, so a green local build predicts a green PR.
+Both slugs are named, so this one is self-diagnosing.
+
+CI (`.github/workflows/ci.yml`) runs three jobs on every pull request: `site`
+(`npm run check`, `npm test`, `npm run build`), `counter` (Go vet and tests, untouched by
+content work), and `e2e` (`npm run test:e2e`, Playwright against a real build). Passing
+`npm run build` locally clears the job that content changes normally break. The one way a
+platform file reaches `e2e` is through the assertions that count search results — for
+instance `e2e/smoke.spec.ts` types "amiga" and expects exactly two cards, so a new
+platform whose name or tagline contains an existing search term can turn CI red while
+your local build is green. If your platform is a variant of one already in the catalog,
+run `npm run test:e2e` before opening the PR.
 
 ## Open the pull request
 
@@ -375,7 +458,7 @@ preview on both a light and a dark color.
 
 Then run through this — the pull request template mirrors it:
 
-- [ ] The file is `src/content/os/<slug>.json`, `hex` values are lowercase `#rrggbb`, and at most one color is `default`.
+- [ ] The file is `src/content/os/<slug>.json`, `hex` values are lowercase `#rrggbb` (read them — no command checks case), and at most one color is `default`.
 - [ ] `family` and `type` reuse existing values unless genuinely new.
 - [ ] Any dithered desktop has its blended entry(ies) plus partials, with **recomputed** averages and the collapse rule applied.
 - [ ] `npm run build` passes.
