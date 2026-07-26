@@ -1,20 +1,19 @@
 ---
 import Base from "../layouts/Base.astro";
 
-// TODO(owner): replace the [bracketed] placeholders with the real operator
-// identity and address. These are legally required (§ 5 TMG / § 18 MStV) and
-// must be accurate before the site goes live in Germany.
+// Operator identity and address are legally required (§ 5 DDG / § 18 MStV) and
+// must stay accurate — update here if any of it changes.
 const blocks = [
-  { label: "OPERATOR", dot: "#008080", value: "[Your Name]\ndesktopcolors.com" },
-  { label: "ADDRESS", dot: "#3a6ea5", value: "[Street & Number]\n[Postal Code] [City]\nGermany" },
+  { label: "OPERATOR", dot: "#008080", value: "Florian Engel\ndesktopcolors.com" },
+  { label: "ADDRESS", dot: "#3a6ea5", value: "Implerstraße 38\n81371 München\nGermany" },
   { label: "CONTACT", dot: "#808000", value: "hello@desktopcolors.com" },
-  { label: "RESPONSIBLE FOR CONTENT", dot: "#800080", value: "[Your Name], address as above\n(§ 18 Abs. 2 MStV)" },
+  { label: "RESPONSIBLE FOR CONTENT", dot: "#800080", value: "Florian Engel, address as above\n(§ 18 Abs. 2 MStV)" },
 ];
 ---
 <Base title="Imprint — desktopcolors.com" description="Legally required operator details for desktopcolors.com.">
   <!-- HERO -->
   <div class="dc-page-x dc-page-head" style="padding-block-end: 30px;">
-    <div class="dc-page-eyebrow">IMPRINT · ANGABEN GEMÄSS § 5 TMG</div>
+    <div class="dc-page-eyebrow">IMPRINT · ANGABEN GEMÄSS § 5 DDG</div>
     <h1 class="dc-page-title">Who's behind this archive.</h1>
     <p class="dc-page-lead">A one-person project, run from Germany. The legally required details live below — the story is over on <a href="/about" style="color: var(--accent-strong); border-bottom: 1px solid currentColor;">About</a>.</p>
   </div>
