@@ -34,33 +34,38 @@ Go on `/usr/local/go` now needs to be reachable from **non-login** shells,
 because both ways `rebuild.sh` actually runs are non-login: the
 `counter-rebuild.service` unit, and the documented manual invocation
 (`sudo -u desktopcolors bash ...` in § 7/§ 10). A non-login shell never
-sources `/etc/profile.d/*`, so the traditional fix below is not what makes the
-deploy work — it's for interactive convenience only, e.g. when you `su -` in
-to debug:
+sources `/etc/profile.d/*`, so the fix below is for interactive convenience
+only — e.g. when you `su -` in to debug — and is **not** what makes either
+non-login path work:
 
 ```bash
 echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/go.sh && . /etc/profile.d/go.sh
 go version   # go1.25.x (only in a login shell, from here on)
 ```
 
-What actually makes `go` resolve on both non-login paths:
+What actually makes `go` resolve on both non-login paths is two other,
+separate mechanisms — each covers exactly one invocation, so don't delete
+either as "redundant" with the other:
 
 - `deploy/counter-rebuild.service` already carries
   `Environment=PATH=/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`,
-  so the systemd timer path needs nothing further from you.
-- For the manual `sudo -u desktopcolors bash ...` invocation, create a symlink
-  in a directory that's already on systemd's (and sudo's `secure_path`)
-  default non-login `PATH`:
-
-  ```bash
-  ln -sf /usr/local/go/bin/go /usr/local/bin/go
-  go version   # now resolves without a login shell too
-  ```
+  so the hourly `counter-rebuild.timer` path needs nothing further from you.
+- For the manual `sudo -u desktopcolors bash ...` invocation (§ 7/§ 10), `sudo`
+  unconditionally overwrites the executed command's `PATH` with its own
+  `secure_path` — and AlmaLinux 8's stock `/etc/sudoers` ships
+  `secure_path = /sbin:/bin:/usr/sbin:/usr/bin`, with **no** `/usr/local/go/bin`
+  or `/usr/local/bin` on it. (Debian's default `secure_path` does include
+  `/usr/local/bin`, which is where the belief that a plain symlink there would
+  fix this comes from — it does not hold on this RHEL-family host.)
+  `deploy/desktopcolors.sudoers`, installed in § 5, adds a scoped
+  `Defaults>desktopcolors secure_path=...` override that applies only when
+  running as the `desktopcolors` user and puts `/usr/local/go/bin` on it.
 
 `rebuild.sh` also preflight-checks `git`, `npm` and `go` on `PATH` before doing
 anything else, so a still-missing tool fails with a named error and a
 `LAST_FAILURE` marker (§ 11) instead of a bare, unexplained exit 127 — but
-that check is a diagnostic, not a substitute for the symlink above.
+that check is a diagnostic, not a substitute for the `secure_path` override
+installed in § 5.
 
 ## 2. Create the service user and directories
 
@@ -139,8 +144,17 @@ systemd-analyze verify /etc/systemd/system/counter-rebuild.service
 install -o root -g root -m 0440 deploy/desktopcolors.sudoers /etc/sudoers.d/desktopcolors
 visudo -cf /etc/sudoers.d/desktopcolors      # must print "parsed OK"
 
+# Confirm the scoped secure_path override actually works, rather than trusting
+# it: this must print a path (e.g. /usr/local/go/bin/go).
+sudo -u desktopcolors bash -c 'command -v go'
+
 systemctl daemon-reload
-systemctl enable --now counter.service
+
+# No --now: nothing has compiled /opt/desktopcolors/counter/counter yet (§ 3
+# leaves that to § 7's first rebuild.sh run), so starting the unit here would
+# fail with an exec error against a binary that doesn't exist. `enable` alone
+# still wires it into multi-user.target for future boots.
+systemctl enable counter.service
 systemctl enable --now counter-rebuild.timer
 systemctl list-timers counter-rebuild.timer --no-pager
 ```
@@ -151,8 +165,13 @@ deliberately does **not**, because that flag blocks the setuid transition
 fail. Do not "fix" that asymmetry — it's the correct state for each unit,
 given which one calls `sudo`.
 
-The counter has no database until the first build, so it is expected to be
-running with an empty store at this point.
+`counter.service` is enabled but not running at this point — there is still
+no binary for it to run. It stays that way until § 7: `rebuild.sh` builds the
+counter, finds no installed binary to compare it against, moves the fresh one
+into place, and runs its restart command (`sudo systemctl restart
+counter.service`). `systemctl restart` on a unit that was never running
+starts it, so that first `rebuild.sh` run is what brings the counter up —
+with an empty store, since nothing has been counted yet.
 
 ## 6. nginx and TLS
 
@@ -186,14 +205,17 @@ sudo -u desktopcolors bash /opt/desktopcolors/deploy/rebuild.sh
 test -L /var/www/desktopcolors/current && echo "published"
 ```
 
-The first run installs dependencies, compiles the counter, restarts it, and
-publishes a release. Later runs skip `npm ci` unless `package-lock.json`
-moved, and skip the counter restart unless the compiled binary changed.
+The first run installs dependencies, compiles the counter, and — finding no
+installed binary yet to compare against — runs its restart command, which
+brings up `counter.service` (enabled but not started since § 5) for the first
+time. It then publishes a release. Later runs skip `npm ci` unless
+`package-lock.json` moved, and skip the counter restart unless the compiled
+binary changed.
 
 If this fails immediately with `required tool '...' not found on PATH`,
 that's `rebuild.sh`'s preflight check (§ 1) — go back and confirm the
-`/usr/local/bin/go` symlink (or whichever tool is named) rather than assuming
-it's an application bug.
+`secure_path` override in `deploy/desktopcolors.sudoers` (§ 5) rather than
+assuming it's an application bug.
 
 ## 8. Verify end-to-end
 

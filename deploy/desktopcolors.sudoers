@@ -10,3 +10,12 @@
 # setuid transition sudo needs and this restart fails. counter.service does set
 # it, correctly — it never calls sudo.
 desktopcolors ALL=(root) NOPASSWD: /usr/bin/systemctl restart counter.service
+
+# AlmaLinux 8's stock /etc/sudoers ships a secure_path with no /usr/local/go/bin
+# or /usr/local/bin (unlike Debian's default). sudo overwrites the executed
+# command's PATH with secure_path unconditionally, so without this override the
+# manual `sudo -u desktopcolors bash .../rebuild.sh` invocation (§ 7/§ 10 of
+# SETUP.md) cannot find `go`, even though an interactive shell can. Scoped to
+# the desktopcolors user only, so it changes nothing for anyone else's sudo
+# invocations on this shared host.
+Defaults>desktopcolors secure_path="/usr/local/go/bin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
