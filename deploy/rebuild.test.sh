@@ -299,41 +299,98 @@ setup
 # A required tool missing from PATH must produce one named, actionable
 # failure instead of a bare exit 127 wherever that tool first gets used —
 # and it must route through the same failure-marker machinery as any other
-# failure. Isolate PATH for this one invocation rather than just deleting a
-# stub: the machine running this suite (or a CI image) may have real go/npm
-# installed elsewhere on PATH (e.g. Homebrew's /opt/homebrew/bin), and
-# run_rebuild's normal STUB:$PATH would still resolve to those, silently
-# passing the "tool is missing" case this test exists to catch.
-PREFLIGHT_STUB="$ROOT/preflight_stub"
-mkdir -p "$PREFLIGHT_STUB"
-cp "$STUB/flock" "$PREFLIGHT_STUB/flock"
-cp "$STUB/npm" "$PREFLIGHT_STUB/npm"
-# go deliberately left out of the stub — this is the actual production bug:
-# git and npm resolve fine, go does not.
-chmod +x "$PREFLIGHT_STUB"/*
-( cd "$REPO" && env -i \
-    PATH="$PREFLIGHT_STUB:/usr/bin:/bin" \
-    HOME="${HOME:-/tmp}" \
-    REPO_DIR="$REPO" WWW_DIR="$WWW" STATE_DIR="$STATE" \
-    COUNTER_BIN="$REPO/counter/counter" BRANCH=release KEEP=3 \
-    RESTART_CMD="sudo /usr/bin/systemctl restart counter.service" \
-    bash "$REBUILD" ) > "$ROOT/preflight.log" 2>&1
-st=$?
-if [ "$st" -ne 0 ]; then
-  ok "missing tool exits nonzero"
-else
-  bad "missing tool exits nonzero — got 0"
-fi
-if grep -q "required tool 'go' not found on PATH; see deploy/SETUP.md" "$ROOT/preflight.log"; then
-  ok "missing tool names the specific tool and points at SETUP.md"
-else
-  bad "missing tool names the specific tool and points at SETUP.md — got: $(cat "$ROOT/preflight.log")"
-fi
-if [ -s "$STATE/LAST_FAILURE" ]; then
-  ok "missing-tool preflight failure writes a marker"
-else
-  bad "missing-tool preflight failure writes a marker"
-fi
+# failure.
+#
+# run_rebuild's normal STUB:$PATH keeps the system PATH appended, so on any
+# host that ships a real go/npm/git system-wide — every ubuntu-latest
+# runner does — `command -v` still resolves them there even with no stub
+# for the tool under test, and the preflight correctly never fires: the
+# real go binary runs on and fails deep inside `go build` with "cannot find
+# main module" instead of at the named check this block exists to prove.
+# Deleting a stub only proves the tool is missing on a machine that has
+# nothing else providing it.
+#
+# Make the block independent of what the host has installed by making a
+# throwaway bin directory the *entire* PATH for this one invocation — not
+# stub:$PATH — containing symlinks to only the binaries rebuild.sh
+# genuinely invokes on the way to (and inside the EXIT trap fired by) the
+# preflight loop: mktemp and tee for the $RUNLOG redirect, mkdir for
+# $STATE_DIR, and — because cleanup() runs the instant the loop's `exit 1`
+# fires — the git, date, tail and rm it uses to write the failure marker.
+# git and npm are also two of the three names the loop itself checks, so
+# they must resolve too, or the loop would report one of *them* missing
+# instead of the tool actually under test. flock is the one exception: no
+# real flock ships on stock macOS, and this block tests tool detection, not
+# locking, so it gets the same harmless "succeed silently" stub already
+# used for it elsewhere in this suite.
+preflight_bin() {
+  local dir="$1" omit="$2" tool real
+  mkdir -p "$dir"
+  # Absolute-path shebang, not `#!/usr/bin/env bash`: the kernel execve's an
+  # absolute interpreter path directly, with no PATH search at all, whereas
+  # `env bash` would need `env` to resolve "bash" against this same
+  # restricted PATH and fail — bash isn't one of the binaries rebuild.sh
+  # needs here, so it deliberately isn't in $dir.
+  cat > "$dir/flock" <<'EOS'
+#!/bin/sh
+exit 0
+EOS
+  chmod +x "$dir/flock"
+  for tool in mktemp tee mkdir date tail rm git npm go; do
+    [ "$tool" = "$omit" ] && continue
+    real="$(command -v "$tool")" || {
+      echo "FAIL: preflight fixture needs a real '$tool' on this machine" >&2
+      return 1
+    }
+    ln -s "$real" "$dir/$tool"
+  done
+}
+
+# Runs one "missing tool" case and checks the same three things the original
+# single-tool block did, parameterized by which tool is left out of the bin
+# directory. Covering more than one tool is cheap and proves the loop names
+# whichever one is actually absent, not just "go" specifically.
+check_preflight_case() {
+  local missing="$1" dir log st bash_bin
+  dir="$ROOT/minbin-$missing"
+  log="$ROOT/preflight-$missing.log"
+  preflight_bin "$dir" "$missing" || { bad "fixture setup for missing '$missing'"; return; }
+  # env -i wipes PATH along with the rest of the environment, so the "bash"
+  # invoked below must be resolved to an absolute path beforehand — bash
+  # itself is not one of the binaries rebuild.sh invokes, so it deliberately
+  # isn't in $dir, and a bare "bash" would fail to resolve against a PATH
+  # containing only $dir.
+  bash_bin="$(command -v bash)"
+  ( cd "$REPO" && env -i \
+      PATH="$dir" \
+      HOME="${HOME:-/tmp}" \
+      REPO_DIR="$REPO" WWW_DIR="$WWW" STATE_DIR="$STATE" \
+      COUNTER_BIN="$REPO/counter/counter" BRANCH=release KEEP=3 \
+      RESTART_CMD="sudo /usr/bin/systemctl restart counter.service" \
+      "$bash_bin" "$REBUILD" ) > "$log" 2>&1
+  st=$?
+  if [ "$st" -ne 0 ]; then
+    ok "missing '$missing' exits nonzero"
+  else
+    bad "missing '$missing' exits nonzero — got 0"
+  fi
+  if grep -q "required tool '$missing' not found on PATH; see deploy/SETUP.md" "$log"; then
+    ok "missing '$missing' names the specific tool and points at SETUP.md"
+  else
+    bad "missing '$missing' names the specific tool and points at SETUP.md — got: $(cat "$log")"
+  fi
+  if [ -s "$STATE/LAST_FAILURE" ]; then
+    ok "missing '$missing' preflight failure writes a marker"
+  else
+    bad "missing '$missing' preflight failure writes a marker"
+  fi
+}
+
+# go is the actual production bug (git and npm resolve system-wide on
+# ubuntu-latest, go's the one that didn't used to). npm is covered too,
+# since it's cheap and proves the loop isn't hardcoded to one name.
+check_preflight_case go
+check_preflight_case npm
 teardown
 
 echo "stale mtime prune order"
