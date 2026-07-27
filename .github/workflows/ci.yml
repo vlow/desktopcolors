@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [main]
+    branches: [main, release]
   pull_request:
 
 jobs:
@@ -41,3 +41,10 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+
+  deploy-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck deploy/rebuild.sh deploy/rebuild.test.sh
+      - run: bash deploy/rebuild.test.sh
