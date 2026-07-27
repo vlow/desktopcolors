@@ -18,6 +18,15 @@ WWW_DIR="${WWW_DIR:-/var/www/desktopcolors}"
 STATE_DIR="${STATE_DIR:-/var/lib/desktopcolors}"
 DB_PATH="${DB_PATH:-$STATE_DIR/counter.db}"
 COUNTER_BIN="${COUNTER_BIN:-$REPO_DIR/counter/counter}"
+# Set here, not on the systemd unit, so both invocation paths — the unit and
+# the documented manual `sudo -u desktopcolors bash ...` run — agree. Without
+# this, `go` falls back to $HOME/go/pkg/mod (HOME is desktopcolors' home dir,
+# /opt/desktopcolors, either way) which differs from what the unit used to set
+# explicitly, and the host ends up downloading and storing
+# modernc.org/sqlite and its dependencies (~360 MB) twice.
+GOCACHE="${GOCACHE:-$REPO_DIR/.cache/go-build}"
+GOMODCACHE="${GOMODCACHE:-$REPO_DIR/.cache/go-mod}"
+export GOCACHE GOMODCACHE
 BRANCH="${BRANCH:-release}"
 KEEP="${KEEP:-3}"
 # A non-numeric KEEP (empty, "abc", ...) would make $((KEEP + 1)) abort the
@@ -171,9 +180,10 @@ fi
 # /etc/profile.d/go.sh, which only login shells source, never runs and `go`
 # can resolve nowhere. Without this check that's a bare exit 127 from deep
 # inside the build; check all three up front instead, so a missing tool
-# produces one message naming it. A /usr/local/bin/go symlink is the usual
-# fix on a host without a login-shell PATH, since /usr/local/bin is already
-# on the default non-login PATH; see deploy/SETUP.md for the full setup.
+# produces one message naming it. The fix is not a /usr/local/bin/go symlink
+# — AlmaLinux 8's stock sudo secure_path has no /usr/local/bin on it, unlike
+# Debian's — but the scoped secure_path override in deploy/desktopcolors.sudoers;
+# see deploy/SETUP.md § 1 and § 5 for the full setup.
 for tool in git npm go; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     log "required tool '$tool' not found on PATH; see deploy/SETUP.md"

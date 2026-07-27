@@ -7,7 +7,11 @@ enforcing**. Commands are run as root (or via sudo) unless stated otherwise.
 Because the host is shared, nothing here touches global nginx config, another
 site's server block, the stock `/etc/logrotate.d/nginx`, or firewalld. Several
 steps look pedantic for that reason — on a dedicated box you could skip them;
-here you can't.
+here you can't. The one deliberate exception is SELinux policy, which is
+host-wide by construction: § 4 gives you a choice between a narrow grant
+(scoped to one port) and a broad one (`httpd_can_network_connect`, which
+affects every site's nginx workers, not just this one) — read that section
+before picking.
 
 **Deployment is pull-only.** `deploy/rebuild.sh` fetches and hard-resets the
 checkout to `origin/release`, so a push to `release` goes live at the next
@@ -79,12 +83,15 @@ mkdir -p /opt/desktopcolors /var/www/desktopcolors/releases /var/lib/desktopcolo
 install -d -o nginx -g nginx -m 0755 /var/log/nginx/desktopcolors
 ```
 
-Budget roughly **600 MB** under `/opt` + `/var/www` for this deploy: a built
-`dist/` is ~72 MB, `node_modules` ~245 MB, and `KEEP=3` retained releases
-under `/var/www/desktopcolors/releases` run ~216 MB together. Because
-publishing **copies** rather than moves (§ 4), `dist/` persists under `/opt`
-*and* a copy of it lives in every retained release under `/var/www` — this is
-not the several-GB figure an earlier estimate used.
+Budget roughly **1.4–1.6 GB** under `/opt` + `/var/www` for this deploy: a
+built `dist/` is ~72 MB, `node_modules` ~245 MB, and `KEEP=3` retained
+releases under `/var/www/desktopcolors/releases` run ~216 MB together.
+Because publishing **copies** rather than moves (§ 4), `dist/` persists under
+`/opt` *and* a copy of it lives in every retained release under `/var/www`.
+On top of that, `GOMODCACHE` (§ 1) holds ~360 MB for this dependency set,
+`GOCACHE` adds its own compiled-object cache, and `npm ci` populates an
+`$HOME/.npm` cache under `/opt/desktopcolors` that is never pruned — all
+steady-state, not a one-time cost.
 
 ## 3. Get the code
 
@@ -92,21 +99,51 @@ not the several-GB figure an earlier estimate used.
 git clone -b release https://github.com/vlow/desktopcolors.git /opt/desktopcolors
 chown -R desktopcolors:desktopcolors \
   /opt/desktopcolors /var/www/desktopcolors /var/lib/desktopcolors
+cd /opt/desktopcolors
 ```
 
 The first `rebuild.sh` run (§ 7) compiles both the counter and the site, so
 there is nothing to build by hand here.
+
+The rest of this guide assumes the shell stays in `/opt/desktopcolors`: §§ 5,
+6 and 9 below install files with paths relative to it (`deploy/counter.service`,
+`deploy/desktopcolors.nginx.conf`, `deploy/desktopcolors.logrotate`).
 
 ## 4. SELinux
 
 This is the step most likely to be skipped and then misdiagnosed as an
 application bug.
 
-```bash
-# Without this, nginx's proxy_pass to 127.0.0.1:8787 is denied and every
-# /api/event beacon fails with 502 while the rest of the site works fine.
-setsebool -P httpd_can_network_connect 1
+Without one of the two grants below, nginx's `proxy_pass` to
+`127.0.0.1:8787` is denied and every `/api/event` beacon fails with 502 while
+the rest of the site works fine. Pick one — they are not both needed:
 
+- **Narrow (recommended):** label port 8787 for httpd to reach, and allow
+  only the *relay* pattern (proxy to a local backend), not general outbound
+  connections. Needs `policycoreutils-python-utils` for `semanage`.
+
+  ```bash
+  dnf install -y policycoreutils-python-utils
+  semanage port -a -t http_port_t -p tcp 8787
+  setsebool -P httpd_can_network_relay 1
+  ```
+
+  This confines the grant to relaying to that one port; it does not let
+  `httpd_t` open arbitrary outbound connections.
+
+- **Broad:** the blunter, host-wide alternative. This is a real trade-off,
+  not a shortcut — it is a permanent grant for **every** `httpd_t` process on
+  the box, including the other sites' nginx workers, to open arbitrary
+  outbound TCP connections, not just a proxy to 127.0.0.1:8787:
+
+  ```bash
+  setsebool -P httpd_can_network_connect 1
+  ```
+
+  Use this only if you have a specific reason to prefer it over the narrow
+  option above.
+
+```bash
 # Release trees must carry httpd_sys_content_t for nginx to read them.
 restorecon -Rv /var/www/desktopcolors
 
@@ -175,19 +212,33 @@ with an empty store, since nothing has been counted yet.
 
 ## 6. nginx and TLS
 
+`deploy/desktopcolors.nginx.conf` declares `listen 443 ssl http2` with real
+`ssl_certificate`/`ssl_certificate_key` paths under
+`/etc/letsencrypt/live/desktopcolors.com/` — not commented out, because nginx
+refuses to start a `listen ... ssl` server block with no certificate
+configured at all (`nginx -t` fails with `no "ssl_certificate" is defined for
+the "listen ... ssl" directive`). So the certificate has to exist *before*
+this conf is installed:
+
 ```bash
+# certbot is already installed and in use on this host. `certonly --nginx`
+# uses the *existing* (other sites') nginx config to answer the HTTP-01
+# challenge and only writes the certificate files — it does not touch any
+# site's server block, and it does not require desktopcolors' server block to
+# exist yet.
+certbot certonly --nginx -d desktopcolors.com -d www.desktopcolors.com
+
 cp deploy/desktopcolors.nginx.conf /etc/nginx/conf.d/desktopcolors.conf
 
 # nginx -t validates EVERY site on this host. Check it before reloading, so a
 # mistake here never takes down the other sites.
 nginx -t
 systemctl reload nginx
-
-# certbot is already installed and in use on this host. This command only
-# edits our conf.d file — it does not touch any other site's server block.
-certbot --nginx -d desktopcolors.com -d www.desktopcolors.com
-nginx -t && systemctl reload nginx
 ```
+
+certbot's own renewal timer (already running for the other sites) picks up
+this certificate too and reloads nginx on renewal — no extra renewal wiring
+is needed here.
 
 DNS already resolves for both names, so this is verification, not
 configuration:
@@ -203,6 +254,13 @@ dig +short desktopcolors.com www.desktopcolors.com
 ```bash
 sudo -u desktopcolors bash /opt/desktopcolors/deploy/rebuild.sh
 test -L /var/www/desktopcolors/current && echo "published"
+
+# This is what first starts counter.service (§ 5 only enabled it). Confirm it
+# actually came up — a successful publish above says nothing about the
+# counter, since scores.json is built from whatever the DB dump returns (or
+# an empty one) rather than failing the run.
+systemctl is-active counter.service
+curl -fsS http://127.0.0.1:8787/healthz
 ```
 
 The first run installs dependencies, compiles the counter, and — finding no
@@ -226,7 +284,10 @@ curl -fsS https://desktopcolors.com/ | grep -q "desktop color archive" && echo "
 curl -fsS -o /dev/null -D- https://desktopcolors.com/os/windows-95/view.json \
   | grep -i 'cache-control'          # -> max-age=300
 
-# A 502 here means § 4 (SELinux) was skipped.
+# A 502 here means either § 4 (SELinux) was skipped, or counter.service
+# itself is not up (crashed on start, or the sudo restart in rebuild.sh
+# failed) — check `systemctl is-active counter.service` and the /healthz
+# curl from § 7 before assuming it's SELinux.
 curl -fsS -o /dev/null -w '%{http_code}\n' -X POST https://desktopcolors.com/api/event \
   -H 'Content-Type: application/json' -d '{"kind":"osview","os":"windows-95"}'   # -> 204
 
