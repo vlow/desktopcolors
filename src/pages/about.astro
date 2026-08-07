@@ -1,6 +1,8 @@
 ---
 import Base from "../layouts/Base.astro";
 
+const email = "hello@desktopcolors.com";
+
 // Every swatch below must be a real color from src/content/os/*.json — hex and
 // name kept verbatim so the tooltip matches what the archive actually ships.
 const heroSwatches = [
@@ -36,9 +38,20 @@ const heroSwatches = [
       <h2 style="font: 700 24px var(--font-ui); letter-spacing: -0.5px; margin: 0 0 4px;">Why I made this</h2>
       <div style="width: 44px; height: 3px; background: var(--accent); border-radius: 2px; margin: 12px 0 22px;"></div>
       <div style="display: flex; flex-direction: column; gap: 18px; font-size: 16px; line-height: 1.72; color: #44403c;">
-        <p style="margin: 0;">It started with a single hex code: <b>#008080</b>. That specific teal was the first thing millions of us saw when a computer finished booting — and one day I realized I couldn't find it written down anywhere. Not the exact value, not what it was called, not which systems shipped it.</p>
-        <p style="margin: 0;">So I started collecting. Windows, Amiga, the Unix desktops, the forgotten ones in between. Every default background, every alternate the settings panel offered, pulled from screenshots, manuals, and disk images, then checked against the real thing.</p>
-        <p style="margin: 0;">These colors are small, ordinary, and easy to lose — which is exactly why they're worth keeping. This page is my attempt to hold onto them, and to let you take any one back to your own desktop.</p>
+        <p style="margin: 0;">For me, the peak of usability was somewhere between Windows NT 4.0 and the early versions of KDE.</p>
+        <p style="margin: 0;">When I think back to those systems, it feels as if working with computers was simpler, more productive, and somehow more pure. A good part of that feeling is probably nostalgia.</p>
+        <p style="margin: 0;">There wasn't a constant fight for my attention everywhere I looked. Instead, a computer felt more like a blank sheet of paper — something that gave me freedom to decide what to do with it.</p>
+        <p style="margin: 0;">Technology felt like a new world waiting to be understood and explored. Not an endless stream of content trying to pour itself directly into my brain, while I use technical measures, plugins, and settings to stop it from becoming addictive and consuming all of my attention.</p>
+        <p style="margin: 0;">The background colors of those systems came with their own promises.</p>
+        <p style="margin: 0;">There was the <b>#008080</b> teal of Windows 95 and Windows NT, followed by the move to the “new blue” of the Windows 2000 era. Or the iconic color of a Sun Solaris workstation.</p>
+        <p style="margin: 0;">I associate these colors with that time in the same way you might associate a particular smell with a place or a period of your life. Decades later, the connection is still immediate.</p>
+        <p style="margin: 0;">That's why a solid-color background is one of the first things I set on any new device. For me, it's the simplest way to bring some calm to the overloaded interfaces of modern operating systems.</p>
+        <p style="margin: 0;">A simple, clean desktop.</p>
+        <p style="margin: 0;">The colors of these old systems also give me an association that feels productive and friendly. They create the setting from which I decide how I want to use a computer: whether it serves me as a tool, or whether I serve it as the endpoint of a never-ending pipeline of information.</p>
+        <p style="margin: 0;">At the same time, finding these colors is becoming increasingly difficult. Many of the operating systems they came from now require hardware you might only be lucky enough to still have in your basement — hardware that probably belongs in a museum by now.</p>
+        <p style="margin: 0;">So, to keep the color codes of my youth from disappearing, I built this museum.</p>
+        <p style="margin: 0;">I transferred many of the colors manually from the original systems. Others I found in their source code.</p>
+        <p style="margin: 0;">If you came here looking for a certain memory or association and found it, I'd love to hear from you. Send me a message or <a href={`mailto:${email}`} style="color: var(--accent);">an email</a>.</p>
       </div>
       <div style="margin-top: 26px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--card-border); border-radius: 14px; display: flex; align-items: center; gap: 16px;">
         <div style="flex: none; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #008080, #3a6ea5); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);"></div>
