@@ -16,7 +16,22 @@
 - No per-crawler rules. One `User-agent: *` group, and `/api/` as the only `Disallow`. Do not add a blocklist, an allowlist, or `Crawl-delay`.
 - Do not disallow `/os/*/view.json` in `robots.txt`. It is excluded from the *sitemap* instead, via the integration's `filter`.
 - Nothing under `deploy/` is modified.
-- `package.json` pins `astro: ^4.15.0`. The sitemap integration must resolve to a version whose peer range accepts Astro 4 — the `@astrojs/sitemap@^3` line.
+- `package.json` pins `astro: ^4.15.0`. The sitemap integration must resolve to a version that works on Astro 4 — `@astrojs/sitemap` **exactly `3.2.1`**, no caret.
+
+## Corrections after execution
+
+Executed 2026-08-09 (`a6574bf`, `3ec29b3`). Two of this plan's assumptions were wrong, and
+the steps below are corrected in place; the deliverable is unchanged. Details and reasoning
+in the spec's *Corrections after implementation*.
+
+1. **Step 5/6 — the version.** `@astrojs/sitemap@^3` resolves to 3.7.3, which reads the
+   Astro-5-only `routes` argument of `astro:build:done` and kills this Astro 4 build with
+   `Cannot read properties of undefined (reading 'reduce')`. Pin `3.2.1` exactly. Step 6's
+   `npm ls` check cannot catch this — the package declares no `peerDependencies` at all, so
+   the tree looks clean either way. The build is the only real check.
+2. **Step 7/9 — the `filter`.** It was never needed: the integration lists page routes
+   only, so the 22 `view.json` endpoints stay out unaided (687 HTML pages → 687 `<loc>`).
+   Step 9 is what proved it, by staying green when it was supposed to go red.
 
 ## A note on the test loop
 
@@ -135,18 +150,22 @@ instead of just pattern-matching the file's text.
 - [ ] **Step 5: Install the sitemap integration**
 
 ```bash
-npm install @astrojs/sitemap@^3
+npm install @astrojs/sitemap@3.2.1
 ```
 
-- [ ] **Step 6: Verify the peer range accepts Astro 4**
+Exactly `3.2.1`, no caret — see *Corrections after execution* above. Confirm `package.json`
+records `"3.2.1"` and not `"^3.2.1"`; `npm install` writes the caret by default and a later
+`npm install` would then pull the Astro-5-only 3.7.x back in.
+
+- [ ] **Step 6: Verify the resolved tree**
 
 ```bash
 npm ls @astrojs/sitemap astro
 ```
 
-Expected: both listed, no `UNMET PEER DEPENDENCY` and no `invalid` marker. If npm resolved
-a version that demands Astro 5, pin the last 3.x that accepts `astro@^4` rather than
-upgrading Astro — an Astro major upgrade is out of scope for this plan.
+Expected: `@astrojs/sitemap@3.2.1` and `astro@4.16.x`. Note that this proves less than it
+appears to — the package declares no `peerDependencies`, so npm reports a clean tree for
+incompatible pairs too. Step 8 is the real check.
 
 - [ ] **Step 7: Register the integration in `astro.config.mjs`**
 
@@ -159,16 +178,13 @@ import sitemap from "@astrojs/sitemap";
 
 export default defineConfig({
   site: "https://desktopcolors.com",
-  integrations: [
-    preact(),
-    // The integration enumerates every generated route, and
-    // src/pages/os/[slug]/view.json.ts produces one per OS. Those are data
-    // endpoints fetched by the OsDetail island, not pages — keep them out.
-    // `page` is the full absolute URL, so endsWith() is exact here.
-    sitemap({ filter: (page) => !page.endsWith("/view.json") }),
-  ],
+  integrations: [preact(), sitemap()],
 });
 ```
+
+No `filter` — the integration lists page routes only. Carry the explanatory comment from
+the committed `astro.config.mjs` (why no filter, why the exact pin) rather than
+reconstructing it.
 
 - [ ] **Step 8: Run the test and watch it pass**
 
@@ -178,20 +194,26 @@ npx playwright test -g "robots.txt"
 
 Expected: PASS.
 
-- [ ] **Step 9: Watch the `filter` guard fail on the path it will run**
+- [ ] **Step 9: Establish what the `view.json` assertion actually guards**
 
-`TESTING.md` § T4 — a guard that has never been seen failing is not known to work. The
-`view.json` assertion is the one guard that has only ever been observed green, because the
-filter was present from its first run.
+`TESTING.md` § T4 — a guard never seen failing is not known to work.
 
-Temporarily change `astro.config.mjs` line to `sitemap()` — no options — then:
+This step was written expecting the assertion to go red once the `filter` was removed. It
+does not: the sitemap contains no `view.json` either way, which is how the filter was found
+to be dead code. Confirm that for yourself rather than taking it on faith:
 
 ```bash
-npx playwright test -g "robots.txt"
+npm run build
+find dist -name view.json | wc -l          # 22 endpoints exist
+find dist -name '*.html' | wc -l           # 687 pages
+grep -c "view.json" dist/sitemap-0.xml     # 0
+grep -c "<loc>" dist/sitemap-0.xml         # 687
 ```
 
-Expected: FAIL at `expect(urlsetXml).not.toContain("view.json")`. Now restore the
-`filter` from Step 7 and re-run; expected PASS.
+So the assertion cannot fail against the current dependency versions. It is kept as a
+characterization guard: it is what fails if a future `@astrojs/sitemap` starts emitting
+endpoint routes. The comment in `e2e/smoke.spec.ts` says so, so that the next reader does
+not mistake it for a live guard on our own config.
 
 - [ ] **Step 10: Run the full suite**
 

@@ -17,7 +17,7 @@ decision. Two concrete costs:
    retained 7 days (`deploy/desktopcolors.nginx.conf`,
    `deploy/desktopcolors.logrotate`) — it exists to surface broken links, and a
    permanent, expected 404 is noise in exactly the place that is supposed to be signal.
-2. Crawlers reach the ~704 generated pages only by following in-page links. There is no
+2. Crawlers reach the 687 generated pages only by following in-page links. There is no
    machine-readable inventory of what exists.
 
 ## Goal
@@ -51,8 +51,8 @@ about. One line removes it.
 runtime and linked from no page, so crawlers rarely encounter it. Excluding it would need
 a wildcard path (`/os/*/view.json`), which is not part of the original robots.txt
 specification and is honoured inconsistently — a rule that mostly does not apply, for a
-problem that does not occur. It is kept out of the *sitemap* instead, where exclusion is
-exact (see below).
+problem that does not occur. It does not reach the sitemap either, but that turned out to
+need no configuration at all — see **Corrections after implementation**.
 
 ### The sitemap comes from `@astrojs/sitemap`
 
@@ -89,18 +89,16 @@ The absolute `Sitemap:` URL is required by the sitemap protocol; it matches `sit
 ```js
 import sitemap from "@astrojs/sitemap";
 
-integrations: [
-  preact(),
-  sitemap({ filter: (page) => !page.endsWith("/view.json") }),
-],
+integrations: [preact(), sitemap()],
 ```
 
 Adds `@astrojs/sitemap` to `dependencies` (and `package-lock.json`). The build then emits
-`sitemap-index.xml` plus `sitemap-0.xml` covering the ~704 HTML pages.
+`sitemap-index.xml` plus `sitemap-0.xml` covering the 687 HTML pages.
 
-The `filter` is the part that is easy to miss: the integration enumerates **every**
-generated route, and `src/pages/os/[slug]/view.json.ts` produces one route per OS. Without
-the filter those JSON endpoints would be advertised as indexable pages.
+> **Superseded.** This section originally called for
+> `sitemap({ filter: (page) => !page.endsWith("/view.json") })`, on the assumption that the
+> integration enumerates every generated route. It does not. See **Corrections after
+> implementation**.
 
 ### Deployment — unchanged
 
@@ -133,6 +131,30 @@ filter is deliberate.
 
 `CONTRIBUTING.md` mirrors only the OS-data and chrome-spec material (`CLAUDE.md`), none of
 which this touches — no mirrored change is needed.
+
+## Corrections after implementation
+
+Implemented 2026-08-09 in `a6574bf` / `3ec29b3`. Two claims above did not survive contact
+with a build; both are corrected in the code, and the affected sections are marked. The
+outcome this spec asked for is unchanged — only the mechanism differs.
+
+**The `filter` was unnecessary and was dropped.** `@astrojs/sitemap` lists page routes
+only, so the 22 `os/<slug>/view.json` endpoints never appear: the build produces 687 HTML
+pages and the sitemap 687 `<loc>` entries, with and without the filter. This surfaced at
+the `TESTING.md` T4 step — the guard was supposed to go red with the filter removed and
+stayed green. Keeping config that implies a problem the tool already solves is worse than
+not having it, so `sitemap()` is called bare. The `not.toContain("view.json")` assertion
+stays as a regression guard on the integration's behaviour across future upgrades.
+
+**The version is pinned exactly, not caret-ranged.** `@astrojs/sitemap` from 3.3 on reads
+the `routes` argument of `astro:build:done`, which exists only in Astro 5; on this Astro 4
+build it is `undefined` and the build dies with `Cannot read properties of undefined
+(reading 'reduce')`. `package.json` therefore carries `"3.2.1"` with no caret — the last
+release from the Astro 4 era — and unpinning belongs to the Astro 5 upgrade.
+
+The plan's safeguard against this (`npm ls` on the peer range) could not have worked:
+`@astrojs/sitemap` declares no `peerDependencies` in any 3.x release, so npm installs the
+incompatible combination and reports a clean tree. The build itself is the only check.
 
 ## Out of scope
 
