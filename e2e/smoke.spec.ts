@@ -194,3 +194,41 @@ test("download sheet generates a wallpaper and fires a download beacon", async (
     .poll(() => sawEvent(events, { kind: "download", hex: "#008080", os: "windows-95" }))
     .toBe(true);
 });
+
+test("robots.txt welcomes crawlers and names a sitemap this build serves", async ({ request }) => {
+  const res = await request.get("/robots.txt");
+  expect(res.status()).toBe(200);
+  const body = await res.text();
+
+  // All crawlers welcome; the beacon endpoint is the only thing off-limits.
+  expect(body).toMatch(/^User-agent: \*$/m);
+  expect(body).toMatch(/^Disallow: \/api\/$/m);
+
+  // The Sitemap line must be absolute and on the production origin...
+  const line = body.match(/^Sitemap: (\S+)$/m);
+  expect(line).not.toBeNull();
+  const advertised = new URL(line![1]);
+  expect(advertised.origin).toBe("https://desktopcolors.com");
+
+  // ...and the path it names must actually be served. Fetch the path, not the
+  // absolute URL: that one points at production, this test at the preview server.
+  const index = await request.get(advertised.pathname);
+  expect(index.status()).toBe(200);
+  const indexXml = await index.text();
+  expect(indexXml).toContain("<sitemapindex");
+
+  // Follow the index to the actual URL set (never hardcode "sitemap-0.xml").
+  const loc = indexXml.match(/<loc>(\S+?)<\/loc>/);
+  expect(loc).not.toBeNull();
+  const urlset = await request.get(new URL(loc![1]).pathname);
+  expect(urlset.status()).toBe(200);
+  const urlsetXml = await urlset.text();
+
+  // It lists pages...
+  expect(urlsetXml).toContain("https://desktopcolors.com/os/windows-95");
+  // ...and not the per-OS view.json endpoints. @astrojs/sitemap excludes
+  // non-page routes on its own, so this asserts THE INTEGRATION'S behaviour,
+  // not our config — it is what fails if a future version starts listing
+  // endpoints. See the note in astro.config.mjs.
+  expect(urlsetXml).not.toContain("view.json");
+});

@@ -1,0 +1,8 @@
+# desktopcolors.com
+# Everything here is a public, static archive and is meant to be indexed.
+# Deliberately minimal: no bot allowlist to go stale.
+
+User-agent: *
+Disallow: /api/
+
+Sitemap: https://desktopcolors.com/sitemap-index.xml
