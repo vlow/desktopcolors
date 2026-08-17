@@ -3,14 +3,12 @@
   "year": 2018,
   "added": "2026-07-20",
   "family": "SerenityOS",
-  "tagline": "A love letter to '90s desktops — built from scratch, themed to the teeth.",
-  "description": "SerenityOS is a from-scratch, Unix-like operating system for the modern age that lovingly recreates the look and feel of late-1990s desktops. Built by a community of hobbyists, it pairs a classic taskbar-and-window interface with a deep set of built-in themes — from Basalt and Nord to Cupertino and Redmond — each recoloring the desktop over a bright, Tango-inspired system palette.",
   "desktopStyle": "win9x",
+  "description": "SerenityOS is a hobbyist OS started by Andreas Kling, who shared his work on the OS in live coding sessions on YouTube. Today, many people may be more familiar with Ladybird, the SerenityOS web browser project. SerenityOS aims for the classic 90s OS aesthetics and is visually influenced by the Windows-family. It has its own very tasteful color palette, with many original colors.",
   "colors": [
     {
       "hex": "#505050",
       "name": "Dim Gray",
-      "note": "The default desktop — the Default theme.",
       "default": true
     },
     {

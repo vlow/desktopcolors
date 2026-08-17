@@ -56,8 +56,9 @@ test("home lists platforms and search filters", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Desktop background colors, by operating system" })).toBeVisible();
   // exact: true — the platform card title is its own text node equal to exactly
-  // "Windows 95"; a non-exact match also hits Windows NT 4.0's tagline
-  // ("...the Windows 95 shell...").
+  // "Windows 95". Without it the match also climbs to every ancestor whose text
+  // merely contains the string (the card <a>, the grid), and strict mode fails on
+  // the multiple hits.
   await expect(page.getByText("Windows 95", { exact: true })).toBeVisible();
 
   await islandsHydrated(page);

@@ -3,15 +3,13 @@
   "year": 1985,
   "added": "2026-07-20",
   "family": "Windows",
-  "tagline": "The first Windows — a desktop dithered from two colors to fake a third.",
-  "description": "Windows 1.0 (1985) was Microsoft's first graphical shell, running tiled windows over MS-DOS. Limited to a fixed hardware palette, it couldn't display its signature desktop green directly — so it dithered it, tiling 8×8 blocks of bright green with 4×4 patches of cyan to blend a softer shade the hardware couldn't name. Depending on how you average that pattern, the result lands near #57ff81 (a simple pixel average) or #57ff9a (averaged in linear light, gamma-corrected).",
   "successor": "windows-2-0",
   "desktopStyle": "win31",
+  "description": "When looking at screenshots of Windows 1.0, you can see the dithered green as defined as default here. However, the actual color representation was highly dependent on the graphics adapter and also the CRT used. That means, what looks like a very bright cyan-green is the pure software side with todays sRGB faithfulness and quite possibly differs vastly from how it looked back in the day - and it might also have differed then, depending on the hardware used. Nevertheless, this is how it would look today, when emitting the same color on modern hardware.",
   "colors": [
     {
       "hex": "#57ff81",
       "name": "Dithered Green (Averaged)",
-      "note": "The Windows 1.0 desktop. There was no single green for it in the hardware palette, so the desktop was dithered — 8×8 blocks of green (#57ff57) with a 4×4 patch of cyan (#57ffff) inside each, 25% cyan by area. This is the conventional pixel average of that pattern; averaging in linear light instead gives the gamma-corrected #57ff9a.",
       "default": true
     },
     {

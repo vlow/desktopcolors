@@ -11,7 +11,7 @@ import type { OsInput } from "../content/config";
 import type { SimilarColor } from "./derive";
 
 const os = (over: Partial<OsInput> & { colors: OsInput["colors"] }): OsInput => ({
-  name: "X", year: 2000, added: "2000-01-01", family: "Fam", tagline: "t", description: "d",
+  name: "X", year: 2000, added: "2000-01-01", family: "Fam", description: "d",
   desktopStyle: "generic", ...over,
 });
 

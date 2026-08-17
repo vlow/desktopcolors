@@ -3,15 +3,13 @@
   "year": 2000,
   "added": "2026-07-17",
   "family": "Windows",
-  "tagline": "A polished blue-gray palette that bridged two eras.",
-  "description": "Windows 2000 refined the NT line with a clean, professional desktop. Its default Windows Classic scheme wore a distinctive blue, while Display Properties still offered the full grid of basic swatches and the familiar named schemes — from Brick to Wheat — carried over from the 9x era. It was the last Windows to wear the classic flat look before Luna arrived with XP.",
   "predecessor": "windows-nt-4-0",
   "desktopStyle": "win9x",
+  "description": "Contrary to what most would expect, Windows 2000 isn't the successor to Windows 98, but to Windows NT 4.0. It was rock solid and clean - probably peak Windows. And it came with a new, blue default color. Still one of my favorites til this day.",
   "colors": [
     {
       "hex": "#3a6ea5",
       "name": "Redmond Blue",
-      "note": "The default background — the Windows Classic and Windows Standard schemes.",
       "default": true
     },
     {

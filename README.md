@@ -145,9 +145,8 @@ tests, and add to it when a bug gets past the suite.
    ```json
    {
      "name": "BeOS", "year": 1995, "family": "BeOS",
-     "tagline": "…", "description": "…",
      "colors": [
-       { "hex": "#33aabb", "name": "Cyan", "note": "…", "default": true },
+       { "hex": "#33aabb", "name": "Cyan", "default": true },
        { "hex": "#dedede", "name": "Light Gray" }
      ]
    }

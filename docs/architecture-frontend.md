@@ -61,12 +61,19 @@ one `default` color, or a dangling `predecessor`/`successor` **fails the build**
 // content/config.ts — the shape every os/*.json must satisfy
 type OsInput = {
   name: string; slug?: string; year: number; family: string;
-  tagline: string; description: string;
+  description: string; // prose, default ""; no entry sets it any more
   predecessor?: string; successor?: string;
   desktopStyle: "modern" | "win9x" | "win31" | "platinum" | "beos" | "amiga" | "kde" | "cde" | "gem" | "generic"; // default "modern"
-  colors: { hex: string; name: string; index: string; note: string; default: boolean }[]; // ≥1, ≤1 default
+  colors: { hex: string; name: string; note: string; default: boolean }[]; // ≥1, ≤1 default; note "" everywhere
 };
 ```
+
+`description` and the per-color `note` are the archive's retired prose fields. They remain
+in the schema, defaulted to `""`, and `OsDetail` still carries and renders them — as the
+page lead and the line under the selected color — so setting one on an entry still shows
+it. None do; they render empty. `tagline` was the third, and is fully removed: gone from
+the schema, from `OsView`, from `PlatformItem`, from the search matcher, and from both
+platform-card layouts.
 
 Adding a platform = dropping a JSON file here. Nothing else needs editing — it flows
 automatically into Platforms, the Colors page, similarity matches, and era sections. See

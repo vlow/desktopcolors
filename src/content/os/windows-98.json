@@ -3,11 +3,10 @@
   "year": 1998,
   "added": "2026-07-17",
   "family": "Windows",
-  "tagline": "The familiar teal desktop, now folded into the web.",
-  "description": "Windows 98 refined the 95 formula, folding the web into the shell with Active Desktop while keeping the familiar look. Its Display Properties carried over the same grid of basic swatches and named schemes — teal still the Windows Standard default — with the classic reserved system colors tuned to their canonical values.",
   "predecessor": "windows-95",
   "successor": "windows-me",
   "desktopStyle": "win9x",
+  "description": "There were no noticable color changes between Windows 95 and 98. The focus was more on Internet Explorer and things like the \"Active Desktop\" which let users choose a HTML page as desktop wallpaper. Yay.",
   "colors": [
     {
       "hex": "#420000",
@@ -133,7 +132,6 @@
     {
       "hex": "#008080",
       "name": "Teal",
-      "note": "The signature default background — the Windows Standard theme.",
       "default": true
     },
     {

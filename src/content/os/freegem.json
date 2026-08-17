@@ -3,30 +3,28 @@
   "year": 1999,
   "added": "2026-07-20",
   "family": "GEM",
-  "tagline": "GEM lives on — a desktop dithered from gray and blue.",
-  "description": "FreeGEM is the community-maintained, open-source continuation of Digital Research's GEM (Graphics Environment Manager), the 1980s GUI that dressed up DOS and the Atari ST. Like the hardware it grew up on, it fakes its desktop color by dithering — checkerboarding gray (#a8a8a8) and pure blue (#0000ff) in equal measure. Averaged as pixels that blends to #5454d4; averaged in linear light it becomes the gamma-corrected #7a7ad9.",
   "desktopStyle": "gem",
+  "description": "FreeGEM is an open source version of Digital Research's GEM. GEM is primarily known as the native GUI of the Atari ST series - although it was also available for other systems at that time. It uses a dithered blue as background, the other colors are not actual choices but the two colors making up the dithered background.",
   "colors": [
     {
       "hex": "#5454d4",
       "name": "Dithered Blue (Averaged)",
-      "note": "The FreeGEM desktop. There's no single color for it — the desktop is dithered, checkerboarding gray (#a8a8a8) and blue (#0000ff) in an even 1:1 pattern. This is the conventional pixel average of the two; averaging in linear light instead gives the gamma-corrected #7a7ad9.",
       "default": true
     },
     {
       "hex": "#7a7ad9",
       "name": "Dithered Blue (Gamma-Corrected)",
-      "note": "The same dithered desktop, averaged in linear light and gamma-corrected — a lighter, airier blue. The simpler pixel average is #5454d4."
+      "note": "The same dithered desktop, averaged in linear light and gamma-corrected: a lighter blue. The simpler pixel average is #5454d4."
     },
     {
       "hex": "#a8a8a8",
       "name": "Stone Gray",
-      "note": "One of the two colors the FreeGEM desktop is dithered from — the gray filling half the checkerboard."
+      "note": "One of the two colors the FreeGEM desktop is dithered from: the gray filling half the checkerboard."
     },
     {
       "hex": "#0000ff",
       "name": "Blue",
-      "note": "One of the two colors the FreeGEM desktop is dithered from — the blue filling the other half of the checkerboard."
+      "note": "One of the two colors the FreeGEM desktop is dithered from: the blue filling the other half of the checkerboard."
     }
   ],
   "type": "Open Source",

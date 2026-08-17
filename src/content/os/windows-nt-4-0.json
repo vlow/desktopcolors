@@ -3,11 +3,10 @@
   "year": 1996,
   "added": "2026-07-17",
   "family": "Windows",
-  "tagline": "The NT kernel meets the Windows 95 shell — teal desktop and all.",
-  "description": "Windows NT 4.0 (1996) wrapped the rock-solid NT kernel in the Windows 95 interface — Explorer, the taskbar, and the Start menu — bringing the modern shell to workstations and servers. It kept the 9x-era Windows Standard teal default and the full grid of basic swatches and named color schemes.",
   "predecessor": "windows-nt-3-x",
   "successor": "windows-2000",
   "desktopStyle": "win9x",
+  "description": "Windows NT 4 came with the same teal default as its predecessors, but for many people NT 4 was the first workstation OS to work with. That's probably why this specific default color was also known under some questionable nicknames like \"green of despair\" or \"depressing teal\".",
   "colors": [
     {
       "hex": "#420000",
@@ -133,7 +132,6 @@
     {
       "hex": "#008080",
       "name": "Teal",
-      "note": "The signature default background — the Windows Standard theme.",
       "default": true
     },
     {

@@ -3,8 +3,8 @@ import { render, screen, fireEvent, within } from "@testing-library/preact";
 import { PlatformControls, type PlatformItem } from "./PlatformControls";
 
 const items: PlatformItem[] = [
-  { slug: "windows-95", name: "Windows 95", year: 1995, added: "2026-07-17", family: "Windows", tagline: "Teal era", defaultHex: "#008080", colorCount: 14, score: 48200, scoreLabel: "48.2k", altColors: [{ hex: "#000080", name: "Navy" }], href: "/os/windows-95", listColors: [{ hex: "#008080", name: "Teal" }, { hex: "#000080", name: "Navy" }] },
-  { slug: "amiga-workbench", name: "Amiga Workbench", year: 1985, added: "2026-07-20", family: "Amiga", tagline: "Four-color glory", defaultHex: "#0055aa", colorCount: 5, score: 300, scoreLabel: "< 1k", altColors: [], href: "/os/amiga-workbench", listColors: [{ hex: "#0055aa", name: "Workbench Blue" }] },
+  { slug: "windows-95", name: "Windows 95", year: 1995, added: "2026-07-17", family: "Windows", defaultHex: "#008080", colorCount: 14, score: 48200, scoreLabel: "48.2k", altColors: [{ hex: "#000080", name: "Navy" }], href: "/os/windows-95", listColors: [{ hex: "#008080", name: "Teal" }, { hex: "#000080", name: "Navy" }] },
+  { slug: "amiga-workbench", name: "Amiga Workbench", year: 1985, added: "2026-07-20", family: "Amiga", defaultHex: "#0055aa", colorCount: 5, score: 300, scoreLabel: "< 1k", altColors: [], href: "/os/amiga-workbench", listColors: [{ hex: "#0055aa", name: "Workbench Blue" }] },
 ];
 
 describe("PlatformControls", () => {

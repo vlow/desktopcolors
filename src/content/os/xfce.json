@@ -3,14 +3,12 @@
   "year": 1996,
   "added": "2026-07-21",
   "family": "Desktop Env.",
-  "tagline": "A lightweight Unix desktop with a broad, practical palette.",
-  "description": "Xfce began in 1996 and grew into a lightweight, modular desktop environment for Unix-like systems, balancing a traditional desktop layout with speed and modest resource use. Its desktop color palette comes from the GTK standard palette, so it spans clear blues, greens, yellows, oranges, reds, purples, and browns before stepping through a full range of neutral tones, with medium gray as the default.",
   "desktopStyle": "modern",
+  "description": "XFCE actually just uses the (admitingly beautiful) default GTK palette, so the colors aren't specific to the WM. Gray is the simple default, which is actually a pretty good match for XFCEs \"no bullshit\"-philosophy.",
   "colors": [
     {
       "hex": "#808080",
       "name": "Gray",
-      "note": "The default desktop background.",
       "default": true
     },
     {

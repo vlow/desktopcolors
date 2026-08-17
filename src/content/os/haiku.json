@@ -3,15 +3,13 @@
   "year": 2009,
   "added": "2026-07-20",
   "family": "Haiku",
-  "tagline": "The open-source heir to BeOS — same focused desktop, same signature blue.",
-  "description": "Haiku is a free and open-source operating system that continues BeOS, aiming for binary compatibility with its applications while modernizing the system underneath. It keeps the fast, single-user desktop that made BeOS distinctive — right down to its signature slate-blue backdrop.",
   "predecessor": "beos",
   "desktopStyle": "beos",
+  "description": "Haiku is the open source re-implementation of BeOS. Naturally, the default background has been taken directly from BeOS 5. I'm still dreaming of a version running well enough on real hardware so I could use it as a daily driver.",
   "colors": [
     {
       "hex": "#336698",
       "name": "Steel Blue",
-      "note": "The Haiku desktop blue.",
       "default": true
     }
   ],

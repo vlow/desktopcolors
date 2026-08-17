@@ -17,8 +17,7 @@ const osSchema = z.object({
   year: z.number().int(),
   added: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   family: z.string().min(1),
-  tagline: z.string().min(1),
-  description: z.string().min(1),
+  description: z.string().optional(),
   predecessor: z.string().optional(),
   successor: z.string().optional(),
   desktopStyle: z.enum(DESKTOP_STYLES).optional(),
@@ -53,10 +52,30 @@ describe("os content files", () => {
     }
   });
 
+  // description and the per-color note are prose fields no entry carries any more.
+  // They stay in the schema (defaulted to "" by config.ts) so an entry *may* set
+  // them, but an entry that omits both has to parse — which every real file does.
+  it("accepts an entry with no description and no colour note", () => {
+    expect(osSchema.safeParse({
+      name: "X", year: 2000, added: "2000-01-01", family: "F",
+      colors: [{ hex: "#000000", name: "Black" }],
+    }).success).toBe(true);
+  });
+
+  // `tagline` is gone from the schema entirely — not defaulted, removed. Zod strips
+  // unknown keys rather than rejecting them, so a re-added "tagline" would parse
+  // clean and then vanish silently on the way to the view. Check the raw JSON.
+  it("has no tagline key left in any entry", () => {
+    for (const f of files) {
+      const raw = JSON.parse(readFileSync(`${dir}/${f}`, "utf8"));
+      expect(raw, f).not.toHaveProperty("tagline");
+    }
+  });
+
   it("requires added in YYYY-MM-DD form", () => {
     const base = {
       name: "X", year: 2000, added: "2000-01-01", family: "F",
-      tagline: "t", description: "d",
+      description: "d",
       colors: [{ hex: "#000000", name: "Black" }],
     };
     expect(osSchema.safeParse(base).success).toBe(true);

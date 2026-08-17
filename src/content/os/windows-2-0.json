@@ -3,16 +3,14 @@
   "year": 1987,
   "added": "2026-07-20",
   "family": "Windows",
-  "tagline": "Dithering, abandoned: Windows 2.0 just used the cyan straight.",
-  "description": "Windows 2.0 (1987) added overlapping windows and a more capable interface — and quietly retired its predecessor's dithered desktop. Where Windows 1.0 blended green and cyan into a shimmering shade the hardware couldn't name, 2.0 simply took the cyan (#57ffff) and painted the desktop with it directly.",
   "predecessor": "windows-1-0",
   "successor": "windows-3-0",
   "desktopStyle": "win31",
+  "description": "Similarly to Windows 1.0, the pure cyan emitted by Windows 2.0 might have looked completely different in 1987 - depending on the hardware used. But on the software side, the default background of Windows 2.0 was \"cyan\" in the EGA/VGA palette.",
   "colors": [
     {
       "hex": "#57ffff",
       "name": "Aqua",
-      "note": "The Windows 2.0 desktop. This is the cyan that Windows 1.0 used as one of its two dither colors — Windows 2.0 dropped the dithering and painted the desktop with it directly.",
       "default": true
     }
   ],

@@ -37,8 +37,8 @@ There is no fixed citation format — a sentence in the pull request description
 enough. If you sampled a pixel, say which screenshot and where you got it. If you read a
 constant, link the file and line.
 
-We would rather have a well-sourced approximation with an honest note than a confident
-wrong hex. If you are unsure, say so in the `note` field and in the PR.
+We would rather have a well-sourced approximation with an honest caveat than a confident
+wrong hex. If you are unsure, say so in the PR.
 
 ## Setup
 
@@ -68,15 +68,12 @@ A complete file, `src/content/os/haiku.json`:
   "year": 2009,
   "added": "2026-07-20",
   "family": "Haiku",
-  "tagline": "The open-source heir to BeOS — same focused desktop, same signature blue.",
-  "description": "Haiku is a free and open-source operating system that continues BeOS, aiming for binary compatibility with its applications while modernizing the system underneath. It keeps the fast, single-user desktop that made BeOS distinctive — right down to its signature slate-blue backdrop.",
   "predecessor": "beos",
   "desktopStyle": "beos",
   "colors": [
     {
       "hex": "#336698",
       "name": "Steel Blue",
-      "note": "The Haiku desktop blue.",
       "default": true
     }
   ],
@@ -97,8 +94,6 @@ A complete file, `src/content/os/haiku.json`:
 | `year` | yes | integer release year |
 | `added` | yes | `YYYY-MM-DD` — the day you write the file, not the day the PR merges. Never bump it later; it drives the "newest" sort. |
 | `family` | yes | groups the platform. Reuse an existing value unless genuinely new — the full set in use today is `Amiga`, `BeOS`, `BleskOS`, `Desktop Env.`, `GEM`, `Haiku`, `Mac OS`, `ReactOS`, `SerenityOS`, `Solaris`, `Windows`. |
-| `tagline` | yes | one evocative line |
-| `description` | yes | one or two sentences of real context |
 | `colors` | yes | at least one entry; **at most one** may be `"default": true` |
 | `slug` | no | defaults to the filename; lowercase letters, digits, hyphens |
 | `predecessor`, `successor` | no | slug refs to other entries. A dangling ref fails the build. |
@@ -107,12 +102,25 @@ A complete file, `src/content/os/haiku.json`:
 | `wikipedia` | no | URL. Must parse as a URL, so include the scheme. |
 | `project` | no | `{ "name", "url" }` for the project's own site. `url` must parse as a URL. |
 
+#### The retired prose fields
+
+`description` and the per-color `note` still exist in the schema, defaulted to `""`, and
+the UI still renders them when set. **No entry carries them any more** — the archive holds
+color data, not prose — so don't add them to a new file. Everything they used to say (why
+a color matters, where it came from, how a dither is weighted) belongs in your pull
+request instead, where the reviewer reads it.
+
+`tagline` is gone outright: out of the schema, out of `OsView`, out of the platform cards.
+Zod strips unknown keys instead of rejecting them, so a `"tagline"` left in a file parses
+without complaint and is then silently dropped — `src/content/os.test.ts` fails on one to
+keep that from going unnoticed.
+
 Two things the schema does **not** enforce, so match the worked example by hand:
 
 - **Key order.** Every file in the collection uses the order shown above — `name`,
-  `year`, `added`, `family`, `tagline`, `description`, the slug refs, `desktopStyle`,
-  `colors`, then `type`, `project`, `wikipedia`. JSON key order is meaningless to the
-  parser; keep it anyway so the files diff against each other.
+  `year`, `added`, `family`, the slug refs, `desktopStyle`, `colors`, then `type`,
+  `project`, `wikipedia`. JSON key order is meaningless to the parser; keep it anyway
+  so the files diff against each other.
 - **Reciprocal links.** `predecessor` and `successor` are two independent one-way
   fields. Writing `"predecessor": "beos"` in your file gives *your* page a link back to
   BeOS; it does **not** give BeOS a forward link to you. If you want both, add
@@ -121,7 +129,7 @@ Two things the schema does **not** enforce, so match the worked example by hand:
 
 ### Colors
 
-Each entry in `colors` is `{ hex, name, note?, default? }`:
+Each entry in `colors` is `{ hex, name, default? }`:
 
 - **`hex`** — lowercase `#rrggbb`. No shorthand, no named colors. The lowercase part is
   **build-checked**: the schema's pattern is `/^#[0-9a-f]{6}$/`, so `#6A859E` fails with
@@ -130,10 +138,6 @@ Each entry in `colors` is `{ hex, name, note?, default? }`:
   every use of a color without a case-insensitive flag.
 - **`name`** — a human name for the swatch. Where a family has light/dark variants,
   qualify it: `French Blue (Light)`, `Olive (Dark)`.
-- **`note`** — optional, terse: where the color is used, which theme it belongs to,
-  how confident you are. **Plain text, not Markdown** — it is rendered as a text node,
-  so backticks and `*` would show up literally. One or two sentences; there is no
-  length limit, but the existing notes stay under about three lines.
 - **`default`** — marks the out-of-the-box desktop color. **At most one per file.**
 
 Array order is display order: the `colors` array is listed top to bottom on
@@ -176,13 +180,13 @@ only in the parenthetical.
    linear, mean, → sRGB). This tracks perception better and is usually lighter and
    airier than the pixel average.
 3. **partial A** — one source color, named by its actual color (`Phosphor Green`,
-   `Stone Gray`), with a note giving its share of the pattern.
+   `Stone Gray`).
 4. **partial B** — the other source color, same treatment. When both sources are the
    same hue and a distinct color name would be a lie, qualify instead:
    `Gray (Light Partial)` / `Gray (Dark Partial)`, as Mac OS 8 does.
 
-Cross-reference the hexes in the notes: each blended entry names the other averaging
-method's result, and each partial names the pattern it fills.
+Nothing in the file records which entries belong to one cluster or how the pattern is
+weighted — the entry names carry the structure, and the rest goes in your pull request.
 
 #### Where `default` goes
 
@@ -193,7 +197,7 @@ gray dither is one wallpaper among many, and `default` sits on `French Blue (Lig
 
 #### Weighting
 
-If the pattern is not 1:1, weight **both** averages by area and say so in the note.
+If the pattern is not 1:1, weight **both** averages by area and state the ratio in the PR.
 Windows 1.0 is 75% green / 25% cyan — each 8×8 green block holds a 4×4 cyan patch.
 
 #### The collapse rule (three entries)
@@ -201,7 +205,7 @@ Windows 1.0 is 75% green / 25% cyan — each 8×8 green block holds a 4×4 cyan 
 When the two source colors are close together and/or near-neutral, both averages round to
 the same hex, and listing them both would put a duplicate swatch on the page. In that
 case collapse to a single **`<Name> (Dithered)`** entry plus the two partials — three
-entries — and note that both averaging methods agree at 8-bit precision.
+entries — and say in the PR that both averaging methods agree at 8-bit precision.
 
 Mac OS 8's gray dither is the canonical case: `#a5a5a5` + `#969696` at 1:1 gives a simple
 average of `157.5` and a linear-light average of `157.7`, both rounding to `#9e9e9e`.
@@ -415,7 +419,7 @@ Every other rule prints `path: message`, and the path includes the array index �
 do **not** have to hunt:
 
 ```
-tagline: Required
+family: Required
 colors.2.name: String must contain at least 1 character(s)
 project.url: Invalid url
 desktopStyle: Invalid enum value. Expected 'modern' | 'win9x' | … , received 'nextstep'
@@ -442,11 +446,11 @@ content work), and `e2e` (`npm run test:e2e`, Playwright against a real build). 
 `npm run build` locally clears the job that content changes normally break. The one way a
 platform file reaches `e2e` is through the assertions that count search results — for
 instance `e2e/smoke.spec.ts` types "amiga" and expects exactly two cards. The search
-match surface is wider than name and tagline: `PlatformControls.tsx:53-57` also matches
-`family`, `defaultHex`, and every alt color's `name` and `hex` — so a platform with
-`"family": "Amiga"` breaks that count assertion even if its own `name` and `tagline`
-never mention Amiga. If your platform shares a name, family, tagline, default hex, or any
-non-default color's name or hex with something already in the catalog, run
+match surface is wider than the name: `PlatformControls.tsx:52-55` also matches `family`,
+`defaultHex`, and every alt color's `name` and `hex` — so a platform with `"family":
+"Amiga"` breaks that count assertion even if its own `name` never mentions Amiga. If your
+platform shares a name, family, default hex, or any non-default color's name or hex with
+something already in the catalog, run
 `npm run test:e2e` before opening the PR.
 
 ## Open the pull request
@@ -495,5 +499,5 @@ Two consequences worth knowing before you contribute:
   deliberate; it is the reason for AGPL rather than GPL.
 - Color values themselves are facts and are not copyrightable. What the license covers is
   the code, the prose, and the compilation — the selection, arrangement, and annotation of
-  the archive. Do not paste descriptions or notes copied from another site: cite the source
-  and write the text yourself.
+  the archive. Do not paste text copied from another site: cite the source and write it
+  yourself.

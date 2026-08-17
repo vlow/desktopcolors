@@ -3,14 +3,12 @@
   "year": 2024,
   "added": "2026-07-20",
   "family": "Desktop Env.",
-  "tagline": "The modern, endlessly tweakable Linux desktop — anchored by Breeze blue.",
-  "description": "KDE Plasma 6 is the current generation of the KDE community's flagship desktop — a fast, deeply customizable Linux environment built on Qt 6 and Wayland. Its Breeze design language centers on a single bright accent blue, the color that tints highlights, links, and the default desktop across the Plasma 6 series.",
   "desktopStyle": "kde",
+  "description": "KDE Plasma still treats solid color desktops as first-class citizens. Yes, I'm looking at you, GNOME! However, there is just one default color. I feel like this is somewhat symptomatic for KDE - everything is configurable, but you have to provide the options. OK, at least there are options which don't require manually setting keys using gsettings... I mean - wtf, GNOME?",
   "colors": [
     {
       "hex": "#1d99f3",
       "name": "Breeze Blue",
-      "note": "The Breeze accent blue — KDE Plasma's default desktop and highlight color.",
       "default": true
     }
   ],

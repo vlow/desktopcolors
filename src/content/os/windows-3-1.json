@@ -3,11 +3,10 @@
   "year": 1992,
   "added": "2026-07-17",
   "family": "Windows",
-  "tagline": "The desktop that taught the world to point and click — with a scheme for every taste.",
-  "description": "Windows 3.1 (1992) brought a graphical desktop to the mass market and expanded the Control Panel's Color applet with a rich set of named schemes — from the tasteful Designer and Tweed to the infamous Hot Dog Stand. On top of a customizable palette, these schemes let users repaint the entire desktop, setting the visual habits Windows 95 would inherit.",
   "predecessor": "windows-3-0",
   "successor": "windows-95",
   "desktopStyle": "win31",
+  "description": "Windows 3.1 introduced two new colors and lots of new themes. The most iconic of them is probably \"Hot Dog Stand\", which uses bright yellow as background and bright red as foreground color. The default was still plain gray.",
   "colors": [
     {
       "hex": "#3f7c7c",
@@ -228,7 +227,6 @@
     {
       "hex": "#c0c0c0",
       "name": "Silver",
-      "note": "The Windows Default theme. Also used in the Monochrome and Rugby themes.",
       "default": true
     },
     {

@@ -3,14 +3,12 @@
   "year": 2016,
   "added": "2026-07-20",
   "family": "ReactOS",
-  "tagline": "The open-source Windows, rebuilt from nothing — classic desktop, real colors.",
-  "description": "ReactOS is a free and open-source operating system that reimplements Windows from the ground up, aiming for binary compatibility with Windows NT applications and drivers. Its desktop can wear several looks — the modern Mizu theme, the flat Lautus and Lunar styles, or the Classic Windows-style Display control panel with its full grid of color schemes. Each style-and-scheme pairing paints the desktop a different background color, on top of the same 48-swatch palette Windows users will recognize.",
   "desktopStyle": "win9x",
+  "description": "ReactOS aims to be an open source Windows alternative, binary compatible to the Windows NT Kernel. As such, it's no wonder most of the color choices are identical to the Microsoft role model. However, 0.4.x also comes with four distinctive colors, including the default blue.",
   "colors": [
     {
       "hex": "#21578d",
       "name": "Mizu Blue",
-      "note": "Default background. Style: Mizu · Scheme: Light.",
       "default": true
     },
     {

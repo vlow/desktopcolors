@@ -3,14 +3,12 @@
   "year": 2020,
   "added": "2026-07-20",
   "family": "BleskOS",
-  "tagline": "A tiny hobby OS with a boldly green desktop.",
-  "description": "BleskOS is a small open-source hobby operating system written from scratch in C for x86 PCs. Minimal and self-contained, it greets you with a plain, boldly green desktop.",
   "desktopStyle": "bleskos",
+  "description": "One of the lesser known alternative OSs, BleskOS aims to be the OS of choice for very old computer hardware. There is no choice of color. If you use it, you better like green.",
   "colors": [
     {
       "hex": "#00c000",
       "name": "Shamrock",
-      "note": "The default BleskOS desktop.",
       "default": true
     }
   ],

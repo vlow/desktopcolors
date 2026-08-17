@@ -3,61 +3,50 @@
   "year": 2000,
   "added": "2026-07-17",
   "family": "Windows",
-  "tagline": "The last of the 9x line — dressed in Windows Classic blue.",
-  "description": "Windows Me (Millennium Edition, 2000) was the final release built on the 9x kernel, aimed at home users with System Restore and multimedia tools. It wore the same Windows Classic desktop blue as Windows 2000, and kept the familiar grid of basic swatches and named schemes carried through the 9x era.",
   "predecessor": "windows-98",
   "desktopStyle": "win9x",
+  "description": "Probably one of the most disliked versions of Windows ever to be released (although Windows 8 might also be a heavy contender). The one good thing that came with it was the new Blue default color, introduced in Windows 2000 months before. I really can't think of anything else.",
   "colors": [
     {
       "hex": "#3a6ea5",
       "name": "Redmond Blue",
-      "note": "The default background — the Windows Classic and Windows Standard schemes.",
       "default": true
     },
     {
       "hex": "#420000",
-      "name": "Oxblood",
-      "note": "Used in the Brick theme."
+      "name": "Oxblood"
     },
     {
       "hex": "#a28d68",
-      "name": "Desert Sand",
-      "note": "Used in the Desert theme."
+      "name": "Desert Sand"
     },
     {
       "hex": "#2c4e47",
-      "name": "Marine Green",
-      "note": "Used in the Marine theme."
+      "name": "Marine Green"
     },
     {
       "hex": "#402840",
-      "name": "Plum",
-      "note": "Used in the Plum theme."
+      "name": "Plum"
     },
     {
       "hex": "#420042",
-      "name": "Byzantium",
-      "note": "Used in the Pumpkin theme."
+      "name": "Byzantium"
     },
     {
       "hex": "#000042",
-      "name": "Ink Blue",
-      "note": "Used in the Red, White, and Blue theme."
+      "name": "Ink Blue"
     },
     {
       "hex": "#414141",
-      "name": "Slate Gray",
-      "note": "Used in the Slate theme."
+      "name": "Slate Gray"
     },
     {
       "hex": "#213f21",
-      "name": "Spruce",
-      "note": "Used in the Spruce theme."
+      "name": "Spruce"
     },
     {
       "hex": "#00401d",
-      "name": "Bottle Green",
-      "note": "Used in the Wheat theme."
+      "name": "Bottle Green"
     },
     {
       "hex": "#ff8080",
@@ -201,8 +190,7 @@
     },
     {
       "hex": "#004040",
-      "name": "Deep Teal",
-      "note": "Used in the Teal theme."
+      "name": "Deep Teal"
     },
     {
       "hex": "#000080",
@@ -214,8 +202,7 @@
     },
     {
       "hex": "#400040",
-      "name": "Dark Purple",
-      "note": "Used in the Eggplant theme."
+      "name": "Dark Purple"
     },
     {
       "hex": "#400080",
@@ -223,8 +210,7 @@
     },
     {
       "hex": "#000000",
-      "name": "Black",
-      "note": "Used in the High Contrast Black, Lilac, Maple, Rainy Day, and Storm themes."
+      "name": "Black"
     },
     {
       "hex": "#808000",
@@ -236,8 +222,7 @@
     },
     {
       "hex": "#808080",
-      "name": "Gray",
-      "note": "Used in the Rose theme."
+      "name": "Gray"
     },
     {
       "hex": "#408080",
@@ -253,8 +238,7 @@
     },
     {
       "hex": "#ffffff",
-      "name": "White",
-      "note": "Used in the High Contrast White theme."
+      "name": "White"
     },
     {
       "hex": "#d4d0c8",

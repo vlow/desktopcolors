@@ -9,7 +9,6 @@ export interface PlatformItem {
   year: number;
   added: string;
   family: string;
-  tagline: string;
   defaultHex: string;
   colorCount: number;
   score: number;
@@ -52,7 +51,6 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
       list = items.filter((it) =>
         it.name.toLowerCase().includes(q) ||
         it.family.toLowerCase().includes(q) ||
-        it.tagline.toLowerCase().includes(q) ||
         it.defaultHex.includes(q) ||
         it.altColors.some((c) => c.name.toLowerCase().includes(q) || c.hex.includes(q)));
     }
@@ -189,7 +187,6 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
                   <span aria-hidden="true" style="font-size: 13px; color: var(--accent);">↗</span>
                 </div>
                 <div style="font: 400 12px var(--font-mono); color: var(--faint); margin-top: 4px;">{it.year} · {it.family}</div>
-                <div style="font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.45; min-height: 34px;">{it.tagline}</div>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px;">
                   <div style="display: flex; gap: 6px;">
                     {it.altColors.slice(0, 4).map((c) => (
@@ -209,7 +206,6 @@ export function PlatformControls({ items }: { items: PlatformItem[] }) {
               <div>
                 <a href={it.href} data-testid="os-name" style="font: 500 19px var(--font-ui);">{it.name} ↗</a>
                 <div style="font: 400 12px var(--font-mono); color: var(--faint); margin-top: 6px;">{it.year} · {it.family} · {it.colorCount} colors</div>
-                <div style="font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5;">{it.tagline}</div>
               </div>
               <div style="display: flex; gap: 14px; flex-wrap: wrap;">
                 {it.listColors.map((c) => (

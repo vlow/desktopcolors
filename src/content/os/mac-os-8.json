@@ -3,14 +3,12 @@
   "year": 1997,
   "added": "2026-07-17",
   "family": "Mac OS",
-  "tagline": "Platinum-era desktop patterns in soft, muted accents.",
-  "description": "Mac OS 8 (1997) introduced the Platinum appearance along with the Desktop Pictures control panel, which for the first time let a full photograph — not just a tiled pattern — fill the desktop. There was still no picker for a plain background color, so solid backgrounds shipped as pictures: a set of iconic solid-color wallpapers, including the default soft lavender-blue. These are their colors — quiet, desaturated greens, browns, and roses that sat comfortably behind Platinum's calm gray chrome.",
   "desktopStyle": "platinum",
+  "description": "Mac OS 8 should have been a completely new system (Project Copland), but due to technical difficulties, Apple settled for a re-brand of MacOS 7.7. However, Apple had created a new design system named \"Platinum\" for Copland, which allowed theming and came with a new default appearance, reminescent of the classic Macintosh System. This design system made its way into Mac OS 8, so it looked pretty different to Mac OS 7 while essentially being the same base system. For the desktop, Mac OS 8 offered to choose between Patterns and Pictures. In between the Patterns are a hand full of solid colors, including the somewhat iconic default \"French Blue (Light)\".",
   "colors": [
     {
       "hex": "#b3b3da",
       "name": "French Blue (Light)",
-      "note": "The default desktop — a soft lavender-blue.",
       "default": true
     },
     {
@@ -57,12 +55,12 @@
     {
       "hex": "#a5a5a5",
       "name": "Gray (Light Partial)",
-      "note": "One of the two grays the dithered gray desktop is mixed from — the lighter shade filling half the checkerboard."
+      "note": "One of the two grays the dithered gray desktop is mixed from - the lighter shade filling half the checkerboard."
     },
     {
       "hex": "#969696",
       "name": "Gray (Dark Partial)",
-      "note": "One of the two grays the dithered gray desktop is mixed from — the darker shade filling the other half."
+      "note": "One of the two grays the dithered gray desktop is mixed from - the darker shade filling the other half."
     }
   ],
   "type": "Proprietary",

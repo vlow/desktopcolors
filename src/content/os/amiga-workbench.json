@@ -3,31 +3,26 @@
   "year": 1985,
   "added": "2026-07-17",
   "family": "Amiga",
-  "tagline": "Four-color glory: the unmistakable Workbench palette.",
-  "description": "Workbench 1.0 through 1.3 (1985–1988) drove the Amiga's desktop with a famously economical four-color palette: a blue background, a near-black navy for text, white for highlights, and a warm orange accent. That blue-and-orange look is instantly recognizable to a generation of computer users.",
   "successor": "amiga-workbench-2-0",
   "desktopStyle": "amiga",
+  "description": "The Amiga Workbench had a very distinctive default palette: blue, black, white, and orange. Although the Amiga 1000 could render up to 4096 colors using the HAM mode, it could only render 2, 4, 8, 16, or 32 simultaneously. HAM mode was great for photos, but it wasn't a good fit for moving objects and using more colors also meant using more RAM.",
   "colors": [
     {
       "hex": "#0055aa",
       "name": "Workbench Blue",
-      "note": "The iconic Workbench 1.x background.",
       "default": true
     },
     {
       "hex": "#000022",
-      "name": "Midnight",
-      "note": "Text and detail."
+      "name": "Midnight"
     },
     {
       "hex": "#ffffff",
-      "name": "White",
-      "note": "Highlights and text."
+      "name": "White"
     },
     {
       "hex": "#ff8800",
-      "name": "Orange",
-      "note": "Signature accent."
+      "name": "Orange"
     }
   ],
   "type": "Proprietary",
