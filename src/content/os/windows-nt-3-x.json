@@ -5,7 +5,7 @@
   "family": "Windows",
   "successor": "windows-nt-4-0",
   "desktopStyle": "win31",
-  "description": "Windows NT 3.x was actually the first version of Windows to boot into the legendary teal background. Since it wasn't nearly as popular as Windows 95 or the direct NT-line successor 4.0, most people associate the color with one of those systems. However, since Windows NT 3.x most commonly used 16 colors, the teal was a bit lighter than the TrueColor version most commonly seen in Windows 95.",
+  "description": "Windows NT 3.x was actually the first version of Windows to boot into the legendary teal background. Since it wasn't nearly as popular as Windows 95 or the direct NT-line successor 4.0, most people associate the color with one of those systems. However, since Windows NT 3.x most commonly used 16 colors, the teal was a bit lighter than the 256 color version most commonly seen in Windows 95.",
   "colors": [
     {
       "hex": "#3f7c7c",
