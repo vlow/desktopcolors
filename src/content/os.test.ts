@@ -52,9 +52,9 @@ describe("os content files", () => {
     }
   });
 
-  // description and the per-color note are prose fields no entry carries any more.
-  // They stay in the schema (defaulted to "" by config.ts) so an entry *may* set
-  // them, but an entry that omits both has to parse — which every real file does.
+  // description and the per-color note are optional prose fields (defaulted to "" by
+  // config.ts). Most entries set them — note carries which built-in theme/style ships
+  // the color — but both stay optional, so an entry that omits them has to parse.
   it("accepts an entry with no description and no colour note", () => {
     expect(osSchema.safeParse({
       name: "X", year: 2000, added: "2000-01-01", family: "F",

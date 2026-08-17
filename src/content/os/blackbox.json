@@ -1,0 +1,67 @@
+{
+  "name": "Blackbox",
+  "year": 1997,
+  "added": "2026-08-17",
+  "family": "Desktop Env.",
+  "desktopStyle": "blackbox",
+  "description": "Blackbox is a fast and minimal window manager for Unix-like OSs. A whole range of *box WMs started as Blackbox forks (e.g. Fluxbox, Openbox, Hackedbox). It comes with a set of styles which all have their own very tasteful and slightly muted background colors.",
+  "colors": [
+    {
+      "hex": "#aaaaaa",
+      "name": "Fog Gray",
+      "note": "Used in the Gray style.",
+      "default": true
+    },
+    {
+      "hex": "#7790aa",
+      "name": "Dusty Blue",
+      "note": "Used in the Blue style."
+    },
+    {
+      "hex": "#3a404b",
+      "name": "Deep Slate",
+      "note": "Used in the Cthulhain style."
+    },
+    {
+      "hex": "#444438",
+      "name": "Drab Olive",
+      "note": "Used in the Flux style."
+    },
+    {
+      "hex": "#77aa77",
+      "name": "Fern Green",
+      "note": "Used in the Green style."
+    },
+    {
+      "hex": "#708090",
+      "name": "Storm Gray",
+      "note": "Used in the Minimal style."
+    },
+    {
+      "hex": "#333333",
+      "name": "Soot Gray",
+      "note": "Used in the Nyz and Twice styles."
+    },
+    {
+      "hex": "#9077aa",
+      "name": "Heather Purple",
+      "note": "Used in the Purple style."
+    },
+    {
+      "hex": "#aa5555",
+      "name": "Clay Red",
+      "note": "Used in the Red style."
+    },
+    {
+      "hex": "#444444",
+      "name": "Basalt",
+      "note": "Used in the Shade style."
+    }
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "blackboxwm",
+    "url": "https://github.com/bbidulock/blackboxwm"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/Blackbox"
+}

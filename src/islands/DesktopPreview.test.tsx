@@ -43,6 +43,7 @@ describe("DesktopPreview", () => {
     expect(chromeFor("cde")).toEqual(["chrome-deskicons", "chrome-cdewindow", "chrome-frontpanel"]);
     expect(chromeFor("gem")).toEqual(["chrome-menubar", "chrome-deskicons", "chrome-gemwindow"]);
     expect(chromeFor("bleskos")).toEqual(["chrome-bleskos"]);
+    expect(chromeFor("blackbox")).toEqual(["chrome-rootmenu", "chrome-workspacebar"]);
     expect(chromeFor("generic")).toEqual(["chrome-deskicons", "chrome-dock"]);
   });
 

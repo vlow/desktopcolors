@@ -373,6 +373,86 @@ const Bleskos = ({ onColor }: { onColor: string }) => {
   );
 };
 
+// Blackbox has no desktop icons and no edge-anchored panel: the whole desktop is
+// a bare root window. Its only chrome is the titled root menu — opened by
+// clicking the root window, so it floats mid-screen rather than pinned to an
+// edge — with a cascading submenu, plus a short workspace toolbar hovering above
+// the bottom edge. RootMenu and WorkspaceBar are the two primitives for that.
+const MENU_ITEMS: { label: string; arrow?: boolean; active?: boolean }[] = [
+  { label: "xterm" },
+  { label: "Editor" },
+  { label: "Mail" },
+  { label: "Graphics", arrow: true, active: true },
+  { label: "Styles", arrow: true },
+  { label: "Workspaces", arrow: true },
+  { label: "Restart" },
+  { label: "Exit" },
+];
+
+const MenuTitle = ({ S, text }: { S: Surfaces; text: string }) => (
+  <div style={{ height: cu(3.5), background: S.soft, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <span style={{ font: `700 ${cu(2.1)} var(--font-ui)`, color: S.ink, opacity: 0.92, letterSpacing: cu(0.05) }}>{text}</span>
+  </div>
+);
+
+const MenuItem = ({ S, label, arrow, active }: { S: Surfaces; label: string; arrow?: boolean; active?: boolean }) => (
+  <div style={{ height: cu(2.8), display: "flex", alignItems: "center", gap: cu(1), padding: `0 ${cu(1.4)}`, background: active ? S.soft : "transparent" }}>
+    <span style={{ flex: 1, font: `400 ${cu(2)} var(--font-ui)`, color: S.ink, opacity: active ? 1 : 0.86, whiteSpace: "nowrap" }}>{label}</span>
+    {arrow ? <span style={{ width: 0, height: 0, borderTop: `${cu(0.8)} solid transparent`, borderBottom: `${cu(0.8)} solid transparent`, borderLeft: `${cu(1)} solid ${S.ink}`, opacity: 0.7 }} /> : null}
+  </div>
+);
+
+const RootMenu = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  const panel = { background: S.win, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}, 0 ${cu(2.4)} ${cu(6)} rgba(0,0,0,0.18)`, borderRadius: cu(1), overflow: "hidden" };
+  // Centred on both axes, then nudged up and left of dead centre: the submenu
+  // cascades to the right, so the pair reads as centred rather than the parent
+  // menu alone, and the -58% lift keeps the menu clear of the workspace bar.
+  // That clearance is what caps the item count: the preview box is shortest, in
+  // cu terms, at the widest layout (~43cu at the 1400px page cap, where cu stops
+  // scaling at 9px), and the menu plus bar have to fit inside that.
+  return (
+    <div data-testid="chrome-rootmenu" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-56%, -58%)", display: "flex", alignItems: "flex-start" }}>
+      <div style={{ width: cu(27), ...panel }}>
+        <MenuTitle S={S} text="Blackbox" />
+        <div style={{ padding: `${cu(0.8)} 0` }}>
+          {MENU_ITEMS.map((it, i) => <MenuItem key={i} S={S} label={it.label} arrow={it.arrow} active={it.active} />)}
+        </div>
+      </div>
+      {/* 12.7 = title (3.5) + list padding (0.8) + the three items above it
+          (3 × 2.8), so the submenu's top edge lines up with the highlighted
+          "Graphics" row it cascades from. */}
+      <div style={{ width: cu(22), marginTop: cu(12.7), marginLeft: `calc(${cu(0.6)} * -1)`, ...panel }}>
+        <MenuTitle S={S} text="Graphics" />
+        <div style={{ padding: `${cu(0.8)} 0` }}>
+          {["Image Editor", "Vector Tool", "Screen Grab"].map((l, i) => <MenuItem key={i} S={S} label={l} />)}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const WorkspaceBar = ({ onColor }: { onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  // The workspace/iconbar arrows: a left-pointing and a right-pointing triangle.
+  const Arrows = () => (
+    <div style={{ display: "flex", alignItems: "center", gap: cu(1.4) }}>
+      {[0, 1].map((i) => (
+        <span key={i} style={{ width: 0, height: 0, borderTop: `${cu(0.85)} solid transparent`, borderBottom: `${cu(0.85)} solid transparent`, [i ? "borderLeft" : "borderRight"]: `${cu(1.1)} solid ${S.ink}`, opacity: 0.65 }} />
+      ))}
+    </div>
+  );
+  return (
+    <div data-testid="chrome-workspacebar" style={{ position: "absolute", left: "50%", bottom: cu(3), transform: "translateX(-50%)", width: cu(62), height: cu(4.8), borderRadius: cu(1), background: S.win, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}, 0 ${cu(1.6)} ${cu(4)} rgba(0,0,0,0.16)`, display: "flex", alignItems: "center", gap: cu(2), padding: `0 ${cu(1.8)}` }}>
+      <span style={{ font: `500 ${cu(2.2)} var(--font-ui)`, color: S.ink, opacity: 0.9, whiteSpace: "nowrap" }}>Workspace 1</span>
+      <Arrows />
+      <span style={{ flex: 1, height: cu(1.2), borderRadius: cu(0.6), background: S.panel }} />
+      <Arrows />
+      <span style={{ font: `500 ${cu(2.1)} var(--font-mono)`, color: S.ink, opacity: 0.9 }}>12:11 PM</span>
+    </div>
+  );
+};
+
 function renderPart(part: ChromePart, onColor: string, key: number): ComponentChildren {
   switch (part.part) {
     case "deskIcons": return <DeskIcons key={key} side={part.side} anchor={part.anchor} icons={part.icons} onColor={onColor} />;
@@ -388,6 +468,8 @@ function renderPart(part: ChromePart, onColor: string, key: number): ComponentCh
     case "frontPanel": return <FrontPanel key={key} onColor={onColor} />;
     case "beosTab": return <BeosTab key={key} onColor={onColor} />;
     case "bleskos": return <Bleskos key={key} onColor={onColor} />;
+    case "rootMenu": return <RootMenu key={key} onColor={onColor} />;
+    case "workspaceBar": return <WorkspaceBar key={key} onColor={onColor} />;
   }
 }
 
