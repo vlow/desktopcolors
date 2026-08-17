@@ -64,6 +64,8 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `frontPanel` | — | CDE front panel |
 | `beosTab` | — | BeOS deskbar tab (top-right) |
 | `bleskos` | — | BleskOS full-screen, windowless program switcher (fills the preview) |
+| `rootMenu` | — | Blackbox titled root menu + cascading submenu, floating mid-screen |
+| `workspaceBar` | — | Blackbox workspace toolbar, floating above the bottom edge |
 
 `body` (`WindowBody`) is one of:
 - `{ kind: "gridIcons", icons: IconKind[], cols }` — a grid of line-art icons
@@ -86,6 +88,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `cde` | icon + Motif window + front panel | CDE, Solaris |
 | `gem` | menu bar + icons + GEM window | Digital Research GEM (FreeGEM) |
 | `bleskos` | full-screen program switcher (no window/taskbar/dock) | BleskOS |
+| `blackbox` | floating root menu + cascading submenu + workspace bar (no icons, no docked panel) | Blackbox (menu-only WMs) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 `modern` is the schema default (`desktopStyle` is optional) and the safety fallback: it
@@ -112,7 +115,7 @@ Add it to `DESKTOP_STYLES` in **`src/lib/desktopStyle.ts`** — the only place t
 declared:
 
 ```ts
-export const DESKTOP_STYLES = ["modern","win9x","win31","platinum","beos","amiga","kde","cde","gem","bleskos","generic","nextstep"] as const;
+export const DESKTOP_STYLES = ["modern","win9x","win31","platinum","beos","amiga","kde","cde","gem","bleskos","blackbox","generic","nextstep"] as const;
 ```
 
 ### 2. Add its chrome spec
@@ -160,6 +163,14 @@ Chrome sits on an unknown wallpaper color — it must stay legible on **any** ba
 - **Absolute-positioned, pinned to an edge**; size in `cu(n)` = `calc(min(1cqw,9px)*n)`
   so chrome scales with the preview box but caps on large screens. The preview root sets
   `container-type: inline-size`.
+- **Mind the height budget.** `cu` is derived from the container's *width*, so tall chrome
+  can outgrow the box. The inline preview on `/os/<slug>` is at its shortest in `cu` terms
+  when the page is **widest**: at the 1400px `--page-max` cap the box is ~798×342px, `cu`
+  hits its 9px ceiling at 7.98px, and only **~43cu of height** are available. (Narrower
+  viewports give *more* — 51cu at 1280px, 86cu at 820px — and the fullscreen viewer gives
+  ~110cu.) Anything vertically ambitious must fit that 43cu worst case together with
+  whatever else the style draws; the `blackbox` root menu is capped at eight items for
+  exactly this reason. Check it at a wide viewport, not just your usual window.
 - **Fonts:** `var(--font-ui)` / `var(--font-mono)`; keep marks schematic.
 - **`<div>`/`<svg>` only** — no images.
 - **`data-testid="chrome-<name>"`** on every primitive root.

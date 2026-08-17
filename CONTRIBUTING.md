@@ -102,13 +102,30 @@ A complete file, `src/content/os/haiku.json`:
 | `wikipedia` | no | URL. Must parse as a URL, so include the scheme. |
 | `project` | no | `{ "name", "url" }` for the project's own site. `url` must parse as a URL. |
 
-#### The retired prose fields
+#### The prose fields
 
-`description` and the per-color `note` still exist in the schema, defaulted to `""`, and
-the UI still renders them when set. **No entry carries them any more** — the archive holds
-color data, not prose — so don't add them to a new file. Everything they used to say (why
-a color matters, where it came from, how a dither is weighted) belongs in your pull
-request instead, where the reviewer reads it.
+`description` (entry-level) and `note` (per-color) are optional, default to `""`, and the
+UI renders them when set. Both are in active use — nearly every entry carries a
+`description`, and roughly two thirds carry per-color notes.
+
+**`note` records where the color comes from inside the OS**, and the established
+convention is **which built-in theme or style shipped it**:
+
+```json
+{ "hex": "#3f7c7c", "name": "Muted Teal", "note": "Used in the Designer theme." }
+```
+
+- Use the platform's **own word** for the concept — Windows NT ships *themes*
+  (`src/content/os/windows-nt-3-x.json`), Blackbox ships *styles*
+  (`src/content/os/blackbox.json`).
+- If one color serves several themes, name them all in **one** note
+  (`"Used in the Nyz and Twice styles."`) rather than repeating the swatch — the site
+  keys colors by hex, and a duplicate hex in one file renders as a duplicate swatch.
+- A color that is just part of the palette and not any theme's default takes **no**
+  note. Windows NT 3.x carries notes on 16 of its 53 colors for exactly this reason.
+- Keep it to a sentence. Reasoning that justifies the *edit* — why you chose a swatch
+  name, how you weighted a dither, what source you read — goes in your pull request,
+  where the reviewer reads it, not in the file.
 
 `tagline` is gone outright: out of the schema, out of `OsView`, out of the platform cards.
 Zod strips unknown keys instead of rejecting them, so a `"tagline"` left in a file parses
@@ -129,15 +146,18 @@ Two things the schema does **not** enforce, so match the worked example by hand:
 
 ### Colors
 
-Each entry in `colors` is `{ hex, name, default? }`:
+Each entry in `colors` is `{ hex, name, note?, default? }`:
 
 - **`hex`** — lowercase `#rrggbb`. No shorthand, no named colors. The lowercase part is
   **build-checked**: the schema's pattern is `/^#[0-9a-f]{6}$/`, so `#6A859E` fails with
   `must be lowercase #rrggbb`. This keeps the source
   files single-case and therefore diff-/greppable: `grep -r '#ae8080' src/content/os` finds
   every use of a color without a case-insensitive flag.
-- **`name`** — a human name for the swatch. Where a family has light/dark variants,
-  qualify it: `French Blue (Light)`, `Olive (Dark)`.
+- **`name`** — a human name for the **color**. Where a family has light/dark variants,
+  qualify it: `French Blue (Light)`, `Olive (Dark)`. Don't qualify it with the theme or
+  style that ships the color — that goes in `note`.
+- **`note`** — optional; which built-in theme or style uses this color. See
+  [The prose fields](#the-prose-fields).
 - **`default`** — marks the out-of-the-box desktop color. **At most one per file.**
 
 Array order is display order: the `colors` array is listed top to bottom on
@@ -255,7 +275,7 @@ Which chrome a preview draws is chosen by the platform's `desktopStyle`. That fi
 affects **only the on-screen preview** — the downloadable wallpaper is always a plain
 solid-color PNG and never reads the style.
 
-Eleven styles exist. Check for a fit here before building anything:
+Twelve styles exist. Check for a fit here before building anything:
 
 | `desktopStyle` | chrome | modeled on |
 |----------------|--------|------------|
@@ -269,6 +289,7 @@ Eleven styles exist. Check for a fit here before building anything:
 | `cde` | icon + Motif window + front panel | CDE, Solaris |
 | `gem` | menu bar + icons + GEM window | Digital Research GEM (FreeGEM) |
 | `bleskos` | full-screen program switcher | BleskOS |
+| `blackbox` | floating root menu + cascading submenu + workspace bar | Blackbox (menu-only WMs) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 ### Reuse an existing style
@@ -289,7 +310,7 @@ Say the new style is `nextstep`. Three edits.
 declared:
 
 ```ts
-export const DESKTOP_STYLES = ["modern", "win9x", "win31", "platinum", "beos", "amiga", "kde", "cde", "gem", "bleskos", "generic", "nextstep"] as const;
+export const DESKTOP_STYLES = ["modern", "win9x", "win31", "platinum", "beos", "amiga", "kde", "cde", "gem", "bleskos", "blackbox", "generic", "nextstep"] as const;
 ```
 
 **2. Add the spec** to `CHROME_SPECS` in `src/lib/chromeSpec.ts`:
@@ -340,6 +361,8 @@ A spec is an ordered array of these parts, drawn in order:
 | `frontPanel` | — | CDE front panel |
 | `beosTab` | — | BeOS deskbar tab (top-right) |
 | `bleskos` | — | BleskOS full-screen program switcher |
+| `rootMenu` | — | Blackbox titled root menu + cascading submenu, floating mid-screen |
+| `workspaceBar` | — | Blackbox workspace toolbar, floating above the bottom edge |
 
 A window's `body` is one of:
 
@@ -370,7 +393,10 @@ Four moving parts:
 4. The authoring conventions: chrome sits on an unknown wallpaper, so derive translucent
    surfaces from `chromeSurfaces(onColor)` rather than picking opaque colors, size in
    `cu()` units so the chrome scales with the preview box, use `<div>` and `<svg>` only,
-   and put `data-testid="chrome-<name>"` on the primitive's root.
+   and put `data-testid="chrome-<name>"` on the primitive's root. Watch the height
+   budget: `cu` derives from the container's *width*, so the inline preview is at its
+   shortest — only about **43cu** — when the page is at its **widest**. Tall chrome that
+   looks fine in a narrow window can collide at 1400px.
 
 For the full detail — the data flow, every convention, and the checklist — see
 [docs/adding-a-preview-style.md](docs/adding-a-preview-style.md).

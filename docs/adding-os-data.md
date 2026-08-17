@@ -49,13 +49,29 @@ This is the full guide (for humans and LLM agents). For the quick version see
 | `project` | — | `{ "name", "url" }` for the OS's own site (open-source projects). |
 | `colors` | ✅ | ≥1 entry; **≤1** may be `"default": true`. |
 
-### The retired prose fields
+### The prose fields
 
-`description` and the per-color `note` still exist in the schema, defaulted to `""`, and
-the UI still renders them when set. **No entry carries them any more** — the archive holds
-color data, not prose — so don't add them to a new file. Everything they used to say (why
-a color matters, where it came from, how a dither is weighted) belongs in the pull request
-instead, where the reviewer reads it.
+`description` (entry-level) and `note` (per-color) are optional, default to `""`, and the
+UI renders them when set. Both are in active use — nearly every entry carries a
+`description`, and roughly two thirds carry per-color notes.
+
+**`note` records where the color comes from inside the OS**, and the established
+convention is **which built-in theme or style shipped it**:
+
+```json
+{ "hex": "#3f7c7c", "name": "Muted Teal", "note": "Used in the Designer theme." }
+```
+
+- Use the platform's **own word** for the concept — Windows NT ships *themes*
+  (`windows-nt-3-x.json`), Blackbox ships *styles* (`blackbox.json`).
+- If one color serves several themes, name them all in **one** note
+  (`"Used in the Nyz and Twice styles."`) rather than repeating the swatch — the site
+  keys colors by hex, and a duplicate hex in one file renders as a duplicate swatch.
+- A color that is just part of the palette and not any theme's default takes **no**
+  note. Windows NT 3.x carries notes on 16 of its 53 colors for exactly this reason.
+- Keep it to a sentence. Reasoning that justifies the *edit* — why you chose a swatch
+  name, how you weighted a dither, what source you read — goes in the pull request,
+  where the reviewer reads it, not in the file.
 
 `tagline` is gone outright: out of the schema, out of `OsView`, out of the platform cards.
 Zod strips unknown keys instead of rejecting them, so a `"tagline"` left in a file parses
@@ -64,15 +80,18 @@ keep that from going unnoticed.
 
 ## Colors
 
-Each color is `{ hex, name, default? }`:
+Each color is `{ hex, name, note?, default? }`:
 
 - **`hex`** — `#rrggbb`, lowercase. Convert from RGB by hand or with the snippet below.
   Lowercase is **build-checked** (`/^#[0-9a-f]{6}$/` in `src/content/config.ts`, mirrored
   in `src/content/os.test.ts`): uppercase is harmless at runtime, since every hex is
   lowercased in `toColorView`/`mergeColorsByHex` before it reaches a view, but rejecting
   it keeps the content files single-case and greppable by color code.
-- **`name`** — a human name for the swatch. For a family with light/dark variants,
-  qualify it: `French Blue (Light)`, `Olive (Dark)`.
+- **`name`** — a human name for the **color**. For a family with light/dark variants,
+  qualify it: `French Blue (Light)`, `Olive (Dark)`. Don't qualify it with the theme or
+  style that ships the color — that goes in `note`.
+- **`note`** — optional; which built-in theme or style uses this color. See
+  [the prose fields](#the-prose-fields).
 - **`default`** — mark the OS's out-of-the-box desktop color. **At most one** per file.
 
 RGB → hex helper:
