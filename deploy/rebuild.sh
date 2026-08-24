@@ -6,6 +6,11 @@
 # and flips the `current` symlink nginx serves. Safe to re-run, and safe to run
 # while another copy is running — the second exits 0 having done nothing.
 #
+# Every run also asserts the counter is actually serving (step 3), and exits
+# nonzero when it isn't — so `systemctl restart` reporting success over a
+# service that cannot start surfaces in $MARKER within the hour, instead of
+# never.
+#
 # Rollback is `git revert` on the release branch, never a local operation: this
 # script unconditionally rebuilds origin/$BRANCH, so a rollback held only in
 # server-side state would be silently undone at the next hourly run.
@@ -26,7 +31,23 @@ COUNTER_BIN="${COUNTER_BIN:-$REPO_DIR/counter/counter}"
 # modernc.org/sqlite and its dependencies (~360 MB) twice.
 GOCACHE="${GOCACHE:-$REPO_DIR/.cache/go-build}"
 GOMODCACHE="${GOMODCACHE:-$REPO_DIR/.cache/go-mod}"
-export GOCACHE GOMODCACHE
+# Keep Go's *work* directory under $REPO_DIR too, and not for cache reasons:
+# `go build -o` does not write the binary in place. It links into a work
+# directory made with os.MkdirTemp($GOTMPDIR, ...) — falling back to $TMPDIR,
+# i.e. /tmp — and then *renames* the result onto the -o path (cmd/go's
+# moveOrCopyFile prefers os.Rename, copying only when the source sits inside
+# $GOCACHE, on Windows, or when the destination directory is setgid). A rename
+# carries the source inode's SELinux label with it, so with the default /tmp
+# the freshly built binary arrives in /opt still labelled user_tmp_t —
+# clobbering the correctly labelled mktemp file below in the process. systemd
+# is not permitted to execute user_tmp_t, so counter.service then dies at
+# every single start with status=203/EXEC. Pointing GOTMPDIR at $REPO_DIR
+# makes the rename source inherit /opt's usr_t by the same type-transition
+# rule that would have applied to the temp file, so the installed binary is
+# correctly labelled by construction. This is the only fix available here: a
+# per-run `restorecon` needs privileges this script deliberately does not have.
+GOTMPDIR="${GOTMPDIR:-$REPO_DIR/.cache/tmp}"
+export GOCACHE GOMODCACHE GOTMPDIR
 BRANCH="${BRANCH:-release}"
 KEEP="${KEEP:-3}"
 # A non-numeric KEEP (empty, "abc", ...) would make $((KEEP + 1)) abort the
@@ -42,6 +63,10 @@ esac
 LOCKFILE="${LOCKFILE:-$STATE_DIR/rebuild.lock}"
 MARKER="${MARKER:-$STATE_DIR/LAST_FAILURE}"
 RESTART_CMD="${RESTART_CMD:-sudo /usr/bin/systemctl restart counter.service}"
+# Must agree with counter.service's --addr, which hardcodes 127.0.0.1:8787.
+# Change one, change the other.
+HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8787/healthz}"
+HEALTH_ATTEMPTS="${HEALTH_ATTEMPTS:-15}"
 LOCK_HASH_FILE="$REPO_DIR/.deploy-lock-hash"
 
 # GNU coreutils on the host, BSD on a developer's macOS. Kept portable so
@@ -52,6 +77,28 @@ hash_file() {
   else
     shasum -a 256 "$1" | cut -d' ' -f1
   fi
+}
+
+# Does the counter actually answer? Polls rather than sleeping a fixed amount:
+# a plain restart binds in well under a second, but one that has to wait out
+# the unit's RestartSec, or a cold sqlite open on a large store, can take
+# longer, and a single immediate probe would report a false failure. Bounded,
+# so a genuinely dead counter is reported rather than hanging the run.
+counter_healthy() {
+  local i
+  for ((i = 1; i <= HEALTH_ATTEMPTS; i++)); do
+    if curl -fsS --max-time 2 -o /dev/null "$HEALTH_URL"; then
+      return 0
+    fi
+    # Spelled as a full `if` rather than `[ ... ] && sleep 1`, which would
+    # leave the loop body's status at 1 on the final pass and make the
+    # function's behaviour depend on `set -e` being suspended by the caller's
+    # condition context.
+    if [ "$i" -lt "$HEALTH_ATTEMPTS" ]; then
+      sleep 1
+    fi
+  done
+  return 1
 }
 
 cd "$REPO_DIR"
@@ -80,6 +127,12 @@ skip_marker=0
 # below. This is deliberately a separate flag from skip_marker: holding the
 # lock and being a signal death are independent facts about a run.
 held_lock=0
+# Set when step 3 finds the counter already dead without this run having
+# changed its binary. Such a run still publishes — a counter outage that
+# predates it must not block an unrelated content deploy — but it must not
+# report success either, so it exits nonzero at the very end instead; see the
+# end of step 3 and the final check below.
+counter_unhealthy=0
 
 # Installed before the lock so it covers the whole run, not just the publish
 # step further down: a run that held the lock must sweep its staging
@@ -172,19 +225,24 @@ else
   exit "$flock_status"
 fi
 
-# Preflight: git, npm and go must all be resolvable on PATH before anything
-# below tries to use them. Both ways this script runs — the
+# Preflight: git, npm, go and curl must all be resolvable on PATH before
+# anything below tries to use them. Both ways this script runs — the
 # counter-rebuild.service unit (systemd's default service PATH has no
 # /usr/local/go/bin) and the documented manual `sudo -u desktopcolors bash
 # ...` invocation in SETUP.md — are non-login shells, so
 # /etc/profile.d/go.sh, which only login shells source, never runs and `go`
 # can resolve nowhere. Without this check that's a bare exit 127 from deep
-# inside the build; check all three up front instead, so a missing tool
+# inside the build; check all four up front instead, so a missing tool
 # produces one message naming it. The fix is not a /usr/local/bin/go symlink
 # — AlmaLinux 8's stock sudo secure_path has no /usr/local/bin on it, unlike
 # Debian's — but the scoped secure_path override in deploy/desktopcolors.sudoers;
 # see deploy/SETUP.md § 1 and § 5 for the full setup.
-for tool in git npm go; do
+#
+# curl is here for the counter health probe in step 3. It is checked up front
+# with the rest rather than guarded at its call site, so a host without it
+# fails with the same named message instead of silently skipping the one
+# assertion that proves the deployed counter actually serves.
+for tool in git npm go curl; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     log "required tool '$tool' not found on PATH; see deploy/SETUP.md"
     exit 1
@@ -215,12 +273,35 @@ fi
 # Without this, a Go fix pushed to the deploy branch would report a successful
 # deploy while the service kept running the old binary, with nothing reporting
 # the discrepancy.
+#
+# $GOTMPDIR has to exist before `go build` runs — go calls os.MkdirTemp inside
+# it and aborts with "creating work dir" if it is missing, unlike GOCACHE and
+# GOMODCACHE, which it creates itself. See the GOTMPDIR comment at the top for
+# why the work directory must not be left to default to /tmp.
+mkdir -p "$GOTMPDIR"
 tmpbin="$(mktemp "$REPO_DIR/counter/.counter.XXXXXX")"
 log "building counter"
 (cd counter && CGO_ENABLED=0 go build -o "$tmpbin" .)
 if cmp -s "$tmpbin" "$COUNTER_BIN"; then
   log "counter unchanged"
   rm -f "$tmpbin"
+  # `cmp` compares bytes, so it says nothing about whether the *installed*
+  # binary can still run. A host-side problem — a wrong SELinux label on it, a
+  # full disk, a corrupt store — leaves the compiled bytes identical, takes
+  # this branch, skips the restart, and used to end here with nothing having
+  # looked at the service at all. That is exactly how a status=203/EXEC outage
+  # went unnoticed: every hourly run reported a clean publish over a counter
+  # that had never once started.
+  #
+  # Don't fail here, though. A counter outage that predates this run must not
+  # block an unrelated content deploy, so record it, publish as normal, and
+  # fail at the very end — which still writes $MARKER (SETUP.md § 11).
+  if counter_healthy; then
+    log "counter healthy at $HEALTH_URL"
+  else
+    log "counter is not answering at $HEALTH_URL; publishing anyway, then failing this run"
+    counter_unhealthy=1
+  fi
 else
   chmod 0755 "$tmpbin"
   # `mv`, never `install`/`cp`: Linux returns ETXTBSY when writing to the binary
@@ -232,6 +313,18 @@ else
   log "counter changed; restarting service"
   read -ra restart_argv <<< "$RESTART_CMD"
   "${restart_argv[@]}"
+  # Prove the restart produced a *serving* counter instead of trusting
+  # systemctl's exit status, which only reports that systemd was asked to
+  # start the unit: for a Type=simple service it returns 0 well before — and
+  # regardless of whether — the binary can be executed at all (203/EXEC) or
+  # the store opens. This is the one check standing between a broken counter
+  # and a release published as if it were healthy, so it fails loudly and
+  # *before* the publish, in the same spirit as the empty-dist guard below.
+  if ! counter_healthy; then
+    log "counter did not come up at $HEALTH_URL after restart; refusing to publish"
+    exit 1
+  fi
+  log "counter healthy at $HEALTH_URL"
 fi
 
 # 4. Dump current popularity scores for the build to bake in. A missing DB is
@@ -351,8 +444,22 @@ done < <(printf '%s' "$release_dirs" | sort -r | tail -n "+$((KEEP + 1))")
 # The publish above already succeeded; a stray rm -rf failure here (e.g.
 # EACCES) must not turn a live, correctly published release into a nonzero
 # script exit — a later task keys a failure marker off this exit status, and
-# that alarm must mean the publish failed, not that a prune hiccupped.
+# that alarm must mean this run failed to deliver a working deploy, not that a
+# prune hiccupped. A dead counter does qualify, which is why the check below
+# is allowed to fail the run and this one is not.
 if [ "$prune_failed" -ne 0 ]; then
   log "one or more releases failed to prune; publish already succeeded, not failing the run"
 fi
 log "done"
+
+# Deliberately the very last thing the script does. Step 3 found the counter
+# already down without this run having changed its binary, so the publish was
+# allowed to complete — content deploys must not be held hostage to a counter
+# outage they had no part in — but the run must not report success while the
+# service answering /api/event is dead. Failing here is what puts it in
+# $MARKER and in front of whoever reads SETUP.md § 11; silence is precisely
+# what kept the original outage invisible.
+if [ "$counter_unhealthy" -ne 0 ]; then
+  log "publish succeeded, but the counter is not serving at $HEALTH_URL"
+  exit 1
+fi

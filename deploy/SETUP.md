@@ -65,11 +65,12 @@ either as "redundant" with the other:
   `Defaults>desktopcolors secure_path=...` override that applies only when
   running as the `desktopcolors` user and puts `/usr/local/go/bin` on it.
 
-`rebuild.sh` also preflight-checks `git`, `npm` and `go` on `PATH` before doing
-anything else, so a still-missing tool fails with a named error and a
-`LAST_FAILURE` marker (§ 11) instead of a bare, unexplained exit 127 — but
-that check is a diagnostic, not a substitute for the `secure_path` override
-installed in § 5.
+`rebuild.sh` also preflight-checks `git`, `npm`, `go` and `curl` on `PATH`
+before doing anything else, so a still-missing tool fails with a named error
+and a `LAST_FAILURE` marker (§ 11) instead of a bare, unexplained exit 127 —
+but that check is a diagnostic, not a substitute for the `secure_path` override
+installed in § 5. (`curl` is on that list because the counter health probe
+needs it; Alma 8 ships it, so this is a guard, not a step.)
 
 ## 2. Create the service user and directories
 
@@ -161,6 +162,40 @@ label over unchanged, silently 403'ing the whole site on nginx's next read.
 Because every release is a fresh copy, no per-release relabeling is ever
 needed — do not "optimize" that copy into a rename; it would reintroduce
 exactly this bug.
+
+**The counter binary's own label matters too** — and unlike the release trees,
+keeping it right is not a one-time step. systemd may not execute a binary
+labelled `user_tmp_t`: `counter.service` then fails at every start with
+`status=203/EXEC`, and because the exec never happens the counter itself logs
+nothing at all. Worse, the outage is silent by construction — `rebuild.sh`
+compares compiled *bytes* to decide whether to restart, so an unchanged Go
+source rebuilds identically every hour, skips the restart, and reports a clean
+deploy over a service that has never once started. (The health probe in
+`rebuild.sh` § 3 exists to break exactly that silence; see § 11.)
+
+The label it needs is `usr_t`, which is what anything created under `/opt`
+inherits. `rebuild.sh` keeps it that way by pinning `GOTMPDIR` under
+`$REPO_DIR`: `go build -o` links into that work directory and then *renames*
+the result onto the output path, and a rename carries the source inode's label
+with it — so with the work directory left to default to `/tmp`, every single
+build installs a `user_tmp_t` binary. Verify once after the first build (§ 7):
+
+```bash
+ls -Z  /opt/desktopcolors/counter/counter   # ...:usr_t:...  — never user_tmp_t
+ls -Zd /opt/desktopcolors/counter          # ...:usr_t:...  — new builds inherit this
+```
+
+If a wrongly labelled binary is already installed, relabel it as root —
+`rebuild.sh` runs unprivileged and cannot relabel anything itself. Reset the
+restart counter in the same breath, or systemd's start rate limiter refuses the
+start on its own with "Start request repeated too quickly":
+
+```bash
+restorecon -F -v /opt/desktopcolors/counter/counter
+systemctl reset-failed counter.service
+systemctl start counter.service
+curl -fsS http://127.0.0.1:8787/healthz
+```
 
 If a later step fails in a way that makes no sense, check for denials before
 anything else:
@@ -255,10 +290,10 @@ dig +short desktopcolors.com www.desktopcolors.com
 sudo -u desktopcolors bash /opt/desktopcolors/deploy/rebuild.sh
 test -L /var/www/desktopcolors/current && echo "published"
 
-# This is what first starts counter.service (§ 5 only enabled it). Confirm it
-# actually came up — a successful publish above says nothing about the
-# counter, since scores.json is built from whatever the DB dump returns (or
-# an empty one) rather than failing the run.
+# This is what first starts counter.service (§ 5 only enabled it). rebuild.sh
+# now probes /healthz itself and refuses to publish if the counter did not
+# come up, so a "published" above already implies a serving counter — this is
+# confirmation by hand, and the two commands to reach for when it did fail.
 systemctl is-active counter.service
 curl -fsS http://127.0.0.1:8787/healthz
 ```
@@ -266,9 +301,12 @@ curl -fsS http://127.0.0.1:8787/healthz
 The first run installs dependencies, compiles the counter, and — finding no
 installed binary yet to compare against — runs its restart command, which
 brings up `counter.service` (enabled but not started since § 5) for the first
-time. It then publishes a release. Later runs skip `npm ci` unless
+time. It then probes `/healthz`, and publishes a release only once the counter
+answers: `systemctl restart` exits 0 as soon as systemd has been *asked* to
+start a `Type=simple` unit, so on its own it would report success over a binary
+systemd cannot execute at all (§ 4). Later runs skip `npm ci` unless
 `package-lock.json` moved, and skip the counter restart unless the compiled
-binary changed.
+binary changed — but they probe `/healthz` either way (§ 11).
 
 If this fails immediately with `required tool '...' not found on PATH`,
 that's `rebuild.sh`'s preflight check (§ 1) — go back and confirm the
@@ -355,3 +393,17 @@ A failed build leaves the previous release serving — the `current` symlink is
 only flipped after a successful build — so the site keeps working and nothing
 prompts anyone to look. Check `LAST_FAILURE` deliberately; its absence is not
 proof of a healthy setup, only proof the last run didn't fail.
+
+A marker no longer means only "the publish failed". Since every run probes
+`/healthz`, there are two shapes to tell apart from the marker's log excerpt:
+
+- `counter did not come up ... after restart; refusing to publish` — the run
+  installed a new counter binary that will not serve, and stopped **before**
+  publishing. The previous release is still live and the site is unaffected.
+- `publish succeeded, but the counter is not serving ...` — the counter was
+  already down before this run, and its binary hadn't changed, so there was
+  nothing for the run to fix. It published the site as normal (a counter
+  outage must not block an unrelated content deploy) and then failed on
+  purpose so the outage is visible here rather than nowhere. **The site is
+  fine; `/api/event` is returning 502.** Start with § 4's `ls -Z` check and
+  `journalctl -u counter -b | grep "Failed at step"`.

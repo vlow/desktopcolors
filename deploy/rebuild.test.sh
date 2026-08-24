@@ -99,11 +99,35 @@ exit 0
 EOS
   cat > "$STUB/go" <<'EOS'
 #!/usr/bin/env bash
+# Record where go was told to keep its work directory, and whether that
+# directory existed when the build ran. Both matter: `go build -o` links into
+# $GOTMPDIR and *renames* the result onto the -o path, so a work directory
+# left to default to /tmp hands the installed binary /tmp's SELinux label
+# (user_tmp_t), which systemd may not execute — and go does not create
+# $GOTMPDIR itself the way it does GOCACHE/GOMODCACHE.
+printf '%s\n' "${GOTMPDIR-<unset>}" > "$STUB_STATE/gotmpdir"
+if [ -n "${GOTMPDIR:-}" ] && [ -d "$GOTMPDIR" ]; then
+  printf 'yes\n' > "$STUB_STATE/gotmpdir_exists"
+else
+  printf 'no\n' > "$STUB_STATE/gotmpdir_exists"
+fi
 out=""
 while [ $# -gt 0 ]; do
   case "$1" in -o) out="$2"; shift 2 ;; *) shift ;; esac
 done
 [ -n "$out" ] && cat "$STUB_STATE/counter_payload" > "$out"
+exit 0
+EOS
+  # Stands in for the counter health probe. Succeeds unless a test flips the
+  # counter_down flag, which makes it fail the way a dead counter does —
+  # curl's exit 7, "failed to connect".
+  cat > "$STUB/curl" <<'EOS'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$STUB_STATE/curl.log"
+if [ -f "$STUB_STATE/counter_down" ]; then
+  echo "stub curl: connection refused" >&2
+  exit 7
+fi
 exit 0
 EOS
   cat > "$STUB/systemctl" <<'EOS'
@@ -164,12 +188,18 @@ trap teardown EXIT
 # publish would hit an existing "$rel" and nest dist inside it. Production runs
 # hourly and cannot collide, but the harness would — and it would mask the
 # nesting bug this very test exists to catch.
+#
+# HEALTH_ATTEMPTS is cut from the production default of 15 because the health
+# probe is a stub that answers instantly: the only thing the default would buy
+# the suite is 15 seconds of `sleep 1` on every test that exercises a *failing*
+# probe. Kept above 1 so the retry loop itself is still exercised.
 run_rebuild() {
   sleep 1
   ( cd "$REPO" && env \
       REPO_DIR="$REPO" WWW_DIR="$WWW" STATE_DIR="$STATE" \
       COUNTER_BIN="$REPO/counter/counter" BRANCH=release \
       KEEP="${KEEP_OVERRIDE:-3}" \
+      HEALTH_ATTEMPTS=2 \
       RESTART_CMD="sudo /usr/bin/systemctl restart counter.service" \
       bash "$REBUILD" ) > "$ROOT/run.log" 2>&1
 }
@@ -196,6 +226,7 @@ spawn_killable_rebuild() {
     cd "$REPO" || exit 1
     exec env REPO_DIR="$REPO" WWW_DIR="$WWW" STATE_DIR="$STATE" \
       COUNTER_BIN="$REPO/counter/counter" BRANCH=release KEEP=3 \
+      HEALTH_ATTEMPTS=2 \
       RESTART_CMD="sudo /usr/bin/systemctl restart counter.service" \
       bash "$REBUILD"
   ) > "$logfile" 2>&1 &
@@ -317,8 +348,8 @@ setup
 # preflight loop: mktemp and tee for the $RUNLOG redirect, mkdir for
 # $STATE_DIR, and — because cleanup() runs the instant the loop's `exit 1`
 # fires — the git, date, tail and rm it uses to write the failure marker.
-# git and npm are also two of the three names the loop itself checks, so
-# they must resolve too, or the loop would report one of *them* missing
+# git, npm and curl are also three of the four names the loop itself checks,
+# so they must resolve too, or the loop would report one of *them* missing
 # instead of the tool actually under test. flock is the one exception: no
 # real flock ships on stock macOS, and this block tests tool detection, not
 # locking, so it gets the same harmless "succeed silently" stub already
@@ -336,7 +367,7 @@ preflight_bin() {
 exit 0
 EOS
   chmod +x "$dir/flock"
-  for tool in mktemp tee mkdir date tail rm git npm go; do
+  for tool in mktemp tee mkdir date tail rm git npm go curl; do
     [ "$tool" = "$omit" ] && continue
     real="$(command -v "$tool")" || {
       echo "FAIL: preflight fixture needs a real '$tool' on this machine" >&2
@@ -388,9 +419,14 @@ check_preflight_case() {
 
 # go is the actual production bug (git and npm resolve system-wide on
 # ubuntu-latest, go's the one that didn't used to). npm is covered too,
-# since it's cheap and proves the loop isn't hardcoded to one name.
+# since it's cheap and proves the loop isn't hardcoded to one name. curl is
+# covered because it is the newest name on the list and the only one whose
+# absence would otherwise be felt nowhere near the preflight — deep in step
+# 3's health probe, where a silently skipped check is exactly the failure the
+# probe exists to prevent.
 check_preflight_case go
 check_preflight_case npm
+check_preflight_case curl
 teardown
 
 echo "stale mtime prune order"
@@ -770,6 +806,100 @@ if ls "$REPO"/counter/.counter.* >/dev/null 2>&1; then
   bad "no .counter.* temp file left behind after a go build failure"
 else
   ok "no .counter.* temp file left behind after a go build failure"
+fi
+teardown
+
+echo "counter build work directory stays inside the repo"
+setup
+# The production bug this pins: with GOTMPDIR unset, `go build -o` links into
+# /tmp and renames the result onto the -o path, and the rename carries /tmp's
+# SELinux label (user_tmp_t) into /opt. systemd may not execute that, so
+# counter.service failed every start with status=203/EXEC — while `cmp`
+# compared identical bytes every hour, skipped the restart, and reported a
+# clean deploy. The label itself is invisible here (no SELinux on the runner,
+# and `go` is a stub), so what this asserts is the one thing this layer *can*
+# see and the thing the fix consists of: the work directory is pinned inside
+# $REPO_DIR, and it exists by the time the build runs. See TESTING.md T5.
+run_rebuild; st=$?
+check "exits 0" "$st" "0"
+check "GOTMPDIR is pinned under the repo" \
+  "$(cat "$STUB_STATE/gotmpdir" 2>/dev/null)" "$REPO/.cache/tmp"
+check "GOTMPDIR exists before go build runs" \
+  "$(cat "$STUB_STATE/gotmpdir_exists" 2>/dev/null)" "yes"
+teardown
+
+echo "counter that does not come up after a restart blocks the publish"
+setup
+# `systemctl restart` exits 0 as soon as systemd has been *asked* to start a
+# Type=simple unit, so it reports success over a binary systemd then cannot
+# execute at all. The first run always installs a binary and restarts, so this
+# exercises the restart path with a counter that never answers. See TESTING.md
+# T6.
+touch "$STUB_STATE/counter_down"
+run_rebuild; st=$?
+if [ "$st" -ne 0 ]; then
+  ok "failed health probe after a restart exits nonzero"
+else
+  bad "failed health probe after a restart exits nonzero — got 0"
+fi
+# Assert the run died at the health gate rather than somewhere incidental —
+# without this the block would pass on any early failure at all (T3).
+if grep -q "refusing to publish" "$ROOT/run.log"; then
+  ok "failed health probe names the health gate as the reason"
+else
+  bad "failed health probe names the health gate as the reason — got: $(cat "$ROOT/run.log")"
+fi
+if [ -e "$WWW/current" ]; then
+  bad "nothing is published when the counter did not come up"
+else
+  ok "nothing is published when the counter did not come up"
+fi
+check "no release directory was created" \
+  "$(find "$WWW/releases" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')" "0"
+if [ -s "$STATE/LAST_FAILURE" ]; then
+  ok "failed health probe writes a marker"
+else
+  bad "failed health probe writes a marker"
+fi
+teardown
+
+echo "counter down with an unchanged binary publishes, then fails the run"
+setup
+# The exact shape of the production outage: the counter is dead for a
+# host-side reason, so the compiled bytes never change, `cmp` matches, and no
+# restart happens. The publish must still go through — a content deploy must
+# not be held hostage to a counter outage it had no part in — but the run must
+# not report success either, or the outage stays invisible forever.
+run_rebuild
+rel_before="$(find "$WWW/releases" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
+check "healthy first run published" "$rel_before" "1"
+commit_to_release package.json '{"name":"content-only"}'
+touch "$STUB_STATE/counter_down"
+run_rebuild; st=$?
+if [ "$st" -ne 0 ]; then
+  ok "dead counter on the unchanged path exits nonzero"
+else
+  bad "dead counter on the unchanged path exits nonzero — got 0"
+fi
+check "the content deploy still published" \
+  "$(find "$WWW/releases" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')" "2"
+check "current serves the new release" "$(cat "$WWW/current/index.html" 2>/dev/null)" "SITE"
+check "checkout advanced despite the dead counter" \
+  "$(cat "$REPO/package.json")" '{"name":"content-only"}'
+# Proves the failure came from the deferred counter check at the very end and
+# not from the publish itself — the marker's meaning depends on the
+# distinction.
+if grep -q "publish succeeded, but the counter is not serving" "$ROOT/run.log"; then
+  ok "the run fails at the deferred counter check, after publishing"
+else
+  bad "the run fails at the deferred counter check, after publishing — got: $(cat "$ROOT/run.log")"
+fi
+check "an unchanged binary still does not restart the counter" \
+  "$(grep -c 'restart counter.service' "$STUB_STATE/systemctl.log")" "1"
+if [ -s "$STATE/LAST_FAILURE" ]; then
+  ok "a dead counter writes a marker"
+else
+  bad "a dead counter writes a marker"
 fi
 teardown
 
