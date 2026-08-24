@@ -76,12 +76,16 @@ Rules of thumb:
 - **`deploy/` is outside these four suites.** `deploy/rebuild.test.sh` (run it
   with `bash deploy/rebuild.test.sh`) covers only the deploy script's
   orchestration — reset to the deploy branch, dependency gating, atomic publish,
-  failure marker, prune — against a fixture repo with `npm`, `go`, `sudo`,
-  `systemctl` and `flock` stubbed. It exists because two of that script's
-  failure modes are invisible in review and expensive in production: publishing
-  an empty release, and a failure marker that is never written or never cleared.
+  failure marker, prune, counter health gating — against a fixture repo with
+  `npm`, `go`, `curl`, `sudo`, `systemctl` and `flock` stubbed. It exists
+  because two of that script's failure modes are invisible in review and
+  expensive in production: publishing an empty release, and a failure marker
+  that is never written or never cleared.
   Everything else about deployment — nginx, SELinux, logrotate, sudo, locking —
   is verified on the host by [`deploy/SETUP.md`](deploy/SETUP.md), not here.
+  That split is a boundary, not a licence to leave a lever unguarded: where the
+  script *controls* something the stubs cannot model, the lever is asserted here
+  and the host-side effect is documented there — see **T5**.
 
 ## Testing decisions
 
@@ -204,3 +208,64 @@ Rules of thumb:
   first failure, though, was a lost click from **T2** — not the overflow
   assertion at all. Reading the message rather than trusting the red is what
   surfaced the hydration bug that became **T2**.
+
+### T5 — Assert the lever, document the effect: the label no suite can see
+
+- **Applies when** — a `deploy/` change turns on something the fixture cannot
+  model: SELinux labels, mount options (`noexec`), real systemd state, disk
+  pressure, sudo policy. In short, whenever the honest answer to "can
+  `rebuild.test.sh` see this?" is no.
+
+- **Do** — split it. Assert the **lever the script controls** in
+  `deploy/rebuild.test.sh`, where it is an ordinary observable — an exported
+  variable, a path, an argument, a created directory — and document the
+  **host-side effect** as a verification step in
+  [`deploy/SETUP.md`](deploy/SETUP.md). For the label case that is two
+  assertions (`GOTMPDIR` is pinned under `$REPO_DIR`, and it exists before `go
+  build` runs) plus an `ls -Z` check in SETUP.md § 4.
+
+- **Don't** — reason from "SELinux is host-verified, so this is out of scope"
+  to leaving the lever unguarded; that is how a one-line environment default
+  goes unnoticed. Equally, don't try to simulate the host in the fixture — a
+  faked label proves nothing and will pass on a runner with SELinux disabled,
+  which every CI runner here is.
+
+- **Evidence** — `counter.service` failed every start with `status=203/EXEC` for
+  a long enough run to reach a systemd restart counter of 15819, while the
+  hourly deploy reported success throughout. Cause: `go build -o` links into a
+  work directory under `$GOTMPDIR` (default `$TMPDIR`, i.e. `/tmp`) and then
+  **renames** the result onto the `-o` path — `cmd/go`'s `moveOrCopyFile`
+  prefers `os.Rename`, copying only when the source is inside `$GOCACHE`, on
+  Windows, or when the destination directory is setgid. The rename carried
+  `/tmp`'s `user_tmp_t` label into `/opt`, which systemd may not execute, and
+  destroyed the correctly labelled `mktemp` sibling the script had gone to
+  trouble to create. Nothing in the existing suite could see a label; two
+  assertions on `GOTMPDIR` fail immediately.
+
+### T6 — A command's exit status is not the service's state: the restart that "worked"
+
+- **Applies when** — a script's success depends on a service being *up*, and it
+  infers that from the exit status of the command that asked for the start
+  (`systemctl restart`/`start`/`reload`), or from its own earlier steps having
+  succeeded.
+
+- **Do** — assert the service **answers**, and assert it on every run rather
+  than only on the run that touched it. `rebuild.sh` probes `/healthz` both
+  after a restart (fatal, before publishing) and on the unchanged path (publish,
+  then fail the run at the very end). Stub the probe in the suite — a `curl`
+  that fails on a flag — and pin *where* the run died by grepping the log for
+  the gate's own message, not just for a nonzero status (see **T3**).
+
+- **Don't** — trust `systemctl restart`'s 0. For a `Type=simple` unit it means
+  only that systemd was asked; it is returned well before, and regardless of
+  whether, the binary can be executed at all or the store opens. And don't gate
+  the health probe on "did we restart it?" — that is precisely the path that
+  stays silent, because a host-side breakage leaves the compiled bytes
+  identical, so `cmp` matches, no restart happens, and nothing looks.
+
+- **Evidence** — the same 203/EXEC outage. `sudo systemctl restart
+  counter.service` exited 0 on every run; `rebuild.sh` then dumped scores
+  straight from the DB file (which needs no running service), treated any dump
+  failure as non-fatal by design, published, and exited 0. The marker in
+  `/var/lib/desktopcolors/LAST_FAILURE` was absent the entire time — it was
+  reporting, accurately, that the *publish* had succeeded.

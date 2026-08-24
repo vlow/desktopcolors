@@ -3,6 +3,7 @@
   "year": 2024,
   "added": "2026-07-20",
   "family": "Desktop Env.",
+  "predecessor": "kde-1",
   "desktopStyle": "kde",
   "description": "KDE Plasma still treats solid color desktops as first-class citizens. Yes, I'm looking at you, GNOME! However, there is just one default color. I feel like this is somewhat symptomatic for KDE - everything is configurable, but you have to provide the options. OK, at least there are options which don't require manually setting keys using gsettings... I mean - wtf, GNOME?",
   "colors": [

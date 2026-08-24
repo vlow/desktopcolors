@@ -112,7 +112,8 @@ The public API, and the only package that speaks HTTP. Two routes:
 - `POST /api/event` → rate-limit → decode (max 4 KiB body) → `scoring.Validate` →
   `store.Apply` → `204 No Content`. Bad body/validation → `400`; rate-limited → `429`;
   store error → `500`.
-- `GET /healthz` → `200 ok` (used by systemd / uptime checks).
+- `GET /healthz` → `200 ok` (used by uptime checks, and by `deploy/rebuild.sh`,
+  which refuses to publish a release whose counter does not answer it).
 
 It depends on the rate limiter through a **narrow interface**, not the concrete type, so
 tests can inject a fake:
