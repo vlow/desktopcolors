@@ -1,0 +1,106 @@
+{
+  "name": "KDE 1",
+  "year": 1998,
+  "added": "2026-08-24",
+  "family": "Desktop Env.",
+  "successor": "kde-plasma-6",
+  "desktopStyle": "kde",
+  "description": "When I first installed KDE, it felt like a new generation of Linux Desktops. It just looked so modern! In many screenshots, you can see that KDE was often used with the preconfigured gradient background. The colors for Desktop 1 and 2 were actually different. I included all four colors below. However, KDE 1.0 had also one hardcoded solid default background color. A pretty cool steel blue, which felt like the perfect companion to the grey desktop bar and the orange accented icons.",
+  "colors": [
+    {
+      "hex": "#4682b4",
+      "name": "Steel Blue",
+      "default": true
+    },
+    {
+      "hex": "#ff0000",
+      "name": "Red"
+    },
+    {
+      "hex": "#00ff00",
+      "name": "Green"
+    },
+    {
+      "hex": "#0000ff",
+      "name": "Blue"
+    },
+    {
+      "hex": "#00ffff",
+      "name": "Cyan"
+    },
+    {
+      "hex": "#ff00ff",
+      "name": "Magenta"
+    },
+    {
+      "hex": "#ffff00",
+      "name": "Yellow"
+    },
+    {
+      "hex": "#800000",
+      "name": "Dark Red"
+    },
+    {
+      "hex": "#008000",
+      "name": "Dark Green"
+    },
+    {
+      "hex": "#000080",
+      "name": "Navy",
+      "note": "Used as top color in the desktop 1 gradient."
+    },
+    {
+      "hex": "#008080",
+      "name": "Teal"
+    },
+    {
+      "hex": "#800080",
+      "name": "Purple"
+    },
+    {
+      "hex": "#808000",
+      "name": "Olive"
+    },
+    {
+      "hex": "#ffffff",
+      "name": "White"
+    },
+    {
+      "hex": "#c0c0c0",
+      "name": "Silver"
+    },
+    {
+      "hex": "#a0a0a4",
+      "name": "Medium Gray"
+    },
+    {
+      "hex": "#808080",
+      "name": "Gray"
+    },
+    {
+      "hex": "#000000",
+      "name": "Black"
+    },
+    {
+      "hex": "#0004ff",
+      "name": "Bright Blue",
+      "note":"Used as bottom color in the desktop 1 gradient."
+    },
+    {
+      "hex": "#00bfaf",
+      "name": "Bright Teal",
+      "note": "Used as top color in the desktop 2 gradient."
+    },
+    {
+      "hex": "#008080",
+      "name": "Teal",
+      "note": "Used as bottom color in the desktop 2 gradient."
+    }
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "KDE",
+    "url": "https://kde.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/K_Desktop_Environment_1"
+}
