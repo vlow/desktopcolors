@@ -5,7 +5,7 @@
   "family": "Desktop Env.",
   "successor": "kde-plasma-6",
   "desktopStyle": "kde",
-  "description": "When I first installed KDE, it felt like a new generation of Linux Desktops. It just looked so modern! In many screenshots, you can see that KDE was often used with the preconfigured gradient background. The colors for Desktop 1 and 2 were actually different. I included all four colors below. However, KDE 1.0 had also one hardcoded solid default background color. A pretty cool steel blue, which felt like the perfect companion to the grey desktop bar and the orange accented icons.",
+  "description": "When I first installed KDE, it felt like a new generation of Linux Desktops. It just looked so modern! In many screenshots, you can see that KDE was often used with the preconfigured gradient background. The colors for Desktop 1 and 2 were actually different. I included all gradient colors below, eventhough they're not strictly used as a solid color background. However, KDE 1.0 had also one hardcoded solid default background color. A pretty cool steel blue, which felt like the perfect companion to the grey desktop bar and the orange accented icons. All other colors stem from the default color picker (including the top color in the desktop 1 gradient).",
   "colors": [
     {
       "hex": "#4682b4",
