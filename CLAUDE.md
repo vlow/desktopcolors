@@ -23,6 +23,10 @@ entry point for understanding the codebase:
   and its colors (`src/content/os/*.json`, validated by `src/content/config.ts`). Follow
   this guide (for humans and LLM agents) when adding OS data or colors — including the
   **dithered colors** workflow (blended + partial entries, and when to collapse them).
+- [`docs/researching-desktop-colors.md`](docs/researching-desktop-colors.md) — how to
+  derive an entry's colors from a system's own **source code and version history**
+  (palette vs. shipped default vs. historical default, gradient direction, git archaeology).
+  Read it before researching a new OS; it feeds `adding-os-data.md`.
 - [`docs/adding-a-preview-style.md`](docs/adding-a-preview-style.md) — how the
   per-OS desktop previews work and how to add chrome. Previews are a Zod-validated,
   data-driven **chrome spec** per OS family (`src/lib/chromeSpec.ts`); this is the guide

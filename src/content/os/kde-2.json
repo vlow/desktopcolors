@@ -1,0 +1,189 @@
+{
+  "name": "KDE 2",
+  "year": 2000,
+  "added": "2026-08-25",
+  "family": "Desktop Env.",
+  "predecessor": "kde-1",
+  "successor": "kde-plasma-6",
+  "desktopStyle": "kde",
+  "description": "KDE 2 defaulted to a vertical gradient of deep blue fading into silver. To be honest, it looked a bit washed out when compared to the default gradients of KDE 1. However, if the display only supported 8-bit color or less, the top color of the gradient was used as a flat background instead - which in my personal opinion looked a lot better. In addition to these two colors, you could pick from 40 default swatches (included below), the Netscape Navigator \"Web\"-palette, and a Gimp \"Royal\"-palette (both not included).",
+  "colors": [
+    {
+      "hex": "#1e72a0",
+      "name": "Deep Azure",
+      "note": "Top color of the shipped vertical gradient, and the flat background color on displays with 8-bit color or less.",
+      "default": true
+    },
+    {
+      "hex": "#c0c0c0",
+      "name": "Silver",
+      "note": "Bottom color of the shipped vertical gradient."
+    },
+    {
+      "hex": "#000000",
+      "name": "Black"
+    },
+    {
+      "hex": "#303030",
+      "name": "Almost Black"
+    },
+    {
+      "hex": "#585858",
+      "name": "Very Dark Gray"
+    },
+    {
+      "hex": "#808080",
+      "name": "Dark Gray"
+    },
+    {
+      "hex": "#a0a0a0",
+      "name": "Mid Gray"
+    },
+    {
+      "hex": "#c3c3c3",
+      "name": "Light Gray"
+    },
+    {
+      "hex": "#dcdcdc",
+      "name": "Very Light Gray"
+    },
+    {
+      "hex": "#ffffff",
+      "name": "White"
+    },
+    {
+      "hex": "#400000",
+      "name": "Very Dark Red"
+    },
+    {
+      "hex": "#800000",
+      "name": "Dark Red"
+    },
+    {
+      "hex": "#c00000",
+      "name": "Mid Red"
+    },
+    {
+      "hex": "#ff0000",
+      "name": "Red"
+    },
+    {
+      "hex": "#ffc0c0",
+      "name": "Light Red"
+    },
+    {
+      "hex": "#004000",
+      "name": "Very Dark Green"
+    },
+    {
+      "hex": "#008000",
+      "name": "Dark Green"
+    },
+    {
+      "hex": "#00c000",
+      "name": "Mid Green"
+    },
+    {
+      "hex": "#00ff00",
+      "name": "Green"
+    },
+    {
+      "hex": "#c0ffc0",
+      "name": "Light Green"
+    },
+    {
+      "hex": "#000080",
+      "name": "Dark Blue"
+    },
+    {
+      "hex": "#0000c0",
+      "name": "Mid Blue"
+    },
+    {
+      "hex": "#0000ff",
+      "name": "Blue"
+    },
+    {
+      "hex": "#c0c0ff",
+      "name": "Light Blue"
+    },
+    {
+      "hex": "#404000",
+      "name": "Very Dark Yellow"
+    },
+    {
+      "hex": "#808000",
+      "name": "Dark Yellow"
+    },
+    {
+      "hex": "#c0c000",
+      "name": "Mid Yellow"
+    },
+    {
+      "hex": "#ffff00",
+      "name": "Yellow"
+    },
+    {
+      "hex": "#ffffc0",
+      "name": "Light Yellow"
+    },
+    {
+      "hex": "#004040",
+      "name": "Very Dark Cyan"
+    },
+    {
+      "hex": "#008080",
+      "name": "Dark Cyan"
+    },
+    {
+      "hex": "#00c0c0",
+      "name": "Mid Cyan"
+    },
+    {
+      "hex": "#00ffff",
+      "name": "Cyan"
+    },
+    {
+      "hex": "#c0ffff",
+      "name": "Light Cyan"
+    },
+    {
+      "hex": "#800080",
+      "name": "Dark Magenta"
+    },
+    {
+      "hex": "#c000c0",
+      "name": "Mid Magenta"
+    },
+    {
+      "hex": "#ff00ff",
+      "name": "Magenta"
+    },
+    {
+      "hex": "#ffc0ff",
+      "name": "Light Magenta"
+    },
+    {
+      "hex": "#c05800",
+      "name": "Dark Orange"
+    },
+    {
+      "hex": "#ff8000",
+      "name": "Orange"
+    },
+    {
+      "hex": "#ffa858",
+      "name": "Light Orange"
+    },
+    {
+      "hex": "#ffdca8",
+      "name": "Very Light Orange"
+    }
+  ],
+  "type": "Open Source",
+  "project": {
+    "name": "KDE",
+    "url": "https://kde.org"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/K_Desktop_Environment_2"
+}
