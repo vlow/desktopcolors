@@ -44,6 +44,16 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 - **`onColor`** (`src/lib/color.ts`) — a contrast helper returning `#1c1917` (dark) or
   `#ffffff` (white); used for text on the wallpaper and to derive the translucent
   surface tints. Computed upstream and passed into the preview.
+- **`accent`** — the **exception** to translucent-only chrome, and deliberately narrow.
+  Some platforms drew a piece of chrome in a *second palette color* rather than in a
+  shade of the background: the C64's screen border and BASIC text are light blue on
+  blue, and a translucent tint cannot reproduce that pair. `OsDetail` passes the first
+  of the entry's *other* colors as `accent`; `DesktopPreview` drops it if it contrasts
+  with the wallpaper by less than `ACCENT_MIN` (1.6:1, low on purpose — the C64's own
+  pair is only 2.6:1), and a primitive that gets one draws it **exactly**, at opacity 1.
+  Today only `basicScreen` reads it; every other primitive ignores it and stays
+  translucent. Reach for it only when a fixed second color is the *point* of the chrome,
+  never as a shortcut around `chromeSurfaces`.
 
 ## The primitive vocabulary
 
@@ -66,6 +76,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `bleskos` | — | BleskOS full-screen, windowless program switcher (fills the preview) |
 | `rootMenu` | — | Blackbox titled root menu + cascading submenu, floating mid-screen |
 | `workspaceBar` | — | Blackbox workspace toolbar, floating above the bottom edge |
+| `basicScreen` | — | C64 border frame + BASIC boot banner + `READY.` prompt and cursor (fills the preview); the only primitive that reads `accent` |
 
 `body` (`WindowBody`) is one of:
 - `{ kind: "gridIcons", icons: IconKind[], cols }` — a grid of line-art icons
@@ -89,6 +100,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `gem` | menu bar + icons + GEM window | Digital Research GEM (FreeGEM) |
 | `bleskos` | full-screen program switcher (no window/taskbar/dock) | BleskOS |
 | `blackbox` | floating root menu + cascading submenu + workspace bar (no icons, no docked panel) | Blackbox (menu-only WMs) |
+| `c64` | screen border frame + BASIC boot banner + `READY.` prompt (no shell at all) | Commodore 64 (BASIC-prompt home computers) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 `modern` is the schema default (`desktopStyle` is optional) and the safety fallback: it
@@ -115,7 +127,7 @@ Add it to `DESKTOP_STYLES` in **`src/lib/desktopStyle.ts`** — the only place t
 declared:
 
 ```ts
-export const DESKTOP_STYLES = ["modern","win9x","win31","platinum","beos","amiga","kde","cde","gem","bleskos","blackbox","generic","nextstep"] as const;
+export const DESKTOP_STYLES = ["modern","win9x","win31","platinum","beos","amiga","kde","cde","gem","bleskos","blackbox","c64","generic","nextstep"] as const;
 ```
 
 ### 2. Add its chrome spec
@@ -157,7 +169,9 @@ Set `"desktopStyle": "nextstep"` in the relevant `src/content/os/*.json` file(s)
 Chrome sits on an unknown wallpaper color — it must stay legible on **any** background:
 
 - **Translucent overlays only.** Derive surfaces from `chromeSurfaces(onColor)`
-  (`panel`/`win`/`border`/`soft`), never opaque colors that could clash.
+  (`panel`/`win`/`border`/`soft`), never opaque colors that could clash. The single
+  exception is `accent` (see [the data flow](#how-it-fits-together-data-flow)) — a second
+  color from the same OS entry, for chrome the platform genuinely drew in one.
 - **Text on the wallpaper** (icon labels) uses `onColor`. **Text/marks on a chrome
   surface** use the translucent `soft`/`border` tints.
 - **Absolute-positioned, pinned to an edge**; size in `cu(n)` = `calc(min(1cqw,9px)*n)`

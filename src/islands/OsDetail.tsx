@@ -1,3 +1,4 @@
+import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { OsView, EraPeerView, ColorDetail, SimilarView, OsViewJson } from "../lib/detail";
 import { denormalizeDetails } from "../lib/detail";
@@ -9,6 +10,7 @@ import { track } from "../lib/track";
 import { colorPath } from "../lib/links";
 import { KnownUsesTimeline } from "./KnownUsesTimeline";
 import { DetailSkeleton } from "./DetailSkeleton";
+import { Dropdown } from "./Dropdown";
 
 interface Props {
   os: OsView;
@@ -107,6 +109,20 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
   }, []);
 
   const summary = colors[sel] ?? colors[0];
+  // The first of the entry's other colors, offered to the preview as chrome ink.
+  // Only the C64's basicScreen reads it — its border and BASIC text were a
+  // second palette color, not a shade of the background — so on the default blue
+  // the preview draws the real light blue, and on light blue the real blue.
+  const accent = colors.find((c) => c.hex !== summary.hex)?.hex;
+
+  // The References row, flattened to one list so it takes any number of links.
+  // `project` and `wikipedia` keep their own icons and fixed ends of the row;
+  // everything in `links` sits between them, in the order the JSON lists it.
+  const refs: { url: string; label: string; icon: ComponentChildren }[] = [
+    ...(os.project ? [{ url: os.project.url, label: os.project.name, icon: "⧉" }] : []),
+    ...os.links.map((l) => ({ url: l.url, label: l.name, icon: "⧉" })),
+    ...(os.wikipedia ? [{ url: os.wikipedia, label: "Wikipedia", icon: <span style="font: 700 13px var(--font-ui);">W</span> }] : []),
+  ];
   const detail = details[summary.hex.toLowerCase()]; // undefined until fetched
   const sim = detail?.similar ?? [];
 
@@ -161,12 +177,46 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
     <div class="dc-detail dc-page-x dc-page-head" style="padding-block-end: 56px;">
       <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 18px;">
         <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
-        {(os.project || os.wikipedia) && (
-          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;">
-            <span style="font: 400 9px var(--font-mono); color: var(--faint); letter-spacing: 1.5px;">REFERENCES</span>
-            {os.project && <a href={os.project.url} target="_blank" rel="noopener" style={REF_LINK}>⧉ {os.project.name} <span style="opacity: 0.5;">↗</span></a>}
-            {os.wikipedia && <a href={os.wikipedia} target="_blank" rel="noopener" style={REF_LINK}><span style="font: 700 13px var(--font-ui);">W</span> Wikipedia <span style="opacity: 0.5;">↗</span></a>}
-          </div>
+        {/* D2 collapse-to-dropdown: both variants are always in the DOM and CSS
+            flips which one shows, so there is no hydration flash. Inline pills
+            wrap onto two or three lines below 760px once an entry carries more
+            than a couple of links, pushing the title down the screen. */}
+        {refs.length > 0 && (
+          <>
+            <div data-testid="refs-inline" class="dc-desktop-only" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;">
+              <span class="dc-control-label">REFERENCES</span>
+              {refs.map((ref) => (
+                <a key={ref.url} href={ref.url} target="_blank" rel="noopener" style={REF_LINK}>{ref.icon} {ref.label} <span style="opacity: 0.5;">↗</span></a>
+              ))}
+            </div>
+            <div data-testid="refs-menu" class="dc-mobile-only" style="margin-left: auto;">
+              <Dropdown
+                ariaLabel={`References: ${refs.length} ${refs.length === 1 ? "link" : "links"}`}
+                align="right"
+                trigger={<>
+                  <span class="dc-control-label">REFERENCES</span>
+                  <span style="font-size: 12px; color: var(--faint);">{refs.length}</span>
+                  <span style="opacity: 0.5;">▾</span>
+                </>}
+              >
+                {(close) => refs.map((ref) => (
+                  <a
+                    key={ref.url}
+                    role="menuitem"
+                    class="dc-menu-item"
+                    href={ref.url}
+                    target="_blank"
+                    rel="noopener"
+                    style="text-decoration: none;"
+                    onClick={close}
+                  >
+                    {ref.icon} {ref.label}
+                    <span style="margin-left: auto; opacity: 0.5;">↗</span>
+                  </a>
+                ))}
+              </Dropdown>
+            </div>
+          </>
         )}
       </div>
       <div class="dc-page-eyebrow" style="margin-top: 14px;">{os.family} · {os.year}{os.type && <> <span style="color: var(--faint);">·</span> <span style="color: var(--muted);">{os.type}</span></>}</div>
@@ -203,7 +253,7 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
             <span style="margin-left: auto; font: 400 11px var(--font-mono); color: var(--faint);">{summary.hex}</span>
           </div>
           <div style="position: relative; flex: 1; min-height: 0;">
-            <DesktopPreview hex={summary.hex} onColor={summary.onColor} style={os.desktopStyle} />
+            <DesktopPreview hex={summary.hex} onColor={summary.onColor} style={os.desktopStyle} accent={accent} />
             <button onClick={() => setFull(true)} style="position: absolute; top: 12px; right: 12px; z-index: 2; cursor: pointer; background: rgba(255,255,255,0.92); border: none; border-radius: 9px; padding: 8px 12px; font: 500 12px var(--font-ui);">⤢ Expand</button>
           </div>
         </div>
@@ -326,7 +376,7 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
       {sheet && <DownloadSheet osSlug={os.slug} color={{ hex: summary.hex, name: summary.name }} onClose={() => setSheet(false)} />}
       {full && (
         <FullscreenPreview
-          hex={summary.hex} onColor={summary.onColor} style={os.desktopStyle}
+          hex={summary.hex} onColor={summary.onColor} style={os.desktopStyle} accent={accent}
           label={`${os.name} · ${summary.name} · ${summary.hex}`}
           pos={sel + 1} total={colors.length}
           onClose={() => setFull(false)} onPrev={() => step(-1)} onNext={() => step(1)}

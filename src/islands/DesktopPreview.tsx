@@ -1,8 +1,24 @@
 import type { ComponentChildren } from "preact";
 import type { DesktopStyle } from "../lib/desktopStyle";
 import { CHROME_SPECS, type ChromePart, type WindowBody } from "../lib/chromeSpec";
+import { contrast } from "../lib/color";
 
-interface Props { hex: string; onColor: string; style: DesktopStyle }
+interface Props {
+  hex: string;
+  onColor: string;
+  style: DesktopStyle;
+  // A second color from the same OS, for chrome that the platform really did
+  // draw in a second color rather than in a shade of the background — today
+  // only the C64's screen border and BASIC text. Ignored by every other style,
+  // and ignored here unless it separates from the wallpaper (see ACCENT_MIN).
+  accent?: string;
+}
+
+// Minimum WCAG contrast between the accent and the wallpaper for the accent to
+// be used. Deliberately low: the C64's own light-blue-on-blue is only 2.6:1 and
+// has to pass, since that low contrast is the thing being reproduced. This only
+// rejects a companion color so close to the wallpaper that chrome would vanish.
+const ACCENT_MIN = 1.6;
 
 /* ────────────────────────────────────────────────────────────────────────
    MODERN scene — the platform-neutral default. Preserved verbatim (only the
@@ -453,7 +469,46 @@ const WorkspaceBar = ({ onColor }: { onColor: string }) => {
   );
 };
 
-function renderPart(part: ChromePart, onColor: string, key: number): ComponentChildren {
+// The Commodore 64 has no desktop shell at all: switching it on drops you into
+// the BASIC V2 prompt. Two things stand in for chrome. First the border — the
+// VIC-II paints a frame around the screen in its own color, so the wallpaper
+// color is the screen *inside* that frame, and the frame has to be visible for
+// the preview to read as a C64 at all. Second the boot banner and the READY.
+// prompt, in a monospace stand-in for PETSCII.
+//
+// The two banner lines are centered rather than indented with the leading
+// spaces the PETSCII screen uses: the preview box is not 40 columns wide and
+// its width changes with the viewport, so a fixed indent drifts off-centre.
+const BASIC_LINES: { text: string; center?: boolean }[] = [
+  { text: "**** COMMODORE 64 BASIC V2 ****", center: true },
+  { text: "" },
+  { text: "64K RAM SYSTEM  38911 BASIC BYTES FREE", center: true },
+  { text: "" },
+  { text: "READY." },
+];
+
+// `accent` is a second color from the same OS (see DesktopPreview). Given one,
+// the frame, text and cursor are drawn in it exactly — opacity 1, no
+// translucency — which on the C64's own blue reproduces the real boot screen:
+// light blue on blue. Without one, fall back to the translucent surfaces the
+// other primitives use, which stay legible on an unknown wallpaper.
+const BasicScreen = ({ onColor, accent }: { onColor: string; accent?: string }) => {
+  const S = chromeSurfaces(onColor);
+  const ink = accent ?? S.ink;
+  return (
+    <div data-testid="chrome-basicscreen" style={{ position: "absolute", inset: 0, boxShadow: `inset 0 0 0 ${cu(3.4)} ${accent ?? S.panel}`, padding: `${cu(6)} ${cu(6.5)}`, display: "flex", flexDirection: "column" }}>
+      {BASIC_LINES.map((line, i) => (
+        // A blank BASIC line still occupies a character row, and an empty span
+        // would collapse to zero height — hence the space.
+        <span key={i} style={{ font: `400 ${cu(2.2)} var(--font-mono)`, lineHeight: cu(3.2), color: ink, opacity: accent ? 1 : 0.9, whiteSpace: "pre", textAlign: line.center ? "center" : "left" }}>{line.text || " "}</span>
+      ))}
+      {/* The cursor: a solid character cell, as the C64 draws it. */}
+      <span style={{ width: cu(1.5), height: cu(2.6), marginTop: cu(0.5), background: ink, opacity: accent ? 1 : 0.85 }} />
+    </div>
+  );
+};
+
+function renderPart(part: ChromePart, onColor: string, key: number, accent?: string): ComponentChildren {
   switch (part.part) {
     case "deskIcons": return <DeskIcons key={key} side={part.side} anchor={part.anchor} icons={part.icons} onColor={onColor} />;
     case "window": return <SharedWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
@@ -470,14 +525,16 @@ function renderPart(part: ChromePart, onColor: string, key: number): ComponentCh
     case "bleskos": return <Bleskos key={key} onColor={onColor} />;
     case "rootMenu": return <RootMenu key={key} onColor={onColor} />;
     case "workspaceBar": return <WorkspaceBar key={key} onColor={onColor} />;
+    case "basicScreen": return <BasicScreen key={key} onColor={onColor} accent={accent} />;
   }
 }
 
-export function DesktopPreview({ hex, onColor, style }: Props) {
+export function DesktopPreview({ hex, onColor, style, accent }: Props) {
   const spec = CHROME_SPECS[style];
+  const ink = accent && contrast(accent, hex) >= ACCENT_MIN ? accent : undefined;
   return (
     <div style={`position: absolute; inset: 0; background-color: ${hex}; overflow: hidden; container-type: inline-size;`}>
-      {spec === null ? <ModernScene onColor={onColor} /> : spec.map((part, i) => renderPart(part, onColor, i))}
+      {spec === null ? <ModernScene onColor={onColor} /> : spec.map((part, i) => renderPart(part, onColor, i, ink))}
     </div>
   );
 }

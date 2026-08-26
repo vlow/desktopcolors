@@ -8,7 +8,7 @@ const os: OsView = {
   slug: "windows-95", name: "Windows 95", year: 1995, added: "2000-01-01", family: "Windows",
   description: "The teal era.", desktopStyle: "win9x",
   defaultHex: "#008080", colorCount: 2, score: 0, scoreLabel: "< 1k",
-  type: "Proprietary", wikipedia: "https://en.wikipedia.org/wiki/Windows_95",
+  type: "Proprietary", links: [], wikipedia: "https://en.wikipedia.org/wiki/Windows_95",
   predecessor: null, successor: { slug: "windows-98", name: "Windows 98", year: 1998 },
   colors: [
     { hex: "#008080", name: "Teal", note: "default", isDefault: true, rgb: "0, 128, 128", hsl: "180° 100% 25%", cmyk: "100% 0% 0% 50%", onColor: "#ffffff", family: "teal", types: ["cool"], score: 0, scoreLabel: "< 1k" },
@@ -58,6 +58,26 @@ const detailsByHex: Record<string, ColorDetail> = {
 };
 
 const baseProps = { os, eraPeers, detailsByHex };
+
+// An entry with more references than the two special-cased fields, for the
+// References-row tests. Expected order: project, then `links` in file order,
+// then Wikipedia.
+const withLinks: OsView = {
+  ...os,
+  project: { name: "Project Site", url: "https://example.org/" },
+  links: [
+    { name: "First", url: "https://example.com/first" },
+    { name: "Second", url: "https://example.com/second" },
+    { name: "Third", url: "https://example.com/third" },
+  ],
+};
+const EXPECTED_REF_HREFS = [
+  "https://example.org/",
+  "https://example.com/first",
+  "https://example.com/second",
+  "https://example.com/third",
+  "https://en.wikipedia.org/wiki/Windows_95",
+];
 
 beforeEach(() => {
   Object.assign(navigator, { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
@@ -190,6 +210,42 @@ describe("OsDetail", () => {
     expect(screen.getByText(/Proprietary/)).toBeTruthy();
     const wiki = screen.getByText(/Wikipedia/).closest("a") as HTMLAnchorElement;
     expect(wiki.getAttribute("href")).toContain("wikipedia.org");
+  });
+
+  // The References row is built from a flattened list, so an entry can carry any
+  // number of links beyond the two special-cased ones. Order is project, then
+  // `links` in file order, then Wikipedia.
+  it("renders an arbitrary number of reference links, in order", () => {
+    render(<OsDetail {...baseProps} os={withLinks} initialHex={null} viewUrl={null} />);
+    const row = screen.getByTestId("refs-inline");
+    const anchors = [...row.querySelectorAll("a")];
+    expect(anchors.map((a) => a.getAttribute("href"))).toEqual(EXPECTED_REF_HREFS);
+    expect(anchors.map((a) => a.textContent?.trim())).toContain("⧉ Second ↗");
+    expect(anchors.every((a) => a.getAttribute("target") === "_blank")).toBe(true);
+  });
+
+  it("hides the References row when an entry has no links at all", () => {
+    const bare: OsView = { ...os, project: undefined, links: [], wikipedia: undefined };
+    render(<OsDetail {...baseProps} os={bare} initialHex={null} viewUrl={null} />);
+    expect(screen.queryByTestId("refs-inline")).toBeNull();
+    expect(screen.queryByTestId("refs-menu")).toBeNull();
+  });
+
+  // D2 collapse-to-dropdown: both variants ship in the markup and CSS decides
+  // which is visible, so the mobile menu must carry the same links in the same
+  // order as the inline pills — jsdom applies no media queries, so this asserts
+  // presence and content, not visibility (see TESTING.md).
+  it("offers the same references in the mobile dropdown", () => {
+    render(<OsDetail {...baseProps} os={withLinks} initialHex={null} viewUrl={null} />);
+    const menu = screen.getByTestId("refs-menu");
+    // Collapsed: the trigger is the only control, so nothing wraps.
+    expect(menu.querySelectorAll("a").length).toBe(0);
+    const trigger = menu.querySelector("button") as HTMLButtonElement;
+    expect(trigger.getAttribute("aria-label")).toBe("References: 5 links");
+
+    fireEvent.click(trigger);
+    const items = [...menu.querySelectorAll("[role='menuitem']")];
+    expect(items.map((a) => a.getAttribute("href"))).toEqual(EXPECTED_REF_HREFS);
   });
 
   it("toggles extended color formats", () => {

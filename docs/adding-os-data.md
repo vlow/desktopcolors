@@ -47,7 +47,29 @@ This is the full guide (for humans and LLM agents). For the quick version see
 | `type` | — | `Proprietary` or `Open Source` (reuse existing values). |
 | `wikipedia` | — | URL. |
 | `project` | — | `{ "name", "url" }` for the OS's own site (open-source projects). |
+| `links` | — | `[{ "name", "url" }, …]` — any number of further reference links. |
 | `colors` | ✅ | ≥1 entry; **≤1** may be `"default": true`. |
+
+### Reference links
+
+The detail page's **References** row is built from three fields and takes any number of
+links: `project` first, then every entry of `links` in file order, then `wikipedia` last.
+Each renders as one pill; `wikipedia` gets the **W** mark, the others a `⧉`. Omit all
+three and the row disappears.
+
+`project` and `wikipedia` stay separate fields because they are the two references almost
+every entry has, and they have fixed positions and marks. Anything else — a vendor site, a
+palette derivation, a museum page, a hardware reference — goes in `links`:
+
+```json
+"links": [
+  { "name": "Commodore", "url": "https://commodore.net/" },
+  { "name": "Colodore", "url": "https://www.colodore.com/" }
+]
+```
+
+Both fields are URL-validated by the schema, so a bare hostname fails the build. Keep
+`name` short — it is the pill's whole label.
 
 ### The prose fields
 

@@ -101,6 +101,28 @@ A complete file, `src/content/os/haiku.json`:
 | `type` | no | `Proprietary` or `Open Source` — those are the only two values in use |
 | `wikipedia` | no | URL. Must parse as a URL, so include the scheme. |
 | `project` | no | `{ "name", "url" }` for the project's own site. `url` must parse as a URL. |
+| `links` | no | `[{ "name", "url" }, …]` — any number of further reference links. See [Reference links](#reference-links). |
+
+#### Reference links
+
+The detail page's **References** row is built from three fields and takes any number of
+links: `project` first, then every entry of `links` in file order, then `wikipedia` last.
+Each renders as one pill; `wikipedia` gets the **W** mark, the others a `⧉`. Omit all
+three and the row disappears.
+
+`project` and `wikipedia` stay separate fields because they are the two references almost
+every entry has, and they have fixed positions and marks. Anything else — a vendor site, a
+palette derivation, a museum page, a hardware reference — goes in `links`:
+
+```json
+"links": [
+  { "name": "Commodore", "url": "https://commodore.net/" },
+  { "name": "Colodore", "url": "https://www.colodore.com/" }
+]
+```
+
+Every `url` is validated by the schema, so a bare hostname fails the build. Keep `name`
+short — it is the pill's whole label.
 
 #### The prose fields
 
@@ -275,7 +297,7 @@ Which chrome a preview draws is chosen by the platform's `desktopStyle`. That fi
 affects **only the on-screen preview** — the downloadable wallpaper is always a plain
 solid-color PNG and never reads the style.
 
-Twelve styles exist. Check for a fit here before building anything:
+Thirteen styles exist. Check for a fit here before building anything:
 
 | `desktopStyle` | chrome | modeled on |
 |----------------|--------|------------|
@@ -290,6 +312,7 @@ Twelve styles exist. Check for a fit here before building anything:
 | `gem` | menu bar + icons + GEM window | Digital Research GEM (FreeGEM) |
 | `bleskos` | full-screen program switcher | BleskOS |
 | `blackbox` | floating root menu + cascading submenu + workspace bar | Blackbox (menu-only WMs) |
+| `c64` | screen border frame + BASIC boot banner + `READY.` prompt | Commodore 64 (BASIC-prompt home computers) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 ### Reuse an existing style
@@ -310,7 +333,7 @@ Say the new style is `nextstep`. Three edits.
 declared:
 
 ```ts
-export const DESKTOP_STYLES = ["modern", "win9x", "win31", "platinum", "beos", "amiga", "kde", "cde", "gem", "bleskos", "blackbox", "generic", "nextstep"] as const;
+export const DESKTOP_STYLES = ["modern", "win9x", "win31", "platinum", "beos", "amiga", "kde", "cde", "gem", "bleskos", "blackbox", "c64", "generic", "nextstep"] as const;
 ```
 
 **2. Add the spec** to `CHROME_SPECS` in `src/lib/chromeSpec.ts`:
@@ -363,6 +386,7 @@ A spec is an ordered array of these parts, drawn in order:
 | `bleskos` | — | BleskOS full-screen program switcher |
 | `rootMenu` | — | Blackbox titled root menu + cascading submenu, floating mid-screen |
 | `workspaceBar` | — | Blackbox workspace toolbar, floating above the bottom edge |
+| `basicScreen` | — | C64 border frame + BASIC boot banner + `READY.` prompt and cursor; the only primitive that reads `accent` |
 
 A window's `body` is one of:
 
@@ -391,12 +415,25 @@ Four moving parts:
    `CHROME_SPECS` entry, by
    contrast, does fail `astro check` — see [Add a new style](#add-a-new-style-from-existing-primitives) above.)
 4. The authoring conventions: chrome sits on an unknown wallpaper, so derive translucent
-   surfaces from `chromeSurfaces(onColor)` rather than picking opaque colors, size in
+   surfaces from `chromeSurfaces(onColor)` rather than picking opaque colors (the one
+   exception is `accent`, below), size in
    `cu()` units so the chrome scales with the preview box, use `<div>` and `<svg>` only,
    and put `data-testid="chrome-<name>"` on the primitive's root. Watch the height
    budget: `cu` derives from the container's *width*, so the inline preview is at its
    shortest — only about **43cu** — when the page is at its **widest**. Tall chrome that
    looks fine in a narrow window can collide at 1400px.
+
+#### The `accent` exception
+
+Some platforms drew a piece of chrome in a **second palette color** rather than in a
+shade of the background — the C64's screen border and BASIC text are light blue on blue,
+and no translucent tint reproduces that pair. For those, `OsDetail` passes the first of
+the entry's *other* colors to the preview as `accent`, and a primitive that receives one
+draws it **exactly**, at opacity 1. `DesktopPreview` drops an accent that contrasts with
+the wallpaper by less than 1.6:1, so chrome can never disappear into the background.
+
+Today only `basicScreen` reads it, and it should stay rare: use `accent` when a fixed
+second color is the *point* of the chrome, never as a shortcut around `chromeSurfaces`.
 
 For the full detail — the data flow, every convention, and the checklist — see
 [docs/adding-a-preview-style.md](docs/adding-a-preview-style.md).

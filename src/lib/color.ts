@@ -78,6 +78,13 @@ export function onColor(hex: string): "#1c1917" | "#ffffff" {
   return contrastRatio(L, L_INK_DARK) >= contrastRatio(L, 1) ? INK_DARK : INK_LIGHT;
 }
 
+// WCAG contrast ratio (1 … 21) between two hex colors. Used to decide whether a
+// second color from the same OS separates enough from the wallpaper to be drawn
+// as chrome on top of it — see the `accent` prop on DesktopPreview.
+export function contrast(a: string, b: string): number {
+  return contrastRatio(relativeLuminance(a), relativeLuminance(b));
+}
+
 export function rgbDistance(a: [number, number, number], b: [number, number, number]): number {
   return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
 }
