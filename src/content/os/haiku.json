@@ -2,7 +2,7 @@
   "name": "Haiku",
   "year": 2009,
   "added": "2026-07-20",
-  "family": "Haiku",
+  "family": "BeOS",
   "predecessor": "beos",
   "desktopStyle": "beos",
   "description": "Haiku is the open source re-implementation of BeOS. Naturally, the default background has been taken directly from BeOS 5. I'm still dreaming of a version running well enough on real hardware so I could use it as a daily driver.",
