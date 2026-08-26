@@ -21,6 +21,7 @@ const osSchema = z.object({
   predecessor: z.string().optional(),
   successor: z.string().optional(),
   desktopStyle: z.enum(DESKTOP_STYLES).optional(),
+  links: z.array(z.object({ name: z.string().min(1), url: z.string().url() })).optional(),
   colors: z.array(osColor).min(1),
 });
 

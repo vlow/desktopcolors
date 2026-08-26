@@ -34,6 +34,7 @@ export const ChromePart = z.discriminatedUnion("part", [
   z.object({ part: z.literal("bleskos") }),
   z.object({ part: z.literal("rootMenu") }),
   z.object({ part: z.literal("workspaceBar") }),
+  z.object({ part: z.literal("basicScreen") }),
 ]);
 export type ChromePart = z.infer<typeof ChromePart>;
 
@@ -89,6 +90,9 @@ export const CHROME_SPECS: Record<DesktopStyle, ChromeSpec | null> = {
   blackbox: [
     { part: "rootMenu" },
     { part: "workspaceBar" },
+  ],
+  c64: [
+    { part: "basicScreen" },
   ],
   generic: [
     { part: "deskIcons", side: "left", icons: [{ kind: "computer", label: "Computer" }, { kind: "folder", label: "Files" }] },

@@ -106,15 +106,19 @@ review and other docs can reference it. Use this template:
   `<Dropdown>` (`src/islands/Dropdown.tsx`); visibility is toggled by the
   `.dc-desktop-only` / `.dc-mobile-only` utility classes in
   [`src/styles/tokens.css`](src/styles/tokens.css). Menu rows are
-  `<button role="menuitem" class="dc-menu-item">`.
+  `<button role="menuitem" class="dc-menu-item">`, or `<a role="menuitem">` where
+  the row navigates rather than setting state (the OS detail References menu).
 
 - **Purpose (UX)** — a heading-zone toolbar with several inline controls (view
   switcher, sort, grouping) wraps onto multiple lines below 760px and steals
   vertical space. Collapsing the controls into a single dropdown button keeps
   the setup zone compact while preserving every option one tap away.
 
-- **Use it when** — a page's inline toolbar controls overflow on narrow screens.
-  In play on Platforms (Sort) and Colors (Group + Sort).
+- **Use it when** — a page's inline controls overflow on narrow screens. In play
+  on Platforms (Sort), Colors (Group + Sort), and the OS detail heading zone
+  (References). The References row is the open-ended case: an entry may carry any
+  number of links, so the inline pills wrap to two or three lines on a phone and
+  push the title down. The menu keeps the zone one line tall at any link count.
 
 - **Don't use it when**
   - A control is meaningless on mobile (e.g. the Platforms List view): drop it

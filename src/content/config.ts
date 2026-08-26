@@ -16,6 +16,12 @@ const osColor = z.object({
 });
 export type OsColor = z.infer<typeof osColor>;
 
+// One entry in the References row on the detail page. `project` and `wikipedia`
+// stay as their own fields — they carry their own icons and a fixed position —
+// and `links` is the open-ended rest: any number of further references, in file
+// order, for sources that are neither the platform's project page nor Wikipedia.
+const osLink = z.object({ name: z.string().min(1), url: z.string().url() });
+
 const osSchema = z.object({
   name: z.string().min(1),
   slug: z.string().regex(/^[a-z0-9-]+$/).optional(),
@@ -27,7 +33,8 @@ const osSchema = z.object({
   successor: z.string().optional(),
   desktopStyle: desktopStyle.default("modern"),
   type: z.string().min(1).optional(),
-  project: z.object({ name: z.string().min(1), url: z.string().url() }).optional(),
+  project: osLink.optional(),
+  links: z.array(osLink).default([]),
   wikipedia: z.string().url().optional(),
   colors: z.array(osColor).min(1)
     .refine((cs) => cs.filter((c) => c.default).length <= 1, {

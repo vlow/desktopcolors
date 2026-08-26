@@ -3,7 +3,7 @@ import type { DesktopStyle } from "../lib/desktopStyle";
 import { DesktopPreview } from "./DesktopPreview";
 
 interface Props {
-  hex: string; onColor: string; style: DesktopStyle;
+  hex: string; onColor: string; style: DesktopStyle; accent?: string;
   label: string; pos: number; total: number;
   onClose: () => void; onPrev: () => void; onNext: () => void;
   detailHref?: string;
@@ -13,7 +13,7 @@ const btn =
   "position: absolute; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.92); border: none; border-radius: 10px; padding: 10px 15px; font: 500 13px var(--font-ui); color: #1c1917; box-shadow: 0 2px 10px rgba(0,0,0,0.2);";
 
 export function FullscreenPreview(props: Props) {
-  const { hex, onColor, style, label, pos, total, onClose, onPrev, onNext, detailHref } = props;
+  const { hex, onColor, style, accent, label, pos, total, onClose, onPrev, onNext, detailHref } = props;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -26,7 +26,7 @@ export function FullscreenPreview(props: Props) {
 
   return (
     <div style="position: fixed; inset: 0; z-index: 100;">
-      <DesktopPreview hex={hex} onColor={onColor} style={style} />
+      <DesktopPreview hex={hex} onColor={onColor} style={style} accent={accent} />
       {detailHref ? (
         <a
           href={detailHref}
