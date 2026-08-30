@@ -83,6 +83,17 @@ export const SETUP_GUIDES: SetupGuideEntry[] = [
     shots: [{ label: "Wallpaper config" }],
   },
   {
+    key: "x11", os: "X11", note: "xsetroot via terminal", swatch: "#008080", cat: "desktop",
+    steps: [
+      "Open a terminal.",
+      "Run the command below, replacing the example hex with your color.",
+    ],
+    code: "xsetroot -solid '#008080'",
+    article: [
+      "The xsetroot command sets the X11 root window background directly, making it independent of the window manager you use.",
+    ],
+  },
+  {
     key: "ios", os: "iOS · iPhone", note: "iOS 16 and later", swatch: "#800080", cat: "mobile",
     steps: [
       "Open Settings → Wallpaper → Add New Wallpaper.",
