@@ -297,7 +297,7 @@ Which chrome a preview draws is chosen by the platform's `desktopStyle`. That fi
 affects **only the on-screen preview** — the downloadable wallpaper is always a plain
 solid-color PNG and never reads the style.
 
-Thirteen styles exist. Check for a fit here before building anything:
+Fourteen styles exist. Check for a fit here before building anything:
 
 | `desktopStyle` | chrome | modeled on |
 |----------------|--------|------------|
@@ -313,6 +313,7 @@ Thirteen styles exist. Check for a fit here before building anything:
 | `bleskos` | full-screen program switcher | BleskOS |
 | `blackbox` | floating root menu + cascading submenu + workspace bar | Blackbox (menu-only WMs) |
 | `c64` | screen border frame + BASIC boot banner + `READY.` prompt | Commodore 64 (BASIC-prompt home computers) |
+| `openlook` | Waste icon + two overlapping OPEN LOOK windows (no panel at all) | OpenWindows / `olwm` (SunOS, early Solaris) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 ### Reuse an existing style
@@ -333,7 +334,7 @@ Say the new style is `nextstep`. Three edits.
 declared:
 
 ```ts
-export const DESKTOP_STYLES = ["modern", "win9x", "win31", "platinum", "beos", "amiga", "kde", "cde", "gem", "bleskos", "blackbox", "c64", "generic", "nextstep"] as const;
+export const DESKTOP_STYLES = ["modern", "win9x", "win31", "platinum", "beos", "amiga", "kde", "cde", "gem", "bleskos", "blackbox", "c64", "openlook", "generic", "nextstep"] as const;
 ```
 
 **2. Add the spec** to `CHROME_SPECS` in `src/lib/chromeSpec.ts`:
@@ -377,6 +378,7 @@ A spec is an ordered array of these parts, drawn in order:
 | `platinumWindow` | `left`, `top`, `w`, `body` | a Mac OS 8 Platinum window |
 | `cdeWindow` | `left`, `top`, `w`, `body` | a CDE/Motif window |
 | `gemWindow` | `left`, `top`, `w`, `body` | a GEM window |
+| `openLookWindow` | `left`, `top`, `w`, `body` | an OPEN LOOK window (menu gadget + menu-button row) |
 | `taskbar` | — | Win9x bottom taskbar |
 | `menuBar` | — | Mac Platinum / GEM top menu bar |
 | `topBar` | — | Amiga Workbench top bar |

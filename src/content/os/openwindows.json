@@ -1,0 +1,17 @@
+{
+  "name": "SunOS / Solaris (OpenWindows)",
+  "year": 1989,
+  "added": "2026-08-31",
+  "family": "Solaris",
+  "successor": "solaris-9",
+  "desktopStyle": "openlook",
+  "colors": [
+    {
+      "hex": "#40a0c0",
+      "name": "Moonstone",
+      "default": true
+    }
+  ],
+  "type": "Proprietary",
+  "wikipedia": "https://en.wikipedia.org/wiki/OpenWindows"
+}
