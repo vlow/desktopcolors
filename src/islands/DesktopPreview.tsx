@@ -268,6 +268,38 @@ const GadgetWindow = ({ testid, left, top, w, body, rightBoxes, onColor }: { tes
   );
 };
 
+// OPEN LOOK (OpenWindows / olwm): the title bar carries the abbreviated window
+// menu — one square gadget at the LEFT with a downward triangle — a bold centered
+// title, and nothing at all on the right. Beneath it sits the row of oblong menu
+// buttons ("File \u25bd  View \u25bd  Edit \u25bd") that no other toolkit draws;
+// that row, not the title bar, is what reads as OPEN LOOK at a glance.
+const MenuMark = ({ S }: { S: Surfaces }) => (
+  <span style={{ width: 0, height: 0, borderLeft: `${cu(0.9)} solid transparent`, borderRight: `${cu(0.9)} solid transparent`, borderTop: `${cu(0.9)} solid ${S.border}` }} />
+);
+
+const OpenLookWindow = ({ left, top, w, body, onColor }: { left: number; top: number; w: number; body: WindowBody; onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-openlookwindow" style={{ position: "absolute", left: cu(left), top: cu(top), width: cu(w), background: S.win, borderRadius: cu(0.4), boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}, 0 ${cu(2.4)} ${cu(6)} rgba(0,0,0,0.18)`, overflow: "hidden" }}>
+      <div style={{ position: "relative", height: cu(5.5), display: "flex", alignItems: "center", padding: `0 ${cu(1.8)}`, boxShadow: `inset 0 calc(${cu(0.3)} * -1) 0 ${S.border}` }}>
+        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: cu(2.8), height: cu(2.8), borderRadius: cu(0.4), background: S.win, boxShadow: `inset 0 0 0 ${cu(0.35)} ${S.border}` }}>
+          <MenuMark S={S} />
+        </span>
+        <span style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: cu(14), height: cu(1.6), borderRadius: cu(0.8), background: S.soft }} />
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: cu(1.2), padding: `${cu(1.2)} ${cu(1.8)}`, boxShadow: `inset 0 calc(${cu(0.3)} * -1) 0 ${S.border}` }}>
+        {[0, 1, 2].map((i) => (
+          <span key={i} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: cu(0.8), width: cu(8), height: cu(2.8), borderRadius: cu(1.4), background: S.win, boxShadow: `inset 0 0 0 ${cu(0.3)} ${S.border}` }}>
+            <span style={{ width: cu(3), height: cu(1.2), borderRadius: cu(0.6), background: S.soft }} />
+            <MenuMark S={S} />
+          </span>
+        ))}
+      </div>
+      <div style={{ padding: cu(2.2) }}><WindowBodyView body={body} onColor={onColor} /></div>
+    </div>
+  );
+};
+
 const Taskbar = ({ onColor }: { onColor: string }) => {
   const S = chromeSurfaces(onColor);
   return (
@@ -516,6 +548,7 @@ function renderPart(part: ChromePart, onColor: string, key: number, accent?: str
     case "platinumWindow": return <PlatinumWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "cdeWindow": return <GadgetWindow key={key} testid="chrome-cdewindow" left={part.left} top={part.top} w={part.w} body={part.body} rightBoxes={2} onColor={onColor} />;
     case "gemWindow": return <GadgetWindow key={key} testid="chrome-gemwindow" left={part.left} top={part.top} w={part.w} body={part.body} rightBoxes={1} onColor={onColor} />;
+    case "openLookWindow": return <OpenLookWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "taskbar": return <Taskbar key={key} onColor={onColor} />;
     case "menuBar": return <MenuBar key={key} onColor={onColor} />;
     case "topBar": return <TopBar key={key} onColor={onColor} />;

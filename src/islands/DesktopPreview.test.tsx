@@ -45,6 +45,7 @@ describe("DesktopPreview", () => {
     expect(chromeFor("bleskos")).toEqual(["chrome-bleskos"]);
     expect(chromeFor("blackbox")).toEqual(["chrome-rootmenu", "chrome-workspacebar"]);
     expect(chromeFor("c64")).toEqual(["chrome-basicscreen"]);
+    expect(chromeFor("openlook")).toEqual(["chrome-deskicons", "chrome-openlookwindow", "chrome-openlookwindow"]);
     expect(chromeFor("generic")).toEqual(["chrome-deskicons", "chrome-dock"]);
   });
 

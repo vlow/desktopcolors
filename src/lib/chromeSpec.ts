@@ -25,6 +25,7 @@ export const ChromePart = z.discriminatedUnion("part", [
   z.object({ part: z.literal("platinumWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("cdeWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("gemWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
+  z.object({ part: z.literal("openLookWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("taskbar") }),
   z.object({ part: z.literal("menuBar") }),
   z.object({ part: z.literal("topBar") }),
@@ -93,6 +94,13 @@ export const CHROME_SPECS: Record<DesktopStyle, ChromeSpec | null> = {
   ],
   c64: [
     { part: "basicScreen" },
+  ],
+  // OPEN LOOK / olwm: no panel of any kind — windows simply sit on the root,
+  // overlapping, with the Waste basket as the one desktop icon.
+  openlook: [
+    { part: "deskIcons", side: "left", anchor: "bottom", icons: [{ kind: "trash", label: "Waste" }] },
+    { part: "openLookWindow", left: 20, top: 3, w: 34, body: { kind: "rows", widths: [70, 42] } },
+    { part: "openLookWindow", left: 44, top: 17, w: 44, body: { kind: "gridIcons", icons: ["folder", "folder", "folder", "folder"], cols: 4 } },
   ],
   generic: [
     { part: "deskIcons", side: "left", icons: [{ kind: "computer", label: "Computer" }, { kind: "folder", label: "Files" }] },

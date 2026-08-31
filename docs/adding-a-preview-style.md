@@ -67,6 +67,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `platinumWindow` | `left`, `top`, `w`, `body` | a Mac OS 8 Platinum window (close box + pinstripe title + centered title + zoom/collapse boxes) |
 | `cdeWindow` | `left`, `top`, `w`, `body` | a CDE/Motif window (one window-menu square left + centered title + minimize/maximize squares right) |
 | `gemWindow` | `left`, `top`, `w`, `body` | a GEM window (one gadget square left + centered title + one sizer square right) |
+| `openLookWindow` | `left`, `top`, `w`, `body` | an OPEN LOOK window (window-menu gadget left + centered title + a row of oblong menu buttons) |
 | `taskbar` | — | Win9x bottom taskbar |
 | `menuBar` | — | Mac Platinum / GEM top menu bar |
 | `topBar` | — | Amiga Workbench top bar |
@@ -101,6 +102,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `bleskos` | full-screen program switcher (no window/taskbar/dock) | BleskOS |
 | `blackbox` | floating root menu + cascading submenu + workspace bar (no icons, no docked panel) | Blackbox (menu-only WMs) |
 | `c64` | screen border frame + BASIC boot banner + `READY.` prompt (no shell at all) | Commodore 64 (BASIC-prompt home computers) |
+| `openlook` | Waste icon + two overlapping OPEN LOOK windows (no panel at all) | OpenWindows / `olwm` (SunOS, early Solaris) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 `modern` is the schema default (`desktopStyle` is optional) and the safety fallback: it
@@ -127,7 +129,7 @@ Add it to `DESKTOP_STYLES` in **`src/lib/desktopStyle.ts`** — the only place t
 declared:
 
 ```ts
-export const DESKTOP_STYLES = ["modern","win9x","win31","platinum","beos","amiga","kde","cde","gem","bleskos","blackbox","c64","generic","nextstep"] as const;
+export const DESKTOP_STYLES = ["modern","win9x","win31","platinum","beos","amiga","kde","cde","gem","bleskos","blackbox","c64","openlook","generic","nextstep"] as const;
 ```
 
 ### 2. Add its chrome spec

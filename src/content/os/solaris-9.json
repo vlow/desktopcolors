@@ -1,8 +1,9 @@
 {
-  "name": "Solaris 9",
+  "name": "Solaris 9 (CDE)",
   "year": 2002,
   "added": "2026-07-21",
   "family": "Solaris",
+  "predecessor": "openwindows",
   "desktopStyle": "cde",
   "description": "Solaris 9 was using CDE, configured with an embossed repeating logo pattern. So, using the color of this wallpaper is actually a bit of cheating, but it's the color I associate most with Solaris 9. All other colors are the solid color backdrops - technically images, but just plain colors and no patterns.",
   "colors": [
