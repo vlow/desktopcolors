@@ -213,7 +213,7 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
             </div>
             <div data-testid="refs-menu" class="dc-mobile-only" style="margin-left: auto;">
               <Dropdown
-                ariaLabel={`References: ${refs.length} ${refs.length === 1 ? "link" : "links"}`}
+                ariaLabel={`References: ${refs.length} ${refs.length === 1 ? "link" : "links"}${os.source ? ", and the source note" : ""}`}
                 align="right"
                 trigger={<>
                   <span class="dc-control-label">REFERENCES</span>
@@ -221,21 +221,48 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
                   <span style="opacity: 0.5;">▾</span>
                 </>}
               >
-                {(close) => refs.map((ref) => (
-                  <a
-                    key={ref.url}
-                    role="menuitem"
-                    class="dc-menu-item"
-                    href={ref.url}
-                    target="_blank"
-                    rel="noopener"
-                    style="text-decoration: none;"
-                    onClick={close}
-                  >
-                    {ref.icon} {ref.label}
-                    <span style="margin-left: auto; opacity: 0.5;">↗</span>
-                  </a>
-                ))}
+                {(close) => (
+                  <>
+                    {refs.map((ref) => (
+                      <a
+                        key={ref.url}
+                        role="menuitem"
+                        class="dc-menu-item"
+                        href={ref.url}
+                        target="_blank"
+                        rel="noopener"
+                        style="text-decoration: none;"
+                        onClick={close}
+                      >
+                        {ref.icon} {ref.label}
+                        <span style="margin-left: auto; opacity: 0.5;">↗</span>
+                      </a>
+                    ))}
+                    {/* Provenance is a different kind of thing from the links
+                        above it — it discloses in-page content rather than
+                        navigating — so it sits last, behind a rule, and carries
+                        a chevron instead of ↗. */}
+                    {os.source && (
+                      <>
+                        {refs.length > 0 && (
+                          <hr class="dc-rule" style="margin: 6px 4px;" />
+                        )}
+                        <button
+                          type="button"
+                          role="menuitem"
+                          data-testid="source-menu-item"
+                          class="dc-menu-item"
+                          aria-expanded={srcOpen}
+                          aria-controls="source-note-panel"
+                          onClick={() => { setSrcOpen((v) => !v); close(); }}
+                        >
+                          Source
+                          <span style="margin-left: auto; opacity: 0.5;">{srcOpen ? "⌃" : "⌄"}</span>
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
               </Dropdown>
             </div>
           </>

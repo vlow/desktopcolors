@@ -397,6 +397,36 @@ describe("OsDetail source note", () => {
     expect(screen.getByTestId("refs-inline")).toBeTruthy();
     expect(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle")).toBeTruthy();
   });
+
+  const openMenu = () =>
+    fireEvent.click(within(screen.getByTestId("refs-menu")).getByRole("button"));
+
+  it("names the source in the dropdown trigger's accessible name", () => {
+    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
+    const trigger = within(screen.getByTestId("refs-menu")).getByRole("button");
+    expect(trigger.getAttribute("aria-label")).toContain("source");
+  });
+
+  it("offers Source as the last item in the references menu", () => {
+    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
+    openMenu();
+    const items = within(screen.getByRole("menu")).getAllByRole("menuitem");
+    expect(items[items.length - 1]).toHaveAttribute("data-testid", "source-menu-item");
+  });
+
+  it("opens the panel and closes the menu when the Source item is chosen", () => {
+    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
+    openMenu();
+    fireEvent.click(screen.getByTestId("source-menu-item"));
+    expect(screen.queryByRole("menu")).toBeNull();
+    expect(screen.getByTestId("source-panel").textContent).toContain("Sampled under v86.");
+  });
+
+  it("offers no Source item for an entry without a note", () => {
+    render(<OsDetail {...baseProps} initialHex={null} viewUrl={null} />);
+    openMenu();
+    expect(screen.queryByTestId("source-menu-item")).toBeNull();
+  });
 });
 
 describe("centerScrollTop", () => {
