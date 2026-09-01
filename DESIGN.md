@@ -365,8 +365,11 @@ review and other docs can reference it. Use this template:
     must resolve in `links` or the build fails. See
     [`docs/adding-os-data.md`](docs/adding-os-data.md).
   - Parsed at build time by `src/lib/sourceNote.ts` into `OsView.source`;
-    `src/islands/SourceNote.tsx` renders the nodes and is the only place
-    `rel="noopener"` is applied.
+    `src/islands/SourceNote.tsx` renders the nodes and is the only place in the
+    source-note path that applies `rel="noopener"` — an author writes a
+    `[Label]` and a URL, never an anchor element, so there is no other call
+    site that could forget it. (Other unrelated links elsewhere on the page,
+    e.g. the References pills in `OsDetail.tsx`, set it too.)
   - The panel's `--panel-sunken` ground is not this decision's own token — it's
     the same recessed surface the Colors page uses for its expanded rank rows,
     folded into one custom property so both surfaces read as one system.

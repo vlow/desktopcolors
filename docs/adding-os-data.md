@@ -111,7 +111,9 @@ fail the build:
 Keep the note to a couple of sentences, and cite the specific artefact rather than
 the general one: *the shipped `.theme` files on the Plus! disc* is useful, *the
 internet* is not. The field is optional and most entries do not have one yet; add
-one when you have done the research to back it.
+one when you have done the research to back it. `links` itself defaults to `{}`,
+so a note with no `[Label]` markers can omit it entirely — `{ "text": "…" }` is a
+complete, valid `source`.
 
 ### The prose fields
 

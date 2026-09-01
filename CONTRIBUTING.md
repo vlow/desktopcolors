@@ -164,7 +164,9 @@ fail the build:
 Keep the note to a couple of sentences, and cite the specific artefact rather than
 the general one: *the shipped `.theme` files on the Plus! disc* is useful, *the
 internet* is not. The field is optional and most entries do not have one yet; add
-one when you have done the research to back it.
+one when you have done the research to back it. `links` itself defaults to `{}`,
+so a note with no `[Label]` markers can omit it entirely — `{ "text": "…" }` is a
+complete, valid `source`.
 
 #### The prose fields
 
@@ -200,9 +202,9 @@ keep that from going unnoticed.
 Two things the schema does **not** enforce, so match the worked example by hand:
 
 - **Key order.** Every file in the collection uses the order shown above — `name`,
-  `year`, `added`, `family`, the slug refs, `desktopStyle`, `colors`, then `type`,
-  `project`, `wikipedia`. JSON key order is meaningless to the parser; keep it anyway
-  so the files diff against each other.
+  `year`, `added`, `family`, the slug refs, `desktopStyle`, `source` (when present),
+  `colors`, then `type`, `project`, `wikipedia`. JSON key order is meaningless to
+  the parser; keep it anyway so the files diff against each other.
 - **Reciprocal links.** `predecessor` and `successor` are two independent one-way
   fields. Writing `"predecessor": "beos"` in your file gives *your* page a link back to
   BeOS; it does **not** give BeOS a forward link to you. If you want both, add
