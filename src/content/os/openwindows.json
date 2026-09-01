@@ -13,5 +13,6 @@
     }
   ],
   "type": "Proprietary",
-  "wikipedia": "https://en.wikipedia.org/wiki/OpenWindows"
+  "wikipedia": "https://en.wikipedia.org/wiki/OpenWindows",
+  "description": "Before CDE became the default desktop environment in Solaris, Sun created \"OpenWindows\", their own implementation of the OPEN LOOK specification. Look at the sheer beauty of this grey blue default background! Special thanks to HN user kjellsbells for this high quality recommendation."
 }
