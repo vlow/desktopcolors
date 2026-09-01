@@ -11,6 +11,7 @@ import { colorPath } from "../lib/links";
 import { KnownUsesTimeline } from "./KnownUsesTimeline";
 import { DetailSkeleton } from "./DetailSkeleton";
 import { Dropdown } from "./Dropdown";
+import { SourceNote } from "./SourceNote";
 
 interface Props {
   os: OsView;
@@ -24,6 +25,10 @@ type CopyKey = string;
 
 const REF_LINK = "display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--ink); font: 500 12px var(--font-ui); border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel); padding: 8px 12px;";
 const STEP_CARD = "display: flex; align-items: center; gap: 12px; text-decoration: none; border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel); padding: 11px 15px;";
+// The Source toggle takes its neighbours' pill vocabulary (REF_LINK) but is a
+// button, not a link — it discloses in-page content rather than navigating, so
+// it carries a chevron where the reference pills carry ↗.
+const SRC_TOGGLE = `${REF_LINK} cursor: pointer;`;
 
 // scrollTop that centers an item (at `itemOffset` within the container's content
 // box, `itemHeight` tall) inside a scroll container, clamped to its scrollable
@@ -67,6 +72,11 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
   const [simFull, setSimFull] = useState(false);
   const [simSheet, setSimSheet] = useState<SimilarView | null>(null);
   const [details, setDetails] = useState<Record<string, ColorDetail>>(detailsByHex);
+  // Open/closed state for the provenance panel. Owned here, not in either
+  // toolbar variant, so the inline pill and the mobile dropdown item cannot
+  // disagree about whether the note is open. Deliberately NOT reset when `sel`
+  // changes: the note is per-OS, not per-color.
+  const [srcOpen, setSrcOpen] = useState(false);
 
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
 
@@ -175,19 +185,31 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
 
   return (
     <div class="dc-detail dc-page-x dc-page-head" style="padding-block-end: 56px;">
-      <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 18px;">
+      <div data-testid="detail-top-row" style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 18px;">
         <a href="/" style="font: 400 13px var(--font-mono); color: var(--faint);">← Browse all platforms</a>
         {/* D2 collapse-to-dropdown: both variants are always in the DOM and CSS
             flips which one shows, so there is no hydration flash. Inline pills
             wrap onto two or three lines below 760px once an entry carries more
             than a couple of links, pushing the title down the screen. */}
-        {refs.length > 0 && (
+        {(refs.length > 0 || os.source) && (
           <>
             <div data-testid="refs-inline" class="dc-desktop-only" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;">
               <span class="dc-control-label">REFERENCES</span>
               {refs.map((ref) => (
                 <a key={ref.url} href={ref.url} target="_blank" rel="noopener" style={REF_LINK}>{ref.icon} {ref.label} <span style="opacity: 0.5;">↗</span></a>
               ))}
+              {os.source && (
+                <button
+                  type="button"
+                  data-testid="source-toggle"
+                  aria-expanded={srcOpen}
+                  aria-controls="source-note-panel"
+                  onClick={() => setSrcOpen((v) => !v)}
+                  style={SRC_TOGGLE}
+                >
+                  Source <span style="opacity: 0.5;">{srcOpen ? "⌃" : "⌄"}</span>
+                </button>
+              )}
             </div>
             <div data-testid="refs-menu" class="dc-mobile-only" style="margin-left: auto;">
               <Dropdown
@@ -219,6 +241,15 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
           </>
         )}
       </div>
+      {os.source && srcOpen && (
+        <div
+          id="source-note-panel"
+          data-testid="source-panel"
+          style="margin-top: 12px; border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel-sunken); padding: 14px 16px; font: 400 13px/1.65 var(--font-ui); color: var(--muted); text-wrap: pretty;"
+        >
+          <SourceNote nodes={os.source} />
+        </div>
+      )}
       <div class="dc-page-eyebrow" style="margin-top: 14px;">{os.family} · {os.year}{os.type && <> <span style="color: var(--faint);">·</span> <span style="color: var(--muted);">{os.type}</span></>}</div>
       <h1 class="dc-page-title">{os.name}</h1>
       <p class="dc-page-lead" style="margin-bottom: 16px;">{os.description}</p>

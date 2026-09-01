@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/preact";
+import { render, screen, fireEvent, within } from "@testing-library/preact";
 import { renderToString } from "preact-render-to-string";
 import { OsDetail, centerScrollTop } from "./OsDetail";
 import type { OsView, EraPeerView, ColorDetail } from "../lib/detail";
@@ -342,6 +342,60 @@ describe("OsDetail", () => {
     render(<OsDetail {...baseProps} initialHex={null} viewUrl={null} />);
     expect(screen.queryByTestId("heavy-skeleton")).toBeNull();
     expect(screen.getByText("KNOWN USES")).toBeTruthy();
+  });
+});
+
+describe("OsDetail source note", () => {
+  const withSource: OsView = {
+    ...os,
+    source: [
+      { kind: "text", value: "Sampled under " },
+      { kind: "link", label: "v86", url: "https://copy.sh/v86/" },
+      { kind: "text", value: "." },
+    ],
+  };
+
+  it("shows a collapsed Source toggle in the inline references row", () => {
+    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
+    const toggle = within(screen.getByTestId("refs-inline")).getByTestId("source-toggle");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).toHaveAttribute("aria-controls", "source-note-panel");
+    expect(screen.queryByTestId("source-panel")).toBeNull();
+  });
+
+  it("opens the panel when the inline toggle is clicked", () => {
+    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
+    fireEvent.click(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle"));
+    expect(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle"))
+      .toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByTestId("source-panel").textContent).toContain("Sampled under v86.");
+  });
+
+  it("closes the panel when the toggle is clicked again", () => {
+    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
+    const toggle = () => within(screen.getByTestId("refs-inline")).getByTestId("source-toggle");
+    fireEvent.click(toggle());
+    fireEvent.click(toggle());
+    expect(screen.queryByTestId("source-panel")).toBeNull();
+  });
+
+  it("keeps the panel open when a different color is selected", () => {
+    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
+    fireEvent.click(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle"));
+    fireEvent.click(screen.getByTestId("color-row-000080"));
+    expect(screen.getByTestId("source-panel")).toBeTruthy();
+  });
+
+  it("renders no toggle and no panel for an entry without a note", () => {
+    render(<OsDetail {...baseProps} initialHex={null} viewUrl={null} />);
+    expect(screen.queryByTestId("source-toggle")).toBeNull();
+    expect(screen.queryByTestId("source-panel")).toBeNull();
+  });
+
+  it("renders the references row for an entry with a note but no links", () => {
+    render(<OsDetail {...baseProps} os={{ ...withSource, project: undefined, links: [], wikipedia: undefined }} initialHex={null} viewUrl={null} />);
+    expect(screen.getByTestId("refs-inline")).toBeTruthy();
+    expect(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle")).toBeTruthy();
   });
 });
 

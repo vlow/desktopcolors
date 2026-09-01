@@ -7,6 +7,14 @@
   "successor": "windows-98",
   "desktopStyle": "win9x",
   "description": "Windows 95 came with teal as the new default color. It was actually already part of the palette, the background color in the \"Ocean\"-Theme since Windows 3.0 and the default color in Windows NT 3.x, but today it's clearly tied to Windows 95, 98, and NT 4.0. Due to the huge success of Windows 95 and its similarly colored siblings, it's probably the first background color most people alive in the 90s have ever seen. Fun fact (thanks to danirod on HN): the actual teal used in Windows 95 and 98 was a bit lighter, if the system was set to 16 colors (instead of 256 colors).",
+  "source": {
+    "text": "Swatch values were sampled from the 48-cell basic palette in the [Display Properties] color dialog, running under [v86], and cross-checked against the shipped `.theme` files on the Plus! disc. Theme attributions follow [Microsoft Plus! for Windows 95].",
+    "links": {
+      "Display Properties": "https://en.wikipedia.org/wiki/Windows_95",
+      "v86": "https://copy.sh/v86/",
+      "Microsoft Plus! for Windows 95": "https://en.wikipedia.org/wiki/Microsoft_Plus!"
+    }
+  },
   "colors": [
     {
       "hex": "#420000",
