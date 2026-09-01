@@ -256,7 +256,19 @@ test("the source note collapses into the references menu on a phone", async ({ p
   await expect(page.getByTestId("source-panel")).toBeVisible();
   await expect(page.getByTestId("source-panel")).toContainText(".theme");
 
-  // Opening the panel must not have wrapped the row it hangs beneath.
+  // The panel must hang BELOW the row, not sit inside it. Position alone can't
+  // prove that: detail-top-row has flex-wrap, so a panel wrongly nested as a
+  // third flex child still gets wrapped onto its own line and *looks* like it
+  // landed below the controls. What a wrongly-nested panel can't avoid is
+  // dragging detail-top-row's own box down with it, since the row would then
+  // have to grow to enclose it — that IS the D2 failure this test exists for:
+  // pushing the title, and everything else on the page, further down the
+  // screen. So re-check the one-line claim on the row itself, the same way as
+  // above, after the interaction.
+  const panelBox = (await page.getByTestId("source-panel").boundingBox())!;
+  expect(panelBox.y).toBeGreaterThanOrEqual(rowBefore.y + rowBefore.height);
+  expect(panelBox.width).toBeGreaterThan(rowBefore.width * 0.9);
+
   const rowAfter = (await page.getByTestId("detail-top-row").boundingBox())!;
-  expect(rowAfter.height).toBeCloseTo(rowBefore.height, 0);
+  expect(rowAfter.height).toBeLessThan(trigger.height * 1.6);
 });
