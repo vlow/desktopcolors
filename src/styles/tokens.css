@@ -11,7 +11,8 @@
   --panel: #ffffff;
   /* A recessed surface: sits on --bg but reads a shade lighter, for inset
      panels that are part of the page rather than a card floating above it.
-     First use: the OS detail source note (DESIGN.md D7). */
+     Used by the expanded color rows on the Colors page and the OS detail
+     source note (DESIGN.md D7). */
   --panel-sunken: #fbfaf9;
   --accent: oklch(0.55 0.17 255);
   --accent-strong: oklch(0.5 0.17 255);
