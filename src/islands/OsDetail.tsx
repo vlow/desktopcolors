@@ -191,14 +191,14 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
             flips which one shows, so there is no hydration flash. Inline pills
             wrap onto two or three lines below 760px once an entry carries more
             than a couple of links, pushing the title down the screen. */}
-        {(refs.length > 0 || os.source) && (
+        {(refs.length > 0 || (os.source && os.source.length > 0)) && (
           <>
             <div data-testid="refs-inline" class="dc-desktop-only" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;">
               <span class="dc-control-label">REFERENCES</span>
               {refs.map((ref) => (
                 <a key={ref.url} href={ref.url} target="_blank" rel="noopener" style={REF_LINK}>{ref.icon} {ref.label} <span style="opacity: 0.5;">↗</span></a>
               ))}
-              {os.source && (
+              {os.source && os.source.length > 0 && (
                 <button
                   type="button"
                   data-testid="source-toggle"
@@ -242,7 +242,7 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
                         above it — it discloses in-page content rather than
                         navigating — so it sits last, behind a rule, and carries
                         a chevron instead of ↗. */}
-                    {os.source && (
+                    {os.source && os.source.length > 0 && (
                       <>
                         {refs.length > 0 && (
                           <hr class="dc-rule" style="margin: 6px 4px;" />
@@ -268,7 +268,7 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
           </>
         )}
       </div>
-      {os.source && srcOpen && (
+      {os.source && os.source.length > 0 && srcOpen && (
         <div
           id="source-note-panel"
           data-testid="source-panel"
