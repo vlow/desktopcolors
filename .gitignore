@@ -14,3 +14,7 @@ playwright-report/
 
 # macOS
 .DS_Store
+
+# Agent scratch: git worktrees and subagent-driven-development ledgers
+.claude/worktrees/
+.superpowers/
