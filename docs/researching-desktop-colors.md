@@ -216,3 +216,12 @@ The five questions transfer; only the filenames change. For a new target, first 
 
 Treat those as hypotheses to confirm in the tree, not as facts — the point of the method is
 that every hex in a finished entry traces to a file, a line, and where relevant a commit.
+
+## Publishing what you found
+
+The research above has a home in the entry itself. `source` is an optional
+per-platform note — the emulator you ran, the source file you read, the disc you
+pulled the themes off — rendered on the detail page behind a `Source` toggle. Write
+it as you finish the research, while you still remember which file you read.
+
+Field reference and marker syntax: [`adding-os-data.md`](adding-os-data.md#the-source-note).

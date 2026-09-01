@@ -338,3 +338,51 @@ review and other docs can reference it. Use this template:
   both the gap and the size into one class makes them identical by construction
   and gives a single place to retune, per `CLAUDE.md`'s reuse-first rules — the
   same centralize-the-rhythm move as the masthead itself (**D3**).
+
+### D7 — Source note (`source` field + References-row toggle): say where the colors came from
+
+- **Element** — an optional per-entry provenance note. A `Source ⌄` toggle in the
+  detail page's References row (`src/islands/OsDetail.tsx`) opens a full-width
+  panel below the whole top row, on `--panel-sunken`. Below 760px the toggle
+  collapses into the References `<Dropdown>` as its last item (**D2**).
+
+- **Purpose (UX)** — the page states colors as fact. This is where a reader who
+  wants to know *how we know* finds out: which emulator, which shipped file,
+  which source tree. It is distinct from the References links, which say where to
+  read more about the **platform**, not where these **values** came from.
+
+- **Use it when** — an entry's colors were derived from something citable: a
+  running system, a source tree, a shipped theme file, a disc.
+
+- **Don't use it when** — the reasoning justifies the *edit* rather than the
+  data ("why I picked this swatch name"). That belongs in the pull request. And
+  never for per-color provenance — the field is per platform; a single color's
+  origin inside the OS goes in its `note`.
+
+- **How**
+  - Content: `source: { text, links }` in the entry's JSON. `text` takes two
+    markers — `[Label]` for a link, backticks for code — and every `[Label]`
+    must resolve in `links` or the build fails. See
+    [`docs/adding-os-data.md`](docs/adding-os-data.md).
+  - Parsed at build time by `src/lib/sourceNote.ts` into `OsView.source`;
+    `src/islands/SourceNote.tsx` renders the nodes and is the only place
+    `rel="noopener"` is applied.
+  - The panel's `--panel-sunken` ground is not this decision's own token — it's
+    the same recessed surface the Colors page uses for its expanded rank rows,
+    folded into one custom property so both surfaces read as one system.
+  - **Closed by default at every width.** Provenance is sought, not served.
+  - **Not reset when the selected color changes** — the note is per-OS.
+
+- **Why this way** — three alternatives were weighed (see the
+  [design spec](docs/superpowers/specs/2026-09-01-source-note-design.md)). Folding
+  the toggle into the References row keeps everything about *where this data comes
+  from* in one strip, and lets the mobile treatment be **D2** unchanged rather than
+  a new pattern: a chip beside the burger wraps the top row to two lines at 390px,
+  and relocating the note under the description on mobile only would be the site's
+  first per-viewport **relocation**, which a secondary block does not earn.
+
+  The note is stored as text plus a validated link map rather than as an HTML
+  string, as the design reference had it. The site is static, so content is baked
+  into every visitor's page at build time and a merged content PR is the threat
+  model. The structured shape also buys the label/link cross-check, which an HTML
+  string cannot.
