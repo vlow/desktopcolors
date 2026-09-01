@@ -234,21 +234,17 @@ test("robots.txt welcomes crawlers and names a sitemap this build serves", async
   expect(urlsetXml).not.toContain("view.json");
 });
 
-// Skipped: no content entry currently carries a `source` note (the seeded
-// windows-95 one was pulled — its text was lifted from the design mock, never
-// verified against a real system, and unverified provenance does not ship as
-// a factual claim). To re-enable: drop `.skip`, point `page.goto` at whichever
-// entry gets the first real note, and update the `.toContainText(".theme")`
-// assertion below to a string that's actually in that note.
+// Drives openwindows, the first entry to carry a real `source` note. If that
+// note is ever reworded, update the `.toContainText` string below with it.
 //
-// Worth re-enabling, not deleting: this is the only test that drives a real
-// browser at the Source toggle. It guards two things jsdom cannot see — that
-// below 760px the toggle lives inside the References dropdown rather than the
-// top row (D2), and that opening the panel doesn't wrap that row onto a
-// second line, which would push the title down the page.
-test.skip("the source note collapses into the references menu on a phone", async ({ page }) => {
+// This is the only test that drives a real browser at the Source toggle, and it
+// guards two things jsdom cannot see — that below 760px the toggle lives inside
+// the References dropdown rather than the top row (D2), and that opening the
+// panel doesn't wrap that row onto a second line, which would push the title
+// down the page.
+test("the source note collapses into the references menu on a phone", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/os/windows-95");
+  await page.goto("/os/openwindows");
   await islandsHydrated(page);
 
   // The inline pill is CSS-hidden; the dropdown takes its place. Both are in the
@@ -266,7 +262,12 @@ test.skip("the source note collapses into the references menu on a phone", async
   await page.getByTestId("source-menu-item").click();
 
   await expect(page.getByTestId("source-panel")).toBeVisible();
-  await expect(page.getByTestId("source-panel")).toContainText(".theme");
+  await expect(page.getByTestId("source-panel")).toContainText("Solaris 2.4");
+  // The [Virtual OS Museum] marker must have become a real anchor, not literal
+  // brackets — the one end-to-end check that authored markers survive the
+  // schema, the build-time parse, and hydration.
+  await expect(page.getByTestId("source-panel").getByRole("link", { name: "Virtual OS Museum" }))
+    .toHaveAttribute("href", "https://virtualosmuseum.org/");
 
   // The panel must hang BELOW the row, not sit inside it. Position alone can't
   // prove that: detail-top-row has flex-wrap, so a panel wrongly nested as a
