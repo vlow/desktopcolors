@@ -233,3 +233,30 @@ test("robots.txt welcomes crawlers and names a sitemap this build serves", async
   // endpoints. See the note in astro.config.mjs.
   expect(urlsetXml).not.toContain("view.json");
 });
+
+test("the source note collapses into the references menu on a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/os/windows-95");
+  await islandsHydrated(page);
+
+  // The inline pill is CSS-hidden; the dropdown takes its place. Both are in the
+  // DOM either way — that is the D2 no-hydration-flash trick — so visibility,
+  // not presence, is the claim.
+  await expect(page.getByTestId("refs-inline")).toBeHidden();
+  await expect(page.getByTestId("refs-menu")).toBeVisible();
+
+  const rowBefore = (await page.getByTestId("detail-top-row").boundingBox())!;
+  const trigger = (await page.getByTestId("refs-menu").boundingBox())!;
+  // One line: the row is no taller than its tallest control, plus slack.
+  expect(rowBefore.height).toBeLessThan(trigger.height * 1.6);
+
+  await page.getByTestId("refs-menu").getByRole("button").click();
+  await page.getByTestId("source-menu-item").click();
+
+  await expect(page.getByTestId("source-panel")).toBeVisible();
+  await expect(page.getByTestId("source-panel")).toContainText(".theme");
+
+  // Opening the panel must not have wrapped the row it hangs beneath.
+  const rowAfter = (await page.getByTestId("detail-top-row").boundingBox())!;
+  expect(rowAfter.height).toBeCloseTo(rowBefore.height, 0);
+});
