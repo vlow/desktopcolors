@@ -234,7 +234,19 @@ test("robots.txt welcomes crawlers and names a sitemap this build serves", async
   expect(urlsetXml).not.toContain("view.json");
 });
 
-test("the source note collapses into the references menu on a phone", async ({ page }) => {
+// Skipped: no content entry currently carries a `source` note (the seeded
+// windows-95 one was pulled — its text was lifted from the design mock, never
+// verified against a real system, and unverified provenance does not ship as
+// a factual claim). To re-enable: drop `.skip`, point `page.goto` at whichever
+// entry gets the first real note, and update the `.toContainText(".theme")`
+// assertion below to a string that's actually in that note.
+//
+// Worth re-enabling, not deleting: this is the only test that drives a real
+// browser at the Source toggle. It guards two things jsdom cannot see — that
+// below 760px the toggle lives inside the References dropdown rather than the
+// top row (D2), and that opening the panel doesn't wrap that row onto a
+// second line, which would push the title down the page.
+test.skip("the source note collapses into the references menu on a phone", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/os/windows-95");
   await islandsHydrated(page);
