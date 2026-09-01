@@ -6,7 +6,7 @@
   "successor": "solaris-9",
   "desktopStyle": "openlook",
   "source": {
-    "text": "Sourced from Solaris 2.4 running inside the [Virtual OS Museum] using a sRGB color picker on the host.",
+    "text": "Sourced from Solaris 2.4 running inside the [Virtual OS Museum] using an sRGB color picker on the host.",
     "links": {
       "Virtual OS Museum": "https://virtualosmuseum.org/"
     }
