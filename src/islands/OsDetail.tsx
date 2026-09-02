@@ -25,10 +25,16 @@ type CopyKey = string;
 
 const REF_LINK = "display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--ink); font: 500 12px var(--font-ui); border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel); padding: 8px 12px;";
 const STEP_CARD = "display: flex; align-items: center; gap: 12px; text-decoration: none; border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel); padding: 11px 15px;";
-// The Source toggle takes its neighbours' pill vocabulary (REF_LINK) but is a
-// button, not a link — it discloses in-page content rather than navigating, so
-// it carries a chevron where the reference pills carry ↗.
-const SRC_TOGGLE = `${REF_LINK} cursor: pointer;`;
+// The "All colors" / "Source" switcher in the colour box's header. Borrowed
+// wholesale from the Platforms page's VIEW switcher (PlatformControls.tsx): the
+// showing view is inked and underlined in the accent, the other sits back in
+// --faint. Reusing that vocabulary means a second two-view switcher on the site
+// reads as the same control rather than a new one.
+const BOX_TAB = (active: boolean): string =>
+  `cursor: pointer; border: none; background: none; padding: 0; font: 500 14px var(--font-ui); color: ${active ? "var(--ink)" : "var(--faint)"};` +
+  (active
+    ? " text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; text-decoration-color: var(--accent);"
+    : "");
 
 // scrollTop that centers an item (at `itemOffset` within the container's content
 // box, `itemHeight` tall) inside a scroll container, clamped to its scrollable
@@ -72,11 +78,10 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
   const [simFull, setSimFull] = useState(false);
   const [simSheet, setSimSheet] = useState<SimilarView | null>(null);
   const [details, setDetails] = useState<Record<string, ColorDetail>>(detailsByHex);
-  // Open/closed state for the provenance panel. Owned here, not in either
-  // toolbar variant, so the inline pill and the mobile dropdown item cannot
-  // disagree about whether the note is open. Deliberately NOT reset when `sel`
-  // changes: the note is per-OS, not per-color.
-  const [srcOpen, setSrcOpen] = useState(false);
+  // Which view the colour box is showing: its list, or the provenance note.
+  // Deliberately NOT reset when `sel` changes — the note is per-OS, not
+  // per-color, so a swatch click has no bearing on it.
+  const [srcView, setSrcView] = useState(false);
 
   useEffect(() => { track({ kind: "osview", os: os.slug }); }, [os.slug]);
 
@@ -133,6 +138,9 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
     ...os.links.map((l) => ({ url: l.url, label: l.name, icon: "⧉" })),
     ...(os.wikipedia ? [{ url: os.wikipedia, label: "Wikipedia", icon: <span style="font: 700 13px var(--font-ui);">W</span> }] : []),
   ];
+  // A note is only worth a switcher if there is something to switch to. Without
+  // one the colour box's header stays a plain label, not a one-option control.
+  const hasSource = !!os.source && os.source.length > 0;
   const detail = details[summary.hex.toLowerCase()]; // undefined until fetched
   const sim = detail?.similar ?? [];
 
@@ -191,29 +199,17 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
             flips which one shows, so there is no hydration flash. Inline pills
             wrap onto two or three lines below 760px once an entry carries more
             than a couple of links, pushing the title down the screen. */}
-        {(refs.length > 0 || (os.source && os.source.length > 0)) && (
+        {refs.length > 0 && (
           <>
             <div data-testid="refs-inline" class="dc-desktop-only" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;">
               <span class="dc-control-label">REFERENCES</span>
               {refs.map((ref) => (
                 <a key={ref.url} href={ref.url} target="_blank" rel="noopener" style={REF_LINK}>{ref.icon} {ref.label} <span style="opacity: 0.5;">↗</span></a>
               ))}
-              {os.source && os.source.length > 0 && (
-                <button
-                  type="button"
-                  data-testid="source-toggle"
-                  aria-expanded={srcOpen}
-                  aria-controls="source-note-panel"
-                  onClick={() => setSrcOpen((v) => !v)}
-                  style={SRC_TOGGLE}
-                >
-                  Source <span style="opacity: 0.5;">{srcOpen ? "⌃" : "⌄"}</span>
-                </button>
-              )}
             </div>
             <div data-testid="refs-menu" class="dc-mobile-only" style="margin-left: auto;">
               <Dropdown
-                ariaLabel={`References: ${refs.length} ${refs.length === 1 ? "link" : "links"}${os.source ? ", and the source note" : ""}`}
+                ariaLabel={`References: ${refs.length} ${refs.length === 1 ? "link" : "links"}`}
                 align="right"
                 trigger={<>
                   <span class="dc-control-label">REFERENCES</span>
@@ -238,29 +234,6 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
                         <span style="margin-left: auto; opacity: 0.5;">↗</span>
                       </a>
                     ))}
-                    {/* Provenance is a different kind of thing from the links
-                        above it — it discloses in-page content rather than
-                        navigating — so it sits last, behind a rule, and carries
-                        a chevron instead of ↗. */}
-                    {os.source && os.source.length > 0 && (
-                      <>
-                        {refs.length > 0 && (
-                          <hr class="dc-rule" style="margin: 6px 4px;" />
-                        )}
-                        <button
-                          type="button"
-                          role="menuitem"
-                          data-testid="source-menu-item"
-                          class="dc-menu-item"
-                          aria-expanded={srcOpen}
-                          aria-controls="source-note-panel"
-                          onClick={() => { setSrcOpen((v) => !v); close(); }}
-                        >
-                          Source
-                          <span style="margin-left: auto; opacity: 0.5;">{srcOpen ? "⌃" : "⌄"}</span>
-                        </button>
-                      </>
-                    )}
                   </>
                 )}
               </Dropdown>
@@ -268,15 +241,6 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
           </>
         )}
       </div>
-      {os.source && os.source.length > 0 && srcOpen && (
-        <div
-          id="source-note-panel"
-          data-testid="source-panel"
-          style="margin-top: 12px; border: 1px solid var(--card-border); border-radius: 11px; background: var(--panel-sunken); padding: 14px 16px; font: 400 13px/1.65 var(--font-ui); color: var(--muted); text-wrap: pretty;"
-        >
-          <SourceNote nodes={os.source} />
-        </div>
-      )}
       <div class="dc-page-eyebrow" style="margin-top: 14px;">{os.family} · {os.year}{os.type && <> <span style="color: var(--faint);">·</span> <span style="color: var(--muted);">{os.type}</span></>}</div>
       <h1 class="dc-page-title">{os.name}</h1>
       <p class="dc-page-lead" style="margin-bottom: 16px;">{os.description}</p>
@@ -315,12 +279,34 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
             <button onClick={() => setFull(true)} style="position: absolute; top: 12px; right: 12px; z-index: 2; cursor: pointer; background: rgba(255,255,255,0.92); border: none; border-radius: 9px; padding: 8px 12px; font: 500 12px var(--font-ui);">⤢ Expand</button>
           </div>
         </div>
-        <div style="border: 1px solid var(--card-border); border-radius: 14px; background: var(--panel); overflow: hidden; display: flex; flex-direction: column;">
-          <div style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
-            <span style="font: 500 14px var(--font-ui);">All colors</span>
-            <span style="font: 400 11px var(--font-mono); color: var(--faint);">{os.colorCount} · click to preview</span>
+        <div data-testid="colors-box" style="border: 1px solid var(--card-border); border-radius: 14px; background: var(--panel); overflow: hidden; display: flex; flex-direction: column;">
+          <div data-testid="colors-box-head" style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+            {hasSource ? (
+              <div style="display: flex; align-items: baseline; gap: 10px; flex: none;">
+                <button type="button" data-testid="view-colors" aria-pressed={!srcView} onClick={() => setSrcView(false)} style={BOX_TAB(!srcView)}>All colors</button>
+                <span style="color: #d6d3d1;">|</span>
+                <button type="button" data-testid="view-source" aria-pressed={srcView} onClick={() => setSrcView(true)} style={BOX_TAB(srcView)}>Source</button>
+              </div>
+            ) : (
+              <span style="font: 500 14px var(--font-ui);">All colors</span>
+            )}
+            {/* Only the list view earns the right-hand slot: the count and the
+                click affordance are information. In the Source view the switcher
+                already says "Source", so a hint there would be redundant — and at
+                390px it wrapped, taking the header to two lines and making the
+                card taller, which is the one thing this placement exists to avoid. */}
+            {!srcView && (
+              <span data-testid="colors-box-meta" style="font: 400 11px var(--font-mono); color: var(--faint); text-align: right; min-width: 0;">
+                {os.colorCount} · click to preview
+              </span>
+            )}
           </div>
-          <div ref={listRef} style="flex: 1; overflow-y: auto; padding: 8px; max-height: 320px;">
+          {/* Both views are always mounted and CSS picks one, so switching away
+              and back does not remount the list — its scroll position, set once
+              by the centering effect above, survives. Each is flex: 1 with the
+              same max-height, so the box is exactly as tall either way: a long
+              note scrolls inside the panel rather than growing the card. */}
+          <div ref={listRef} data-testid="colors-list" style={`flex: 1; overflow-y: auto; padding: 8px; max-height: 320px;${srcView ? " display: none;" : ""}`}>
             {colors.map((col, i) => (
               <div key={col.hex} onClick={() => setSel(i)} data-testid={`color-row-${col.hex.slice(1)}`} aria-current={i === sel ? "true" : undefined} style={`cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 9px; background: ${i === sel ? "var(--accent-tint)" : "transparent"};`}>
                 <div style={`width: 32px; height: 32px; border-radius: 7px; background-color: ${col.hex}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);`} />
@@ -332,6 +318,14 @@ export function OsDetail({ os, eraPeers, initialHex, detailsByHex, viewUrl }: Pr
               </div>
             ))}
           </div>
+          {hasSource && (
+            <div
+              data-testid="source-panel"
+              style={`flex: 1; overflow-y: auto; padding: 14px 16px; max-height: 320px; font: 400 13px/1.65 var(--font-ui); color: var(--muted); text-wrap: pretty;${srcView ? "" : " display: none;"}`}
+            >
+              {os.source && <SourceNote nodes={os.source} />}
+            </div>
+          )}
         </div>
       </div>
 

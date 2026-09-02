@@ -235,33 +235,41 @@ test("robots.txt welcomes crawlers and names a sitemap this build serves", async
 });
 
 // Drives openwindows, the first entry to carry a real `source` note. If that
-// note is ever reworded, update the `.toContainText` string below with it.
+// note is ever reworded, update the assertions below with it.
 //
-// This is the only test that drives a real browser at the Source toggle, and it
-// guards two things jsdom cannot see — that below 760px the toggle lives inside
-// the References dropdown rather than the top row (D2), and that opening the
-// panel doesn't wrap that row onto a second line, which would push the title
-// down the page.
-test("the source note collapses into the references menu on a phone", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+// Two claims, each asserted at the width where it actually holds, and both
+// invisible to jsdom, which has no layout engine:
+//
+//  1. At desktop width, switching to the note does not change the box's height.
+//     That is the whole point of putting provenance inside the colour box, and
+//     it is real here because .dc-detail-hero stretches both columns to a
+//     372px-min row — so the note shares the list's space rather than adding to
+//     it. A body that sized to content instead would break this.
+//  2. At 390px the header holds "All colors | Source" AND its meta line on one
+//     line. That header is a non-wrapping flex row inside a box with
+//     overflow: hidden, so the failure mode is not a wrap — it is silent
+//     horizontal clipping of whichever end runs out of room.
+//
+// Claim 1 is deliberately NOT asserted at 390px: the mobile rules drop the
+// hero's min-height, so the box hugs its content in both views. For an entry
+// with one colour a three-line note is legitimately taller than a one-row list,
+// and forcing them equal would mean padding out short lists with dead space.
+test("the colour box shows the source note in its own space", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/os/openwindows");
   await islandsHydrated(page);
 
-  // The inline pill is CSS-hidden; the dropdown takes its place. Both are in the
-  // DOM either way — that is the D2 no-hydration-flash trick — so visibility,
-  // not presence, is the claim.
-  await expect(page.getByTestId("refs-inline")).toBeHidden();
-  await expect(page.getByTestId("refs-menu")).toBeVisible();
+  // The list shows first; the note is mounted but hidden by CSS, so visibility
+  // is the claim, not presence.
+  await expect(page.getByTestId("colors-list")).toBeVisible();
+  await expect(page.getByTestId("source-panel")).toBeHidden();
 
-  const rowBefore = (await page.getByTestId("detail-top-row").boundingBox())!;
-  const trigger = (await page.getByTestId("refs-menu").boundingBox())!;
-  // One line: the row is no taller than its tallest control, plus slack.
-  expect(rowBefore.height).toBeLessThan(trigger.height * 1.6);
-
-  await page.getByTestId("refs-menu").getByRole("button").click();
-  await page.getByTestId("source-menu-item").click();
+  const boxBefore = (await page.getByTestId("colors-box").boundingBox())!;
+  const listBefore = (await page.getByTestId("colors-list").boundingBox())!;
+  await page.getByTestId("view-source").click();
 
   await expect(page.getByTestId("source-panel")).toBeVisible();
+  await expect(page.getByTestId("colors-list")).toBeHidden();
   await expect(page.getByTestId("source-panel")).toContainText("Solaris 2.4");
   // The [Virtual OS Museum] marker must have become a real anchor, not literal
   // brackets — the one end-to-end check that authored markers survive the
@@ -269,19 +277,41 @@ test("the source note collapses into the references menu on a phone", async ({ p
   await expect(page.getByTestId("source-panel").getByRole("link", { name: "Virtual OS Museum" }))
     .toHaveAttribute("href", "https://virtualosmuseum.org/");
 
-  // The panel must hang BELOW the row, not sit inside it. Position alone can't
-  // prove that: detail-top-row has flex-wrap, so a panel wrongly nested as a
-  // third flex child still gets wrapped onto its own line and *looks* like it
-  // landed below the controls. What a wrongly-nested panel can't avoid is
-  // dragging detail-top-row's own box down with it, since the row would then
-  // have to grow to enclose it — that IS the D2 failure this test exists for:
-  // pushing the title, and everything else on the page, further down the
-  // screen. So re-check the one-line claim on the row itself, the same way as
-  // above, after the interaction.
-  const panelBox = (await page.getByTestId("source-panel").boundingBox())!;
-  expect(panelBox.y).toBeGreaterThanOrEqual(rowBefore.y + rowBefore.height);
-  expect(panelBox.width).toBeGreaterThan(rowBefore.width * 0.9);
+  // Claim 1, the sharp form: the note occupies the very rect the list vacated.
+  // Box height alone is a weak check for an entry with one colour — the hero's
+  // 372px floor swallows any growth — but this bites on the regression that
+  // actually matters: a note rendered below the list instead of in its place,
+  // or spilling outside the card.
+  const panel = (await page.getByTestId("source-panel").boundingBox())!;
+  expect(panel.y).toBeCloseTo(listBefore.y, 0);
+  expect(panel.height).toBeCloseTo(listBefore.height, 0);
+  const boxAfter = (await page.getByTestId("colors-box").boundingBox())!;
+  expect(boxAfter.height).toBeCloseTo(boxBefore.height, 0);
 
-  const rowAfter = (await page.getByTestId("detail-top-row").boundingBox())!;
-  expect(rowAfter.height).toBeLessThan(trigger.height * 1.6);
+  // Claim 2: the header survives a phone's width on one line, in both views.
+  await page.setViewportSize({ width: 390, height: 844 });
+  // The switcher keeps working after the reflow — the view is state, not CSS.
+  await expect(page.getByTestId("source-panel")).toBeVisible();
+  const headSource = (await page.getByTestId("colors-box-head").boundingBox())!;
+
+  await page.getByTestId("view-colors").click();
+  await expect(page.getByTestId("colors-list")).toBeVisible();
+
+  const box = (await page.getByTestId("colors-box").boundingBox())!;
+  const head = (await page.getByTestId("colors-box-head").boundingBox())!;
+  const tab = (await page.getByTestId("view-colors").boundingBox())!;
+  const meta = (await page.getByTestId("colors-box-meta").boundingBox())!;
+
+  // Same line: the switcher's and the meta's vertical extents overlap. The
+  // header is a non-wrapping flex row, so the meta cannot drop below the tabs —
+  // but its own text can wrap internally, which is what this catches.
+  expect(meta.y).toBeLessThan(tab.y + tab.height);
+  expect(tab.y).toBeLessThan(meta.y + meta.height);
+  // Nothing clipped: both ends sit inside the box's own width.
+  expect(tab.x).toBeGreaterThanOrEqual(box.x);
+  expect(meta.x + meta.width).toBeLessThanOrEqual(box.x + box.width + 0.5);
+  // One line, and the same one line in both views: a header that grew in either
+  // would make the card taller, which is the failure this placement avoids.
+  expect(head.height).toBeLessThan(tab.height * 2 + 24);
+  expect(headSource.height).toBeCloseTo(head.height, 0);
 });

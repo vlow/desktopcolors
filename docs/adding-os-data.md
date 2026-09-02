@@ -77,7 +77,9 @@ Both fields are URL-validated by the schema, so a bare hostname fails the build.
 `source` records **where the values in this file were actually obtained** — the
 emulator, the source tree, the shipped file. It is not the same job as `links`,
 which point at background reading about the platform. It renders on the detail
-page as a panel behind a `Source` toggle in the References row, closed by default.
+page in the "All colors" card: its header becomes an **All colors | Source**
+switcher, and the note takes the card's existing space rather than adding any.
+The colour list shows by default.
 
 ```json
 "source": {

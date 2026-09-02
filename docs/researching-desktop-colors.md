@@ -221,7 +221,8 @@ that every hex in a finished entry traces to a file, a line, and where relevant 
 
 The research above has a home in the entry itself. `source` is an optional
 per-platform note — the emulator you ran, the source file you read, the disc you
-pulled the themes off — rendered on the detail page behind a `Source` toggle. Write
+pulled the themes off — rendered on the detail page in the "All colors" card,
+behind a **Source** view in its header. Write
 it as you finish the research, while you still remember which file you read.
 
 Field reference and marker syntax: [`adding-os-data.md`](adding-os-data.md#the-source-note).

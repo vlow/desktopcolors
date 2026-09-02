@@ -355,76 +355,69 @@ describe("OsDetail source note", () => {
     ],
   };
 
-  it("shows a collapsed Source toggle in the inline references row", () => {
+  const renderWithSource = () =>
     render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
-    const toggle = within(screen.getByTestId("refs-inline")).getByTestId("source-toggle");
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(toggle).toHaveAttribute("aria-controls", "source-note-panel");
-    expect(screen.queryByTestId("source-panel")).toBeNull();
+
+  it("shows the color list and offers no Source view when the entry has no note", () => {
+    render(<OsDetail {...baseProps} initialHex={null} viewUrl={null} />);
+    expect(screen.queryByTestId("view-source")).toBeNull();
+    // With nothing to switch to, the heading stays a plain label rather than
+    // becoming a one-option switcher.
+    expect(screen.queryByTestId("view-colors")).toBeNull();
+    expect(screen.getByText("All colors")).toBeTruthy();
+    expect(screen.getByTestId("colors-list")).toBeVisible();
   });
 
-  it("opens the panel when the inline toggle is clicked", () => {
-    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
-    fireEvent.click(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle"));
-    expect(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle"))
-      .toHaveAttribute("aria-expanded", "true");
+  it("starts on the color list, with the Source view available but not showing", () => {
+    renderWithSource();
+    expect(screen.getByTestId("view-colors")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("view-source")).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByTestId("colors-list")).toBeVisible();
+    expect(screen.getByTestId("source-panel")).not.toBeVisible();
+  });
+
+  it("swaps the box over to the note when Source is chosen", () => {
+    renderWithSource();
+    fireEvent.click(screen.getByTestId("view-source"));
+    expect(screen.getByTestId("source-panel")).toBeVisible();
     expect(screen.getByTestId("source-panel").textContent).toContain("Sampled under v86.");
+    expect(screen.getByTestId("colors-list")).not.toBeVisible();
+    expect(screen.getByTestId("view-source")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("view-colors")).toHaveAttribute("aria-pressed", "false");
   });
 
-  it("closes the panel when the toggle is clicked again", () => {
-    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
-    const toggle = () => within(screen.getByTestId("refs-inline")).getByTestId("source-toggle");
-    fireEvent.click(toggle());
-    fireEvent.click(toggle());
-    expect(screen.queryByTestId("source-panel")).toBeNull();
+  it("swaps back to the list without remounting it, so its scroll survives", () => {
+    renderWithSource();
+    const before = screen.getByTestId("colors-list");
+    fireEvent.click(screen.getByTestId("view-source"));
+    fireEvent.click(screen.getByTestId("view-colors"));
+    // Same node, not a fresh one: the list is hidden, never unmounted, so the
+    // mount-only centering effect is not re-run and scrollTop is preserved.
+    expect(screen.getByTestId("colors-list")).toBe(before);
+    expect(screen.getByTestId("colors-list")).toBeVisible();
   });
 
-  it("keeps the panel open when a different color is selected", () => {
-    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
-    fireEvent.click(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle"));
+  it("drops the header's meta line in the Source view", () => {
+    renderWithSource();
+    expect(screen.getByTestId("colors-box-meta").textContent).toContain("click to preview");
+    fireEvent.click(screen.getByTestId("view-source"));
+    // The count and click affordance describe the list, not the note, and the
+    // switcher already names the view — so the slot goes rather than restating it.
+    expect(screen.queryByTestId("colors-box-meta")).toBeNull();
+  });
+
+  it("leaves the selected color untouched across a view switch", () => {
+    renderWithSource();
     fireEvent.click(screen.getByTestId("color-row-000080"));
-    expect(screen.getByTestId("source-panel")).toBeTruthy();
+    fireEvent.click(screen.getByTestId("view-source"));
+    fireEvent.click(screen.getByTestId("view-colors"));
+    expect(screen.getByTestId("color-row-000080")).toHaveAttribute("aria-current", "true");
   });
 
-  it("renders no toggle and no panel for an entry without a note", () => {
-    render(<OsDetail {...baseProps} initialHex={null} viewUrl={null} />);
+  it("puts no source control in the references row or its dropdown", () => {
+    renderWithSource();
     expect(screen.queryByTestId("source-toggle")).toBeNull();
-    expect(screen.queryByTestId("source-panel")).toBeNull();
-  });
-
-  it("renders the references row for an entry with a note but no links", () => {
-    render(<OsDetail {...baseProps} os={{ ...withSource, project: undefined, links: [], wikipedia: undefined }} initialHex={null} viewUrl={null} />);
-    expect(screen.getByTestId("refs-inline")).toBeTruthy();
-    expect(within(screen.getByTestId("refs-inline")).getByTestId("source-toggle")).toBeTruthy();
-  });
-
-  const openMenu = () =>
     fireEvent.click(within(screen.getByTestId("refs-menu")).getByRole("button"));
-
-  it("names the source in the dropdown trigger's accessible name", () => {
-    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
-    const trigger = within(screen.getByTestId("refs-menu")).getByRole("button");
-    expect(trigger.getAttribute("aria-label")).toContain("source");
-  });
-
-  it("offers Source as the last item in the references menu", () => {
-    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
-    openMenu();
-    const items = within(screen.getByRole("menu")).getAllByRole("menuitem");
-    expect(items[items.length - 1]).toHaveAttribute("data-testid", "source-menu-item");
-  });
-
-  it("opens the panel and closes the menu when the Source item is chosen", () => {
-    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
-    openMenu();
-    fireEvent.click(screen.getByTestId("source-menu-item"));
-    expect(screen.queryByRole("menu")).toBeNull();
-    expect(screen.getByTestId("source-panel").textContent).toContain("Sampled under v86.");
-  });
-
-  it("offers no Source item for an entry without a note", () => {
-    render(<OsDetail {...baseProps} initialHex={null} viewUrl={null} />);
-    openMenu();
     expect(screen.queryByTestId("source-menu-item")).toBeNull();
   });
 });

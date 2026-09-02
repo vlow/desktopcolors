@@ -339,17 +339,19 @@ review and other docs can reference it. Use this template:
   and gives a single place to retune, per `CLAUDE.md`'s reuse-first rules — the
   same centralize-the-rhythm move as the masthead itself (**D3**).
 
-### D7 — Source note (`source` field + References-row toggle): say where the colors came from
+### D7 — Source note (`source` field + colour-box view switcher): say where the colors came from
 
-- **Element** — an optional per-entry provenance note. A `Source ⌄` toggle in the
-  detail page's References row (`src/islands/OsDetail.tsx`) opens a full-width
-  panel below the whole top row, on `--panel-sunken`. Below 760px the toggle
-  collapses into the References `<Dropdown>` as its last item (**D2**).
+- **Element** — an optional per-entry provenance note. The detail page's "All
+  colors" card header becomes a two-view switcher — **All colors | Source** — and
+  the note renders in the card's existing body, in place of the colour list
+  (`src/islands/OsDetail.tsx`). Same treatment at every width. With no note, the
+  header stays the plain "All colors" label rather than a one-option control.
 
 - **Purpose (UX)** — the page states colors as fact. This is where a reader who
   wants to know *how we know* finds out: which emulator, which shipped file,
-  which source tree. It is distinct from the References links, which say where to
-  read more about the **platform**, not where these **values** came from.
+  which source tree. Putting it in the colour box puts the provenance next to the
+  thing whose provenance it is, and costs no vertical space: the note borrows the
+  list's room rather than adding a band of its own.
 
 - **Use it when** — an entry's colors were derived from something citable: a
   running system, a source tree, a shipped theme file, a disc.
@@ -370,19 +372,33 @@ review and other docs can reference it. Use this template:
     `[Label]` and a URL, never an anchor element, so there is no other call
     site that could forget it. (Other unrelated links elsewhere on the page,
     e.g. the References pills in `OsDetail.tsx`, set it too.)
-  - The panel's `--panel-sunken` ground is not this decision's own token — it's
-    the same recessed surface the Colors page uses for its expanded rank rows,
-    folded into one custom property so both surfaces read as one system.
-  - **Closed by default at every width.** Provenance is sought, not served.
+  - The switcher reuses the Platforms page's VIEW vocabulary
+    (`PlatformControls.tsx`): the showing view inked and underlined in the
+    accent, the other in `--faint`, split by a thin rule. `aria-pressed` carries
+    the active state, as it does for `.dc-filter-pill` (**D5**).
+  - **Both views stay mounted**; CSS picks one. Switching therefore never
+    remounts the list, so the scroll position set by its one-shot centering
+    effect survives a trip through the note and back.
+  - Both bodies are `flex: 1` under the same `max-height`, so the card is exactly
+    as tall either way and a long note scrolls inside it. At desktop widths
+    `.dc-detail-hero` stretches the card to the preview's height, so the switch
+    is pixel-stable; below 760px the hero drops its `min-height` and the card
+    hugs its content, so an entry with very few colors *will* change height when
+    switching. That is deliberate — the alternative is padding short lists with
+    dead space.
+  - **Shows the colour list by default.** Provenance is sought, not served.
   - **Not reset when the selected color changes** — the note is per-OS.
 
-- **Why this way** — three alternatives were weighed (see the
-  [design spec](docs/superpowers/specs/2026-09-01-source-note-design.md)). Folding
-  the toggle into the References row keeps everything about *where this data comes
-  from* in one strip, and lets the mobile treatment be **D2** unchanged rather than
-  a new pattern: a chip beside the burger wraps the top row to two lines at 390px,
-  and relocating the note under the description on mobile only would be the site's
-  first per-viewport **relocation**, which a secondary block does not earn.
+- **Why this way** — the note first shipped as a toggle in the References row
+  opening a full-width band above the title (see the
+  [design spec](docs/superpowers/specs/2026-09-01-source-note-design.md), which
+  records that design and the alternatives weighed for it). It was replaced
+  because a band above the title pushed the whole page down for a secondary
+  block, and because making it work on a phone meant threading the toggle into
+  the References `<Dropdown>` (**D2**) — provenance two taps deep, in a menu
+  otherwise full of outbound links. Hosting the note in the colour box costs no
+  layout at all, needs no mobile special case, and reads as part of the record
+  rather than an aside.
 
   The note is stored as text plus a validated link map rather than as an HTML
   string, as the design reference had it. The site is static, so content is baked
