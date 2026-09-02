@@ -4,6 +4,12 @@
   "added": "2026-08-17",
   "family": "Desktop Env.",
   "desktopStyle": "blackbox",
+  "source": {
+    "text": "The background colors are defined in the styles bundled with the source code. The background color is defined as `*backgroundColor:`. I used the source code mirror at [GitHub].",
+    "links": {
+      "GitHub": "https://github.com/bbidulock/blackboxwm/tree/master/data/styles"
+    }
+  },
   "description": "Blackbox is a fast and minimal window manager for Unix-like OSs. A whole range of *box WMs started as Blackbox forks (e.g. Fluxbox, Openbox, Hackedbox). It comes with a set of styles which all have their own very tasteful and slightly muted background colors.",
   "colors": [
     {
