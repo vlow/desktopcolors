@@ -300,6 +300,41 @@ const OpenLookWindow = ({ left, top, w, body, onColor }: { left: number; top: nu
   );
 };
 
+// Plan 9's rio. Three things make a rio screen recognisable, and none of them is
+// a title bar — rio has none. A window opens with a "tag" line instead: a row of
+// command words (New Cut Paste Snarf Sort Zerox Delcol) that you click to act on
+// the window. The scroll bar runs down the LEFT edge, not the right. And nothing
+// is rounded — rio's frames are strictly square.
+//
+// The real frames are cyan, which this cannot use: chrome has to stay legible on
+// an arbitrary wallpaper, so it comes from chromeSurfaces (see the authoring
+// conventions in docs/adding-a-preview-style.md). `accent` is the one escape
+// hatch and it is unavailable here anyway — Plan 9's entry has a single color, so
+// there is no second one to borrow.
+const RioWindow = ({ left, top, w, body, onColor }: { left: number; top: number; w: number; body: WindowBody; onColor: string }) => {
+  const S = chromeSurfaces(onColor);
+  return (
+    <div data-testid="chrome-riowindow" style={{ position: "absolute", left: cu(left), top: cu(top), width: cu(w), background: S.win, boxShadow: `inset 0 0 0 ${cu(0.5)} ${S.border}, 0 ${cu(2.4)} ${cu(6)} rgba(0,0,0,0.18)`, overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: cu(1.3), height: cu(4), padding: `0 ${cu(1.3)}`, background: S.panel, boxShadow: `inset 0 calc(${cu(0.4)} * -1) 0 ${S.border}` }}>
+        {/* Proportional rather than fixed widths: the tag is a run of words that
+            fills the line at whatever width the window is, and flex-shrink keeps
+            it from overflowing a narrow one. The trailing spacer is the empty
+            stretch a real tag leaves for typing. */}
+        {[4.6, 3.2, 4, 4.4, 2.8, 3.6, 4.8].map((g, i) => (
+          <span key={i} style={{ flex: `${g} 1 0`, height: cu(1.3), background: S.soft }} />
+        ))}
+        <span style={{ flex: "5 1 0" }} />
+      </div>
+      <div style={{ display: "flex" }}>
+        <div style={{ flex: "none", width: cu(2), background: S.panel, boxShadow: `inset calc(${cu(0.4)} * -1) 0 0 ${S.border}` }}>
+          <div style={{ margin: `${cu(1)} ${cu(0.45)}`, height: cu(7), background: S.soft }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0, padding: cu(2) }}><WindowBodyView body={body} onColor={onColor} /></div>
+      </div>
+    </div>
+  );
+};
+
 const Taskbar = ({ onColor }: { onColor: string }) => {
   const S = chromeSurfaces(onColor);
   return (
@@ -549,6 +584,7 @@ function renderPart(part: ChromePart, onColor: string, key: number, accent?: str
     case "cdeWindow": return <GadgetWindow key={key} testid="chrome-cdewindow" left={part.left} top={part.top} w={part.w} body={part.body} rightBoxes={2} onColor={onColor} />;
     case "gemWindow": return <GadgetWindow key={key} testid="chrome-gemwindow" left={part.left} top={part.top} w={part.w} body={part.body} rightBoxes={1} onColor={onColor} />;
     case "openLookWindow": return <OpenLookWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
+    case "rioWindow": return <RioWindow key={key} left={part.left} top={part.top} w={part.w} body={part.body} onColor={onColor} />;
     case "taskbar": return <Taskbar key={key} onColor={onColor} />;
     case "menuBar": return <MenuBar key={key} onColor={onColor} />;
     case "topBar": return <TopBar key={key} onColor={onColor} />;

@@ -26,6 +26,7 @@ export const ChromePart = z.discriminatedUnion("part", [
   z.object({ part: z.literal("cdeWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("gemWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("openLookWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
+  z.object({ part: z.literal("rioWindow"), left: z.number(), top: z.number(), w: z.number().positive(), body: WindowBody }),
   z.object({ part: z.literal("taskbar") }),
   z.object({ part: z.literal("menuBar") }),
   z.object({ part: z.literal("topBar") }),
@@ -101,6 +102,14 @@ export const CHROME_SPECS: Record<DesktopStyle, ChromeSpec | null> = {
     { part: "deskIcons", side: "left", anchor: "bottom", icons: [{ kind: "trash", label: "Waste" }] },
     { part: "openLookWindow", left: 20, top: 3, w: 34, body: { kind: "rows", widths: [70, 42] } },
     { part: "openLookWindow", left: 44, top: 17, w: 44, body: { kind: "gridIcons", icons: ["folder", "folder", "folder", "folder"], cols: 4 } },
+  ],
+  // rio draws no panel, no dock and no desktop icons — the bare wallpaper with
+  // windows on it is the whole shell. Two windows side by side rather than the
+  // stack a real rio screen accumulates: overlap reads as clutter at preview
+  // scale, and the tag line is the thing worth showing unobscured.
+  plan9: [
+    { part: "rioWindow", left: 3, top: 3, w: 52, body: { kind: "rows", widths: [94, 82, 88, 70, 90, 76, 86, 62, 80] } },
+    { part: "rioWindow", left: 59, top: 3, w: 36, body: { kind: "rows", widths: [84, 66, 78, 58, 72, 62, 76] } },
   ],
   generic: [
     { part: "deskIcons", side: "left", icons: [{ kind: "computer", label: "Computer" }, { kind: "folder", label: "Files" }] },

@@ -93,7 +93,7 @@ A complete file, `src/content/os/haiku.json`:
 | `name` | yes | display name, non-empty |
 | `year` | yes | integer release year |
 | `added` | yes | `YYYY-MM-DD` — the day you write the file, not the day the PR merges. Never bump it later; it drives the "newest" sort. |
-| `family` | yes | groups the platform. Reuse an existing value unless genuinely new — the full set in use today is `Amiga`, `BeOS`, `BleskOS`, `Desktop Env.`, `GEM`, `Haiku`, `Mac OS`, `ReactOS`, `SerenityOS`, `Solaris`, `Windows`. |
+| `family` | yes | groups the platform. Reuse an existing value unless genuinely new — the full set in use today is `Amiga`, `BeOS`, `BleskOS`, `Commodore`, `Desktop Env.`, `GEM`, `Mac OS`, `Plan 9`, `ReactOS`, `SerenityOS`, `Solaris`, `Windows`. |
 | `colors` | yes | at least one entry; **at most one** may be `"default": true` |
 | `slug` | no | defaults to the filename; lowercase letters, digits, hyphens |
 | `predecessor`, `successor` | no | slug refs to other entries. A dangling ref fails the build. |
@@ -361,6 +361,7 @@ Fourteen styles exist. Check for a fit here before building anything:
 | `blackbox` | floating root menu + cascading submenu + workspace bar | Blackbox (menu-only WMs) |
 | `c64` | screen border frame + BASIC boot banner + `READY.` prompt | Commodore 64 (BASIC-prompt home computers) |
 | `openlook` | Waste icon + two overlapping OPEN LOOK windows (no panel at all) | OpenWindows / `olwm` (SunOS, early Solaris) |
+| `plan9` | two side-by-side rio windows (no panel, no dock, no icons) | Plan 9 (rio) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 ### Reuse an existing style
@@ -426,6 +427,7 @@ A spec is an ordered array of these parts, drawn in order:
 | `cdeWindow` | `left`, `top`, `w`, `body` | a CDE/Motif window |
 | `gemWindow` | `left`, `top`, `w`, `body` | a GEM window |
 | `openLookWindow` | `left`, `top`, `w`, `body` | an OPEN LOOK window (menu gadget + menu-button row) |
+| `rioWindow` | `left`, `top`, `w`, `body` | a Plan 9 rio window (tag line instead of a title bar, left-hand scroll bar, square corners) |
 | `taskbar` | — | Win9x bottom taskbar |
 | `menuBar` | — | Mac Platinum / GEM top menu bar |
 | `topBar` | — | Amiga Workbench top bar |
