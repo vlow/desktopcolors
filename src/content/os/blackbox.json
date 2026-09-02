@@ -5,7 +5,7 @@
   "family": "Desktop Env.",
   "desktopStyle": "blackbox",
   "source": {
-    "text": "The background colors are defined in the styles bundled with the source code. The background color is defined as `*backgroundColor:`. I used the source code mirror at [GitHub].",
+    "text": "The background colors are defined in the styles bundled with the source code. The background color is defined as `*backgroundColor`. I used the source code mirror at [GitHub].",
     "links": {
       "GitHub": "https://github.com/bbidulock/blackboxwm/tree/master/data/styles"
     }
