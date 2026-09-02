@@ -48,6 +48,7 @@ This is the full guide (for humans and LLM agents). For the quick version see
 | `wikipedia` | — | URL. |
 | `project` | — | `{ "name", "url" }` for the OS's own site (open-source projects). |
 | `links` | — | `[{ "name", "url" }, …]` — any number of further reference links. |
+| `source` | — | `{ "text", "links" }` — where these colors came from. See [The source note](#the-source-note). |
 | `colors` | ✅ | ≥1 entry; **≤1** may be `"default": true`. |
 
 ### Reference links
@@ -71,6 +72,51 @@ palette derivation, a museum page, a hardware reference — goes in `links`:
 Both fields are URL-validated by the schema, so a bare hostname fails the build. Keep
 `name` short — it is the pill's whole label.
 
+### The source note
+
+`source` records **where the values in this file were actually obtained** — the
+emulator, the source tree, the shipped file. It is not the same job as `links`,
+which point at background reading about the platform. It renders on the detail
+page in the "All colors" card: its header becomes an **All colors | Source**
+switcher, and the note takes the card's existing space rather than adding any.
+The colour list shows by default.
+
+```json
+"source": {
+  "text": "Sampled from the 48-cell basic palette in the [Display Properties] color dialog under [v86], cross-checked against the shipped `.theme` files.",
+  "links": {
+    "Display Properties": "https://en.wikipedia.org/wiki/Windows_95",
+    "v86": "https://copy.sh/v86/"
+  }
+}
+```
+
+`text` takes exactly two markers:
+
+| marker | renders as |
+|--------|-----------|
+| `[Label]` | a link, labelled `Label`, whose URL is `links["Label"]` |
+| `` `x` `` | inline mono, for filenames and identifiers |
+
+Everything else is literal, including an unmatched `[` or backtick — prose with a
+stray bracket is fine and will not fail the build. Markers do not nest, and there
+is no escape syntax.
+
+The schema cross-checks the two halves **in both directions**, so both of these
+fail the build:
+
+- a `[Label]` with no matching key in `links` — it would otherwise render as
+  literal brackets, which nobody notices in review;
+- a key in `links` never cited in `text` — dead data, usually left behind by a
+  rename.
+
+Keep the note to a couple of sentences, and cite the specific artefact rather than
+the general one: *the shipped `.theme` files on the Plus! disc* is useful, *the
+internet* is not. The field is optional and most entries do not have one yet; add
+one when you have done the research to back it. `links` itself defaults to `{}`,
+so a note with no `[Label]` markers can omit it entirely — `{ "text": "…" }` is a
+complete, valid `source`.
+
 ### The prose fields
 
 `description` (entry-level) and `note` (per-color) are optional, default to `""`, and the
@@ -92,8 +138,9 @@ convention is **which built-in theme or style shipped it**:
 - A color that is just part of the palette and not any theme's default takes **no**
   note. Windows NT 3.x carries notes on 16 of its 53 colors for exactly this reason.
 - Keep it to a sentence. Reasoning that justifies the *edit* — why you chose a swatch
-  name, how you weighted a dither, what source you read — goes in the pull request,
-  where the reviewer reads it, not in the file.
+  name, how you weighted a dither — goes in the pull request, where the reviewer reads
+  it, not in the file. **What source you read** is the exception: that belongs in the
+  entry's [`source`](#the-source-note) note, which exists to publish it.
 
 `tagline` is gone outright: out of the schema, out of `OsView`, out of the platform cards.
 Zod strips unknown keys instead of rejecting them, so a `"tagline"` left in a file parses

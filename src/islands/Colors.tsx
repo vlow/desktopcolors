@@ -363,7 +363,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
                 <div data-testid="rank-row" class="dc-rank-row" role="button" tabIndex={0}
                   aria-expanded={open} aria-label={`${c.name} ${c.hex} — ${open ? "hide" : "show"} details`}
                   onClick={() => toggleExp(c.hex)} onKeyDown={(e) => onRowKey(e, c.hex)}
-                  style={`cursor: pointer; display: grid; grid-template-columns: 40px 56px minmax(0, 1fr) minmax(130px, 210px) 84px; gap: 16px; align-items: center; padding: 10px; border-radius: ${open ? "12px 12px 0 0" : "12px"}; ${open ? "border: 1px solid var(--field-border); border-bottom: none; border-left: 3px solid var(--accent); padding: 9px 9px 10px 7px;" : ""} background: ${open ? "#fbfaf9" : "transparent"};`}>
+                  style={`cursor: pointer; display: grid; grid-template-columns: 40px 56px minmax(0, 1fr) minmax(130px, 210px) 84px; gap: 16px; align-items: center; padding: 10px; border-radius: ${open ? "12px 12px 0 0" : "12px"}; ${open ? "border: 1px solid var(--field-border); border-bottom: none; border-left: 3px solid var(--accent); padding: 9px 9px 10px 7px;" : ""} background: ${open ? "var(--panel-sunken)" : "transparent"};`}>
                   <span style="font: 600 20px var(--font-mono); color: #cbc7c2; text-align: right;">{c.rank}</span>
                   <span class="dc-rank-swatch" style={`display: block; height: 56px; border-radius: 10px; background-color: ${c.hex}; box-shadow: ${open ? "inset 0 0 0 2px var(--accent)" : "inset 0 0 0 1px rgba(0,0,0,0.1)"};`} />
                   <span>
@@ -380,7 +380,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
                   </span>
                 </div>
                 {open && (
-                  <div class="dc-infobox" style={`margin: 0 0 10px; border: 1px solid var(--field-border); border-top: none; border-left: 3px solid ${c.hex}; border-radius: 0 0 12px 12px; background: #fbfaf9; padding: 16px 18px;`}>
+                  <div class="dc-infobox" style={`margin: 0 0 10px; border: 1px solid var(--field-border); border-top: none; border-left: 3px solid ${c.hex}; border-radius: 0 0 12px 12px; background: var(--panel-sunken); padding: 16px 18px;`}>
                     <ColorInfobox variant="flat" color={c} platforms={platformsByHex[c.hex.toLowerCase()] ?? []}
                       onPreview={() => openPv(ranking, i)}
                       onDownload={() => setSheet({ name: c.name, hex: c.hex, slug: c.primarySlug })} />

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import { z } from "zod";
 import { DESKTOP_STYLES } from "../lib/desktopStyle";
+import { sourceNoteLinkErrors } from "../lib/sourceNote";
 
 // Mirrors src/content/config.ts — lowercase-only, so the files stay greppable.
 const hex = z.string().regex(/^#[0-9a-f]{6}$/);
@@ -70,6 +71,19 @@ describe("os content files", () => {
     for (const f of files) {
       const raw = JSON.parse(readFileSync(`${dir}/${f}`, "utf8"));
       expect(raw, f).not.toHaveProperty("tagline");
+    }
+  });
+
+  // This suite's mirrored osSchema omits `source` entirely (zod strips unknown
+  // keys), so the real cross-check lives only in config.ts's superRefine, which a
+  // full build exercises but this suite otherwise never touches. Read the raw
+  // JSON — same pattern as the tagline check above — so a mismatched [Label]/
+  // links pair in a real content file fails fast, without needing astro:content.
+  it("has no dangling source-note markers or unused links", () => {
+    for (const f of files) {
+      const raw = JSON.parse(readFileSync(`${dir}/${f}`, "utf8"));
+      if (!raw.source) continue;
+      expect(sourceNoteLinkErrors(raw.source.text, raw.source.links ?? {}), f).toEqual([]);
     }
   });
 

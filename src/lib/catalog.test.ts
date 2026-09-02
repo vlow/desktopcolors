@@ -68,6 +68,31 @@ describe("buildCatalog", () => {
     ] }) }];
     expect(() => buildCatalog(bad, scores)).toThrow(/nope/);
   });
+
+  it("parses an entry's source note into nodes on the view", () => {
+    const withSource: OsEntry[] = [
+      { slug: "beos", data: os({
+        name: "BeOS",
+        colors: [{ hex: "#336698", name: "Steel Blue", note: "", default: true }],
+        source: {
+          text: "Taken from the constants in the [Haiku source tree] (`InterfaceDefs.h`).",
+          links: { "Haiku source tree": "https://github.com/haiku/haiku" },
+        },
+      }) },
+    ];
+    const view = buildCatalog(withSource, parseScores({ colors: {}, os: {} })).bySlug.get("beos")!;
+    expect(view.source).toEqual([
+      { kind: "text", value: "Taken from the constants in the " },
+      { kind: "link", label: "Haiku source tree", url: "https://github.com/haiku/haiku" },
+      { kind: "text", value: " (" },
+      { kind: "code", value: "InterfaceDefs.h" },
+      { kind: "text", value: ")." },
+    ]);
+  });
+
+  it("leaves source undefined for an entry without a note", () => {
+    expect(cat.bySlug.get("windows-95")!.source).toBeUndefined();
+  });
 });
 
 describe("buildCatalog metadata fields", () => {
