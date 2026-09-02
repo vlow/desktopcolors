@@ -5,6 +5,12 @@
   "family": "Amiga",
   "successor": "amiga-workbench-2-0",
   "desktopStyle": "amiga",
+  "source": {
+    "text": "Values read from [The Amiga Workbench Simulator] (taws). The RGB values are configured in the Workbench preferences. I read the default values from there.",
+    "links": {
+      "The Amiga Workbench Simulator": "https://taws.ch/WB.html"
+    }
+  },
   "description": "The Amiga Workbench had a very distinctive default palette: blue, black, white, and orange. Although the Amiga 1000 could render up to 4096 colors using the HAM mode, it could only render 2, 4, 8, 16, or 32 simultaneously. HAM mode was great for photos, but it wasn't a good fit for moving objects and using more colors also meant using more RAM.",
   "colors": [
     {
