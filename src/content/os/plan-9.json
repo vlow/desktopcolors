@@ -1,0 +1,27 @@
+{
+  "name": "Plan 9 (Rio)",
+  "year": 1992,
+  "added": "2026-09-02",
+  "family": "Plan 9",
+  "desktopStyle": "plan9",
+  "source": {
+    "text": "Read using an sRGB color picker from a [v86 virtual machine running Plan 9 (Legacy)].",
+    "links": {
+      "v86 virtual machine running Plan 9 (Legacy)": "https://copy.sh/v86/?profile=9legacy"
+    }
+  },
+  "colors": [
+    {
+      "hex": "#777777",
+      "name": "Nickel",
+      "default": true
+    }
+  ],
+  "type": "Proprietary",
+  "project": {
+    "name": "Plan 9 (Rio)",
+    "url": "https://9p.io/plan9/"
+  },
+  "wikipedia": "https://en.wikipedia.org/wiki/Plan_9_from_Bell_Labs",
+  "description": "Although Plan 9 came with a pretty colorful palette, the only choice of background color is dark grey. It's a nice contrast to the otherwise rather light UI controls."
+}

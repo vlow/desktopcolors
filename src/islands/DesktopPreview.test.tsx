@@ -46,6 +46,8 @@ describe("DesktopPreview", () => {
     expect(chromeFor("blackbox")).toEqual(["chrome-rootmenu", "chrome-workspacebar"]);
     expect(chromeFor("c64")).toEqual(["chrome-basicscreen"]);
     expect(chromeFor("openlook")).toEqual(["chrome-deskicons", "chrome-openlookwindow", "chrome-openlookwindow"]);
+    // Two rio windows and nothing else: rio draws no panel, dock or desk icons.
+    expect(chromeFor("plan9")).toEqual(["chrome-riowindow", "chrome-riowindow"]);
     expect(chromeFor("generic")).toEqual(["chrome-deskicons", "chrome-dock"]);
   });
 

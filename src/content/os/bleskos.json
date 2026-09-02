@@ -4,6 +4,12 @@
   "added": "2026-07-20",
   "family": "BleskOS",
   "desktopStyle": "bleskos",
+  "source": {
+    "text": "I used an sRGB color picker to read the value from the [copy.sh] virtual machine.",
+    "links": {
+      "copy.sh": "https://copy.sh/v86/?profile=bleskos"
+    }
+  },
   "description": "One of the lesser known alternative OSs, BleskOS aims to be the OS of choice for very old computer hardware. There is no choice of color. If you use it, you better like green.",
   "colors": [
     {

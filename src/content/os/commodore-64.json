@@ -4,6 +4,13 @@
   "added": "2026-08-26",
   "family": "Commodore",
   "desktopStyle": "c64",
+  "source": {
+    "text": "I used the values from the [Colodore palette]. There is a lot of thought and re-engineering behind this palette. If you're interested in the matter, you should definitely read [pepto's blog post on that topic].",
+    "links": {
+      "Colodore palette": "https://www.colodore.com/",
+      "pepto's blog post on that topic": "https://www.pepto.de/projects/colorvic/"
+    }
+  },
   "description": "The C64 background colors are not a desktop, but they are so iconic that I couldn't leave them out. It's not easy to pinpoint the exact colors, but a guy known as pepto did a fantastic job re-engineering the full palette. These are the colors he calculated for 50% Brightness, 100% Contrast and 50% Color, which is what he set as default values. Visit the linked Colodore website if you want to dive deeper.",
   "colors": [
     {

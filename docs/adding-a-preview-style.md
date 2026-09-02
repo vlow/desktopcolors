@@ -68,6 +68,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `cdeWindow` | `left`, `top`, `w`, `body` | a CDE/Motif window (one window-menu square left + centered title + minimize/maximize squares right) |
 | `gemWindow` | `left`, `top`, `w`, `body` | a GEM window (one gadget square left + centered title + one sizer square right) |
 | `openLookWindow` | `left`, `top`, `w`, `body` | an OPEN LOOK window (window-menu gadget left + centered title + a row of oblong menu buttons) |
+| `rioWindow` | `left`, `top`, `w`, `body` | a Plan 9 rio window (no title bar at all — a tag line of command words on top, scroll bar down the **left** edge, square corners) |
 | `taskbar` | — | Win9x bottom taskbar |
 | `menuBar` | — | Mac Platinum / GEM top menu bar |
 | `topBar` | — | Amiga Workbench top bar |
@@ -103,6 +104,7 @@ src/lib/catalog.ts ──▶ view props ──▶ <DesktopPreview hex onColor st
 | `blackbox` | floating root menu + cascading submenu + workspace bar (no icons, no docked panel) | Blackbox (menu-only WMs) |
 | `c64` | screen border frame + BASIC boot banner + `READY.` prompt (no shell at all) | Commodore 64 (BASIC-prompt home computers) |
 | `openlook` | Waste icon + two overlapping OPEN LOOK windows (no panel at all) | OpenWindows / `olwm` (SunOS, early Solaris) |
+| `plan9` | two side-by-side rio windows (no panel, no dock, no icons) | Plan 9 (rio) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 `modern` is the schema default (`desktopStyle` is optional) and the safety fallback: it

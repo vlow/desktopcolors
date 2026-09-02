@@ -7,6 +7,7 @@ import {
 } from "./derive";
 import { colorScore, osScore, type Scores } from "./scores";
 import type { DesktopStyle } from "./desktopStyle";
+import { parseSourceNote, type SourceNode } from "./sourceNote";
 
 export interface ColorView {
   hex: string;
@@ -44,6 +45,9 @@ export interface OsView {
   // defaults it to []), so callers never have to null-check it.
   links: { name: string; url: string }[];
   wikipedia?: string;
+  // Provenance note, parsed at build time so the browser receives nodes and the
+  // parser never ships to it. Absent when the entry has no note.
+  source?: SourceNode[];
   colors: ColorView[];
   defaultHex: string;
   colorCount: number;
@@ -105,6 +109,7 @@ export function buildCatalog(entries: OsEntry[], scores: Scores): Catalog {
       slug, name: data.name, year: data.year, added: data.added, family: data.family,
       description: data.description, desktopStyle: data.desktopStyle,
       type: data.type, project: data.project, links: data.links ?? [], wikipedia: data.wikipedia,
+      source: data.source ? parseSourceNote(data.source.text, data.source.links) : undefined,
       colors, defaultHex: def.hex.toLowerCase(), colorCount: colors.length,
       score, scoreLabel: formatScore(score),
       predecessor: refOf(data.predecessor, "predecessor", slug),

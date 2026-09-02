@@ -269,3 +269,28 @@ Rules of thumb:
   failure as non-fatal by design, published, and exited 0. The marker in
   `/var/lib/desktopcolors/LAST_FAILURE` was absent the entire time — it was
   reporting, accurately, that the *publish* had succeeded.
+
+### T7 — Never leave a dev server on the Playwright port: the suite that tested nothing
+
+`playwright.config.ts` sets `reuseExistingServer: !process.env.CI` and points
+`webServer` at `127.0.0.1:4321`. That flag exists so a local run does not pay a
+~130s production build every time. The trap: **anything** already listening on
+4321 is reused, including `astro dev`.
+
+That happened while building the source note. A dev server had been started on
+4321 to eyeball a change; every `npm run test:e2e` afterwards silently skipped
+its own build and drove that server instead. The suite reported 10/10 green
+against a tree that did not build the code under test.
+
+Worse than slow or flaky — **wrong in a way that looks right**. Under `astro dev`
+the SSR output and the hydrated client bundle can disagree: `curl` showed the new
+markup while the post-hydration DOM still had the old structure, because the
+island's client module was cached. A deliberately broken layout passed, and the
+"proof" that a new assertion had teeth was itself invalid.
+
+- **Before running the e2e suite, make sure port 4321 is free.**
+  `curl -sf -o /dev/null http://127.0.0.1:4321/ && echo IN USE` is enough.
+- If a test's result surprises you — a break that still passes, an assertion that
+  cannot fail — check for a stray dev server *before* rewriting the assertion.
+- Layout and geometry assertions are the ones this bites hardest, because they
+  are the ones that cannot be re-checked in jsdom (**T1**).

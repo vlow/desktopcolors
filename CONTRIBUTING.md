@@ -93,7 +93,7 @@ A complete file, `src/content/os/haiku.json`:
 | `name` | yes | display name, non-empty |
 | `year` | yes | integer release year |
 | `added` | yes | `YYYY-MM-DD` — the day you write the file, not the day the PR merges. Never bump it later; it drives the "newest" sort. |
-| `family` | yes | groups the platform. Reuse an existing value unless genuinely new — the full set in use today is `Amiga`, `BeOS`, `BleskOS`, `Desktop Env.`, `GEM`, `Haiku`, `Mac OS`, `ReactOS`, `SerenityOS`, `Solaris`, `Windows`. |
+| `family` | yes | groups the platform. Reuse an existing value unless genuinely new — the full set in use today is `Amiga`, `BeOS`, `BleskOS`, `Commodore`, `Desktop Env.`, `GEM`, `Mac OS`, `Plan 9`, `ReactOS`, `SerenityOS`, `Solaris`, `Windows`. |
 | `colors` | yes | at least one entry; **at most one** may be `"default": true` |
 | `slug` | no | defaults to the filename; lowercase letters, digits, hyphens |
 | `predecessor`, `successor` | no | slug refs to other entries. A dangling ref fails the build. |
@@ -102,6 +102,7 @@ A complete file, `src/content/os/haiku.json`:
 | `wikipedia` | no | URL. Must parse as a URL, so include the scheme. |
 | `project` | no | `{ "name", "url" }` for the project's own site. `url` must parse as a URL. |
 | `links` | no | `[{ "name", "url" }, …]` — any number of further reference links. See [Reference links](#reference-links). |
+| `source` | no | `{ "text", "links" }` — where these colors came from. See [The source note](#the-source-note). |
 
 #### Reference links
 
@@ -123,6 +124,51 @@ palette derivation, a museum page, a hardware reference — goes in `links`:
 
 Every `url` is validated by the schema, so a bare hostname fails the build. Keep `name`
 short — it is the pill's whole label.
+
+#### The source note
+
+`source` records **where the values in this file were actually obtained** — the
+emulator, the source tree, the shipped file. It is not the same job as `links`,
+which point at background reading about the platform. It renders on the detail
+page in the "All colors" card: its header becomes an **All colors | Source**
+switcher, and the note takes the card's existing space rather than adding any.
+The colour list shows by default.
+
+```json
+"source": {
+  "text": "Sampled from the 48-cell basic palette in the [Display Properties] color dialog under [v86], cross-checked against the shipped `.theme` files.",
+  "links": {
+    "Display Properties": "https://en.wikipedia.org/wiki/Windows_95",
+    "v86": "https://copy.sh/v86/"
+  }
+}
+```
+
+`text` takes exactly two markers:
+
+| marker | renders as |
+|--------|-----------|
+| `[Label]` | a link, labelled `Label`, whose URL is `links["Label"]` |
+| `` `x` `` | inline mono, for filenames and identifiers |
+
+Everything else is literal, including an unmatched `[` or backtick — prose with a
+stray bracket is fine and will not fail the build. Markers do not nest, and there
+is no escape syntax.
+
+The schema cross-checks the two halves **in both directions**, so both of these
+fail the build:
+
+- a `[Label]` with no matching key in `links` — it would otherwise render as
+  literal brackets, which nobody notices in review;
+- a key in `links` never cited in `text` — dead data, usually left behind by a
+  rename.
+
+Keep the note to a couple of sentences, and cite the specific artefact rather than
+the general one: *the shipped `.theme` files on the Plus! disc* is useful, *the
+internet* is not. The field is optional and most entries do not have one yet; add
+one when you have done the research to back it. `links` itself defaults to `{}`,
+so a note with no `[Label]` markers can omit it entirely — `{ "text": "…" }` is a
+complete, valid `source`.
 
 #### The prose fields
 
@@ -146,8 +192,9 @@ convention is **which built-in theme or style shipped it**:
 - A color that is just part of the palette and not any theme's default takes **no**
   note. Windows NT 3.x carries notes on 16 of its 53 colors for exactly this reason.
 - Keep it to a sentence. Reasoning that justifies the *edit* — why you chose a swatch
-  name, how you weighted a dither, what source you read — goes in your pull request,
-  where the reviewer reads it, not in the file.
+  name, how you weighted a dither — goes in your pull request, where the reviewer reads
+  it, not in the file. **What source you read** is the exception: that belongs in the
+  entry's [`source`](#the-source-note) note, which exists to publish it.
 
 `tagline` is gone outright: out of the schema, out of `OsView`, out of the platform cards.
 Zod strips unknown keys instead of rejecting them, so a `"tagline"` left in a file parses
@@ -157,9 +204,9 @@ keep that from going unnoticed.
 Two things the schema does **not** enforce, so match the worked example by hand:
 
 - **Key order.** Every file in the collection uses the order shown above — `name`,
-  `year`, `added`, `family`, the slug refs, `desktopStyle`, `colors`, then `type`,
-  `project`, `wikipedia`. JSON key order is meaningless to the parser; keep it anyway
-  so the files diff against each other.
+  `year`, `added`, `family`, the slug refs, `desktopStyle`, `source` (when present),
+  `colors`, then `type`, `project`, `wikipedia`. JSON key order is meaningless to
+  the parser; keep it anyway so the files diff against each other.
 - **Reciprocal links.** `predecessor` and `successor` are two independent one-way
   fields. Writing `"predecessor": "beos"` in your file gives *your* page a link back to
   BeOS; it does **not** give BeOS a forward link to you. If you want both, add
@@ -314,6 +361,7 @@ Fourteen styles exist. Check for a fit here before building anything:
 | `blackbox` | floating root menu + cascading submenu + workspace bar | Blackbox (menu-only WMs) |
 | `c64` | screen border frame + BASIC boot banner + `READY.` prompt | Commodore 64 (BASIC-prompt home computers) |
 | `openlook` | Waste icon + two overlapping OPEN LOOK windows (no panel at all) | OpenWindows / `olwm` (SunOS, early Solaris) |
+| `plan9` | two side-by-side rio windows (no panel, no dock, no icons) | Plan 9 (rio) |
 | `generic` | icons + dock | minimal / unknown shells |
 
 ### Reuse an existing style
@@ -379,6 +427,7 @@ A spec is an ordered array of these parts, drawn in order:
 | `cdeWindow` | `left`, `top`, `w`, `body` | a CDE/Motif window |
 | `gemWindow` | `left`, `top`, `w`, `body` | a GEM window |
 | `openLookWindow` | `left`, `top`, `w`, `body` | an OPEN LOOK window (menu gadget + menu-button row) |
+| `rioWindow` | `left`, `top`, `w`, `body` | a Plan 9 rio window (tag line instead of a title bar, left-hand scroll bar, square corners) |
 | `taskbar` | — | Win9x bottom taskbar |
 | `menuBar` | — | Mac Platinum / GEM top menu bar |
 | `topBar` | — | Amiga Workbench top bar |
@@ -471,7 +520,7 @@ The entry name after `os →` is your file. The line under it is the schema's me
 reported location is always `:0:0` — Astro cannot map a JSON error back to a line — so
 the message itself is all you get.
 
-**Whether that message names the offending field depends on the rule.** Three rules in
+**Whether that message names the offending field depends on the rule.** Five rules in
 the schema carry a hand-written message, and those print bare, with no field path:
 
 | message | what it means |
@@ -479,6 +528,8 @@ the schema carry a hand-written message, and those print bare, with no field pat
 | `must be lowercase #rrggbb` | some `hex` is malformed or uppercase |
 | `must be YYYY-MM-DD` | `added` is the wrong shape |
 | `at most one color may be marked default` | two or more colors have `"default": true` |
+| `source note cites [X] but "links" has no such entry` | a `[X]` in `source.text` has no matching key in `source.links` |
+| `source note "links" entry "X" is never cited as [X] in "text"` | `source.links` has a key that `source.text` never uses |
 
 Every other rule prints `path: message`, and the path includes the array index — so you
 do **not** have to hunt:
@@ -490,7 +541,7 @@ project.url: Invalid url
 desktopStyle: Invalid enum value. Expected 'modern' | 'win9x' | … , received 'nextstep'
 ```
 
-`colors.2` is the third entry in your `colors` array, zero-indexed. Only the three bare
+`colors.2` is the third entry in your `colors` array, zero-indexed. Only the five bare
 messages above leave you checking entries by hand — and for `must be lowercase #rrggbb`
 that means re-reading each `hex` for a missing `#`, a wrong length, an uppercase letter,
 or a stray character.

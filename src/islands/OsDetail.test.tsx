@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/preact";
+import { render, screen, fireEvent, within } from "@testing-library/preact";
 import { renderToString } from "preact-render-to-string";
 import { OsDetail, centerScrollTop } from "./OsDetail";
 import type { OsView, EraPeerView, ColorDetail } from "../lib/detail";
@@ -342,6 +342,83 @@ describe("OsDetail", () => {
     render(<OsDetail {...baseProps} initialHex={null} viewUrl={null} />);
     expect(screen.queryByTestId("heavy-skeleton")).toBeNull();
     expect(screen.getByText("KNOWN USES")).toBeTruthy();
+  });
+});
+
+describe("OsDetail source note", () => {
+  const withSource: OsView = {
+    ...os,
+    source: [
+      { kind: "text", value: "Sampled under " },
+      { kind: "link", label: "v86", url: "https://copy.sh/v86/" },
+      { kind: "text", value: "." },
+    ],
+  };
+
+  const renderWithSource = () =>
+    render(<OsDetail {...baseProps} os={withSource} initialHex={null} viewUrl={null} />);
+
+  it("shows the color list and offers no Source view when the entry has no note", () => {
+    render(<OsDetail {...baseProps} initialHex={null} viewUrl={null} />);
+    expect(screen.queryByTestId("view-source")).toBeNull();
+    // With nothing to switch to, the heading stays a plain label rather than
+    // becoming a one-option switcher.
+    expect(screen.queryByTestId("view-colors")).toBeNull();
+    expect(screen.getByText("All colors")).toBeTruthy();
+    expect(screen.getByTestId("colors-list")).toBeVisible();
+  });
+
+  it("starts on the color list, with the Source view available but not showing", () => {
+    renderWithSource();
+    expect(screen.getByTestId("view-colors")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("view-source")).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByTestId("colors-list")).toBeVisible();
+    expect(screen.getByTestId("source-panel")).not.toBeVisible();
+  });
+
+  it("swaps the box over to the note when Source is chosen", () => {
+    renderWithSource();
+    fireEvent.click(screen.getByTestId("view-source"));
+    expect(screen.getByTestId("source-panel")).toBeVisible();
+    expect(screen.getByTestId("source-panel").textContent).toContain("Sampled under v86.");
+    expect(screen.getByTestId("colors-list")).not.toBeVisible();
+    expect(screen.getByTestId("view-source")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("view-colors")).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("swaps back to the list without remounting it, so its scroll survives", () => {
+    renderWithSource();
+    const before = screen.getByTestId("colors-list");
+    fireEvent.click(screen.getByTestId("view-source"));
+    fireEvent.click(screen.getByTestId("view-colors"));
+    // Same node, not a fresh one: the list is hidden, never unmounted, so the
+    // mount-only centering effect is not re-run and scrollTop is preserved.
+    expect(screen.getByTestId("colors-list")).toBe(before);
+    expect(screen.getByTestId("colors-list")).toBeVisible();
+  });
+
+  it("drops the header's meta line in the Source view", () => {
+    renderWithSource();
+    expect(screen.getByTestId("colors-box-meta").textContent).toContain("click to preview");
+    fireEvent.click(screen.getByTestId("view-source"));
+    // The count and click affordance describe the list, not the note, and the
+    // switcher already names the view — so the slot goes rather than restating it.
+    expect(screen.queryByTestId("colors-box-meta")).toBeNull();
+  });
+
+  it("leaves the selected color untouched across a view switch", () => {
+    renderWithSource();
+    fireEvent.click(screen.getByTestId("color-row-000080"));
+    fireEvent.click(screen.getByTestId("view-source"));
+    fireEvent.click(screen.getByTestId("view-colors"));
+    expect(screen.getByTestId("color-row-000080")).toHaveAttribute("aria-current", "true");
+  });
+
+  it("puts no source control in the references row or its dropdown", () => {
+    renderWithSource();
+    expect(screen.queryByTestId("source-toggle")).toBeNull();
+    fireEvent.click(within(screen.getByTestId("refs-menu")).getByRole("button"));
+    expect(screen.queryByTestId("source-menu-item")).toBeNull();
   });
 });
 

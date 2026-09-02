@@ -5,6 +5,12 @@
   "family": "BeOS",
   "predecessor": "beos",
   "desktopStyle": "beos",
+  "source": {
+    "text": "The value is configured in the UI. I used the web accessible virtual machine from [copy.sh] and read the value from the configuration dialog.",
+    "links": {
+      "copy.sh": "https://copy.sh/v86/?profile=haiku"
+    }
+  },
   "description": "Haiku is the open source re-implementation of BeOS. Naturally, the default background has been taken directly from BeOS 5. I'm still dreaming of a version running well enough on real hardware so I could use it as a daily driver.",
   "colors": [
     {
