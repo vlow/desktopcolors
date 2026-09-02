@@ -228,7 +228,7 @@ describe("buildOsUniverse", () => {
   });
 });
 
-import { osMatch, osOptionDisabled } from "./colorCatalog";
+import { osMatch, osOptionDisabled, defaultMatch } from "./colorCatalog";
 
 const P = (slug: string, isDefault = false): Platform =>
   ({ slug, name: slug, year: 2000, family: "F", isDefault });
@@ -277,5 +277,54 @@ describe("osOptionDisabled", () => {
     expect(osOptionDisabled("w98", allBeos)).toBe(true);
     // w95 also ships red, so beos+w95 still yields red → enabled
     expect(osOptionDisabled("w95", allBeos)).toBe(false);
+  });
+});
+
+describe("defaultMatch", () => {
+  // Adds a color that ships but is nobody's default, which the shared fixture lacks.
+  const dmap: Record<string, Platform[]> = { ...pmap, "#00ff00": [P("w95"), P("w98")] };
+
+  it("with no OS selected, passes only colors that are a default somewhere", () => {
+    expect(defaultMatch("#008080", dmap, {}, "any")).toBe(true);
+    expect(defaultMatch("#ff0000", dmap, {}, "any")).toBe(true);
+    expect(defaultMatch("#00ff00", dmap, {}, "any")).toBe(false);
+  });
+
+  it("ANY: color is the default on at least one selected OS", () => {
+    expect(defaultMatch("#ff0000", dmap, { beos: true }, "any")).toBe(true);
+    // red ships on w95 but is not its default
+    expect(defaultMatch("#ff0000", dmap, { w95: true }, "any")).toBe(false);
+    expect(defaultMatch("#008080", dmap, { w95: true }, "any")).toBe(true);
+  });
+
+  it("ALL: color is the default on every selected OS", () => {
+    expect(defaultMatch("#008080", dmap, { w95: true, w98: true }, "all")).toBe(true);
+    expect(defaultMatch("#ff0000", dmap, { w95: true, beos: true }, "all")).toBe(false);
+  });
+});
+
+describe("osOptionDisabled with defaultsOnly", () => {
+  // Only red is in play, and red's sole default is beos.
+  const redOnly = {
+    universe: [C("#ff0000", "red", ["warm"] as ColorEntry["types"])],
+    platformsByHex: pmap,
+    osSel: {} as Record<string, true>,
+    mode: "any" as const,
+    defaultsOnly: true,
+  };
+
+  it("ANY: disables an OS that no default in the universe belongs to", () => {
+    // w95 ships red, but red is not w95's default → picking it would empty the grid
+    expect(osOptionDisabled("w95", redOnly)).toBe(true);
+    expect(osOptionDisabled("beos", redOnly)).toBe(false);
+  });
+
+  it("ALL: disables an OS that shares no default with the selection", () => {
+    const allBeos = { ...redOnly, mode: "all" as const, osSel: { beos: true } as Record<string, true> };
+    expect(osOptionDisabled("w95", allBeos)).toBe(true);
+  });
+
+  it("leaves the OS options untouched when defaultsOnly is off", () => {
+    expect(osOptionDisabled("w95", { ...redOnly, defaultsOnly: false })).toBe(false);
   });
 });

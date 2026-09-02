@@ -270,8 +270,9 @@ review and other docs can reference it. Use this template:
   - The chip is a _data sample_ to browse/preview, not a filter toggle — that's
     the hue-band/leaderboard swatch (`.dc-swatch`), which is bigger, un-bordered,
     and opens an infobox rather than narrowing a set.
-  - A single primary action fits inline (Colors "Filter by OS") — leave it a
-    plain pill button, not a labelled `.dc-filter-group`.
+  - A single primary action or on/off filter fits inline (Colors "Filter by OS",
+    "Defaults only") — that is a `.dc-toolbar-pill` (**D8**), not a labelled
+    `.dc-filter-group`.
 
 - **How**
   - `.dc-filter-pill` owns the button chrome; the **active** state is the
@@ -295,9 +296,9 @@ review and other docs can reference it. Use this template:
     `.dc-color-filters` container that is hidden by default and revealed by a
     single mobile-only **"Filter by color"** toggle in the toolbar (the D2
     collapse model). When open (`.dc-open`) the container renders as a bordered
-    card mirroring the Filter by OS panel (`.dc-os-panel`). The toggle button
-    reuses the OS button's pill style and highlights when open **or** a
-    family/type filter is active (no count badge). Desktop keeps the groups
+    card mirroring the Filter by OS panel (`.dc-os-panel`). The toggle button is
+    a `.dc-toolbar-pill` (**D8**) and lights up when open **or** a family/type
+    filter is active (no count badge). Desktop keeps the groups
     always-visible in a plain column; both states stay in the DOM and only CSS
     flips, per D2's flash-free rule.
 
@@ -405,3 +406,47 @@ review and other docs can reference it. Use this template:
   into every visitor's page at build time and a merged content PR is the threat
   model. The structured shape also buys the label/link cross-check, which an HTML
   string cannot.
+
+### D8 — Toolbar pill (`.dc-toolbar-pill`): a standalone on/off control in a toolbar
+
+- **Element** — the plain rounded pill button that sits loose in a page toolbar,
+  carrying a glyph and a label and inverting to solid `--ink` when lit. In play on
+  Colors three times: **⧉ Filter by OS**, the mobile-only **◧ Filter by color**
+  toggle, and **★ Defaults only**. In
+  [`src/styles/tokens.css`](src/styles/tokens.css).
+
+- **Purpose (UX)** — a toolbar's standalone controls are peers, so they should be
+  one shape at one size, and "this control is doing something right now" should
+  read the same whichever one it is. That matters most for a filter like Defaults
+  only, whose effect is invisible unless the reader can see the pill is lit.
+
+- **Use it when** — a single control belongs directly in a toolbar: a two-state
+  filter, or a button disclosing a filter panel.
+
+- **Don't use it when**
+  - The control is one of a *set* of facets with a color chip and a live count —
+    that is `.dc-filter-pill` in a labelled `.dc-filter-group` (**D5**).
+  - The control picks one of several values rather than switching one thing on
+    and off — that is the segmented control (Colors `GROUP`/`SORT`), which needs
+    a `.dc-control-label` (**D4**) to say what it selects.
+
+- **How**
+  - The class owns all the chrome. The lit state has two forms, and the choice is
+    an accessibility one, not a visual one: a real toggle sets
+    `aria-pressed={on}` (Defaults only), while a disclosure button owns
+    `aria-expanded`/`aria-controls` for the panel and takes an extra `.dc-on`
+    class for the highlight (Filter by OS, Filter by color). Both render
+    identically; neither styles state inline.
+  - Metadata rides in the label, not in a badge — Filter by OS appends its pick
+    count as `· 2`.
+  - Padding is symmetric (`7px 15px`), unlike `.dc-filter-pill`'s asymmetric
+    inset, which exists only to sit tight against its chip.
+
+- **Why this way** — the same ten-property inline style was pasted onto Filter by
+  OS and Filter by color, each recomputing the lit colors in its own ternaries
+  (one of them inside an IIFE that existed only to name the boolean). Adding a
+  third copy for Defaults only is exactly what `CLAUDE.md`'s reuse-first rule
+  forbids, so the shared value moved to a class and the callers kept only their
+  state. Splitting the lit state across `aria-pressed` and `.dc-on` keeps a
+  disclosure button from claiming to be a toggle, which is what a single
+  `aria-pressed` hook would have forced.

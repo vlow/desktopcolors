@@ -3,7 +3,7 @@ import type { DesktopStyle } from "../lib/desktopStyle";
 import type { FamilyKey, ColorTypeKey } from "../lib/color";
 import {
   groupIntoBands, rankColors, familyCounts, typeCounts,
-  osMatch, osOptionDisabled, matchesColorQuery,
+  osMatch, defaultMatch, osOptionDisabled, matchesColorQuery,
   FAMILY_DEFS, COLOR_TYPE_DEFS,
   type ColorEntry, type Platform, type OsUniverse, type OsFamily, type OsMode,
 } from "../lib/colorCatalog";
@@ -37,6 +37,7 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
   const [colorOpen, setColorOpen] = useState(false);
   const [osSel, setOsSel] = useState<Record<string, true>>({});
   const [osMode, setOsMode] = useState<OsMode>("any");
+  const [defaultsOnly, setDefaultsOnly] = useState(false);
   const [pv, setPv] = useState<{ list: ColorEntry[]; idx: number } | null>(null);
   const [sheet, setSheet] = useState<{ name: string; hex: string; slug: string } | null>(null);
   const [bandWidth, setBandWidth] = useState(850);
@@ -62,26 +63,35 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
   const tCountsAll = useMemo(() => typeCounts(matched), [matched]);
   const countLabel = (n: number, total: number) => (n === total ? `${total}` : `${n}/${total}`);
 
-  const osMatches = (c: ColorEntry) => osMatch(c.hex, platformsByHex, osSel, osMode);
+  // The OS pick and "defaults only" are one predicate: defaultMatch reads the
+  // same selection, so switching the filter on narrows an OS pick to that OS's
+  // own default rather than any default that also ships there.
+  const osMatches = (c: ColorEntry) =>
+    osMatch(c.hex, platformsByHex, osSel, osMode) &&
+    (!defaultsOnly || defaultMatch(c.hex, platformsByHex, osSel, osMode));
 
   const bands = useMemo(
     () => group === "flat" ? [] :
       groupIntoBands(matched.filter(osMatches),
         { group: "hue", family, types: type ? [type] : [], sort }),
-    [matched, platformsByHex, group, family, type, sort, osSel, osMode]);
+    [matched, platformsByHex, group, family, type, sort, osSel, osMode, defaultsOnly]);
   const ranking = useMemo(() => {
     if (group !== "flat") return [];
     const base = matched.filter(osMatches);
     const filtered = type ? base.filter((c) => c.types.includes(type)) : base;
     return rankColors(filtered, { family, sort });
-  }, [matched, platformsByHex, group, family, type, sort, osSel, osMode]);
+  }, [matched, platformsByHex, group, family, type, sort, osSel, osMode, defaultsOnly]);
 
   // Universe for OS-option disabling: colors passing the family/type filter only.
   const osUniverseColors = useMemo(
     () => colors.filter((c) => (!family || c.family === family) && (!type || c.types.includes(type))),
     [colors, family, type]);
   const osDisabled = (slug: string) =>
-    osOptionDisabled(slug, { universe: osUniverseColors, platformsByHex, osSel, mode: osMode });
+    osOptionDisabled(slug, { universe: osUniverseColors, platformsByHex, osSel, mode: osMode, defaultsOnly });
+
+  // `empty` is a search miss; `noResults` is any filter combination that leaves
+  // the grid blank. A search miss implies both, so it picks the wording.
+  const noResults = group === "flat" ? ranking.length === 0 : bands.length === 0;
 
   const cols = Math.max(1, Math.floor((bandWidth + EXP_GAP) / (EXP_COLW + EXP_GAP)));
   const bandGridRef = (n: HTMLDivElement | null) => {
@@ -210,12 +220,11 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
             ))}
           </Dropdown>
         </div>
-        <button onClick={() => setOsOpen((o) => !o)} style={`cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 15px; font: 500 13px var(--font-ui); border: 1px solid ${osOpen || osSelKeys.length ? "var(--ink)" : "var(--field-border)"}; background: ${osOpen || osSelKeys.length ? "var(--ink)" : "#fff"}; color: ${osOpen || osSelKeys.length ? "#fff" : "var(--ink)"};`}>⧉ Filter by OS{osSelKeys.length ? ` · ${osSelKeys.length}` : ""}</button>
+        <button class="dc-toolbar-pill" aria-pressed={defaultsOnly} onClick={() => { setDefaultsOnly((d) => !d); setExp(null); }}>★ Defaults only</button>
+        <button class={`dc-toolbar-pill${osOpen || osSelKeys.length ? " dc-on" : ""}`} onClick={() => setOsOpen((o) => !o)}>⧉ Filter by OS{osSelKeys.length ? ` · ${osSelKeys.length}` : ""}</button>
         <div class="dc-mobile-only">
-          {(() => { const on = colorOpen || !!family || !!type; return (
-            <button onClick={() => setColorOpen((o) => !o)} aria-expanded={colorOpen} aria-controls="dc-color-filters"
-              style={`cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 15px; font: 500 13px var(--font-ui); border: 1px solid ${on ? "var(--ink)" : "var(--field-border)"}; background: ${on ? "var(--ink)" : "#fff"}; color: ${on ? "#fff" : "var(--ink)"};`}>◧ Filter by color</button>
-          ); })()}
+          <button class={`dc-toolbar-pill${colorOpen || !!family || !!type ? " dc-on" : ""}`}
+            onClick={() => setColorOpen((o) => !o)} aria-expanded={colorOpen} aria-controls="dc-color-filters">◧ Filter by color</button>
         </div>
       </div>
 
@@ -306,10 +315,19 @@ export function Colors({ colors, styleBySlug, platformsByHex, osUniverse }: Prop
       </div>
       <div class="dc-page-x"><hr class="dc-rule" /></div>
       <div class="dc-colors-body dc-page-x" style="padding-block: 6px 56px;">
-      {empty ? (
+      {noResults ? (
         <div style="padding: 64px 0; text-align: center; color: var(--muted);">
-          <div style="font: 500 20px var(--font-ui); color: var(--ink);">No colors match “{search}”</div>
-          <div style="font-size: 14px; margin-top: 8px;">Try a color name, a group like “teal”, a hex value, or a year.</div>
+          {empty ? (
+            <>
+              <div style="font: 500 20px var(--font-ui); color: var(--ink);">No colors match “{search}”</div>
+              <div style="font-size: 14px; margin-top: 8px;">Try a color name, a group like “teal”, a hex value, or a year.</div>
+            </>
+          ) : (
+            <>
+              <div style="font: 500 20px var(--font-ui); color: var(--ink);">No colors match the current filters</div>
+              <div style="font-size: 14px; margin-top: 8px;">Try clearing a filter{defaultsOnly ? ", or switching Defaults only back off" : ""}.</div>
+            </>
+          )}
         </div>
       ) : group !== "flat" ? (
         <div style="margin-top: 18px;">

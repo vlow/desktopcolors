@@ -213,3 +213,95 @@ describe("Colors", () => {
     expect(panel.classList.contains("dc-open")).toBe(false);
   });
 });
+
+describe("Colors — defaults only", () => {
+  // The shared fixture has no color that is nobody's default (teal is Windows
+  // 95/98's, red is BeOS's), and that is the only kind the filter hides outright.
+  const plain: ColorEntry = { hex: "#00ff00", name: "Green", family: "green", types: ["vivid"], h: 120, s: 100, l: 50, onColor: "#000000", score: 100, scoreLabel: "100", yearRange: "1995", primarySlug: "windows-95", href: "/os/windows-95/00ff00" };
+  const defProps = {
+    ...props,
+    colors: [...colors, plain],
+    platformsByHex: {
+      ...platformsByHex,
+      "#00ff00": [{ slug: "windows-95", name: "Windows 95", year: 1995, family: "Windows", isDefault: false }],
+    },
+  };
+  const bandNames = () => screen.getAllByTestId("band-name").map((n) => n.textContent);
+  const toggle = () => screen.getByRole("button", { name: /Defaults only/ });
+
+  it("is off on load, so colors that are nobody's default are shown", () => {
+    render(<Colors {...defProps} />);
+    expect(toggle().getAttribute("aria-pressed")).toBe("false");
+    expect(bandNames()).toContain("Greens");
+  });
+
+  it("hides colors that are nobody's default when switched on", () => {
+    render(<Colors {...defProps} />);
+    fireEvent.click(toggle());
+    expect(toggle().getAttribute("aria-pressed")).toBe("true");
+    const names = bandNames();
+    expect(names).not.toContain("Greens");
+    expect(names).toContain("Teals"); // Windows 95/98's default
+    expect(names).toContain("Reds");  // BeOS's default
+  });
+
+  it("switches back off on a second click", () => {
+    render(<Colors {...defProps} />);
+    fireEvent.click(toggle());
+    fireEvent.click(toggle());
+    expect(toggle().getAttribute("aria-pressed")).toBe("false");
+    expect(bandNames()).toContain("Greens");
+  });
+
+  it("ANY: narrows to the picked OS's own default, not any default it also ships", () => {
+    render(<Colors {...defProps} />);
+    fireEvent.click(screen.getByRole("button", { name: /Filter by OS/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Windows 95" }));
+    fireEvent.click(toggle());
+    const names = bandNames();
+    expect(names).toContain("Teals");     // Windows 95's default
+    expect(names).not.toContain("Reds");  // ships on Windows 95, but BeOS's default
+    expect(names).not.toContain("Greens");
+  });
+
+  it("ALL: requires the color to be the default of every picked OS", () => {
+    render(<Colors {...defProps} />);
+    fireEvent.click(screen.getByRole("button", { name: /Filter by OS/ }));
+    fireEvent.click(screen.getByRole("button", { name: "ALL picked" }));
+    fireEvent.click(screen.getByRole("button", { name: "Windows 95" }));
+    fireEvent.click(screen.getByRole("button", { name: "Windows 98" }));
+    fireEvent.click(toggle());
+    expect(bandNames()).toEqual(["Teals"]); // the only color both call their default
+  });
+
+  it("disables an OS that owns no default in the current scope", () => {
+    render(<Colors {...defProps} />);
+    fireEvent.click(toggle());
+    fireEvent.click(screen.getByRole("button", { name: /Reds/ })); // family = red
+    fireEvent.click(screen.getByRole("button", { name: /Filter by OS/ }));
+    // Red is BeOS's default but merely ships on Windows 95, so picking Windows 95
+    // would empty the grid.
+    expect((screen.getByRole("button", { name: "Windows 95" }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: "BeOS" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("shows an empty state when the filters together leave nothing", () => {
+    render(<Colors {...defProps} />);
+    fireEvent.click(screen.getByRole("button", { name: /Filter by OS/ }));
+    fireEvent.click(screen.getByRole("button", { name: "BeOS" })); // BeOS's default is red
+    fireEvent.click(toggle());
+    fireEvent.click(screen.getByRole("button", { name: /Teals/ })); // no teal is BeOS's default
+    expect(screen.queryAllByTestId("band-name")).toHaveLength(0);
+    expect(screen.getByText(/No colors match the current filters/i)).toBeTruthy();
+  });
+
+  it("keeps working in the ungrouped leaderboard", () => {
+    render(<Colors {...defProps} />);
+    fireEvent.click(screen.getByRole("button", { name: "Ungrouped" }));
+    expect(screen.getAllByTestId("rank-row")).toHaveLength(3);
+    fireEvent.click(toggle());
+    const rows = screen.getAllByTestId("rank-row");
+    expect(rows).toHaveLength(2);
+    expect(rows.some((r) => r.textContent?.includes("Green"))).toBe(false);
+  });
+});

@@ -191,6 +191,25 @@ export function osMatch(
   return mode === "all" ? keys.every((k) => slugs.has(k)) : keys.some((k) => slugs.has(k));
 }
 
+// "Defaults only" narrows to the colors a system shipped as ITS default background,
+// using the same ANY/ALL semantics as osMatch: with no OS picked a color passes if
+// it is the default anywhere, and with OSes picked it must be the default of one
+// (ANY) or all (ALL) of them. Coupling it to the selection is the point — picking
+// Windows 95 and asking for defaults means Windows 95's default, not any default
+// that happens to also ship there.
+export function defaultMatch(
+  hex: string,
+  platformsByHex: Record<string, Platform[]>,
+  osSel: Record<string, true>,
+  mode: OsMode,
+): boolean {
+  const defaults = (platformsByHex[hex.toLowerCase()] ?? []).filter((p) => p.isDefault);
+  const keys = Object.keys(osSel).filter((k) => osSel[k]);
+  if (keys.length === 0) return defaults.length > 0;
+  const slugs = new Set(defaults.map((p) => p.slug));
+  return mode === "all" ? keys.every((k) => slugs.has(k)) : keys.some((k) => slugs.has(k));
+}
+
 export function osOptionDisabled(
   candidateSlug: string,
   opts: {
@@ -198,13 +217,18 @@ export function osOptionDisabled(
     platformsByHex: Record<string, Platform[]>;
     osSel: Record<string, true>;
     mode: OsMode;
+    // When set, only an OS's *default* color counts as shipping on it, matching
+    // defaultMatch. Without this the panel would happily offer a pick that
+    // empties the grid.
+    defaultsOnly?: boolean;
   },
 ): boolean {
-  const { universe, platformsByHex, osSel, mode } = opts;
+  const { universe, platformsByHex, osSel, mode, defaultsOnly } = opts;
   const selected = Object.keys(osSel).filter((k) => osSel[k]);
   if (selected.includes(candidateSlug)) return false; // never disable a selected OS
   const shipsOn = (hex: string, slug: string): boolean =>
-    (platformsByHex[hex.toLowerCase()] ?? []).some((p) => p.slug === slug);
+    (platformsByHex[hex.toLowerCase()] ?? [])
+      .some((p) => p.slug === slug && (!defaultsOnly || p.isDefault));
   if (mode === "all") {
     const need = [...selected, candidateSlug];
     return !universe.some((c) => need.every((s) => shipsOn(c.hex, s)));

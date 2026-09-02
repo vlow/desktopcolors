@@ -208,6 +208,21 @@ a { color: inherit; text-decoration: none; }
 .dc-filter-pill[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
 .dc-filter-pill:disabled { opacity: 0.4; cursor: default; }
 .dc-filter-pill-chip { width: 15px; height: 15px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12); }
+/* Toolbar pill (D8): the plain on/off buttons in a page toolbar — Colors' Filter
+   by OS, its mobile Filter by color toggle, and Defaults only. Same chrome as
+   .dc-filter-pill, minus the chip and count slot, with its own symmetric padding
+   because there is no chip to offset. The lit state is `aria-pressed` on a real
+   toggle and `.dc-on` on a disclosure button (which owns aria-expanded instead),
+   so no caller styles state inline. */
+.dc-toolbar-pill {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  border-radius: 999px; padding: 7px 15px;
+  font: 500 13px var(--font-ui);
+  border: 1px solid var(--field-border); background: #fff; color: var(--ink);
+}
+.dc-toolbar-pill[aria-pressed="true"],
+.dc-toolbar-pill.dc-on { border-color: var(--ink); background: var(--ink); color: #fff; }
+
 .dc-filter-clear { cursor: pointer; background: transparent; border: none; color: var(--accent-strong); font: 500 13px var(--font-ui); padding: 8px 6px; }
 
 /* Filter-pill count slot: a narrow tabular reserve so a pill stays stable as its
