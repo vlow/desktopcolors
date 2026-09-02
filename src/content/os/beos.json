@@ -5,6 +5,12 @@
   "family": "BeOS",
   "successor": "haiku",
   "desktopStyle": "beos",
+  "source": {
+    "text": "The value is configured in the UI. I used the web accessible virtual machine from [copy.sh] and read the value from the configuration dialog.",
+    "links": {
+      "copy.sh": "https://copy.sh/v86/?profile=beos"
+    }
+  },
   "description": "BeOS is probably more known for its bold yellow window decorations. However, the beautiful blue background provided the perfect contrast. There are no other presets, but you could choose any sRGB color instead.",
   "colors": [
     {
